@@ -4,9 +4,10 @@ bash-lib
 Library of bash scripts
 
 date-util.sh
-============
+------------
 
 Usage:
+
     source date-util.sh
 
 Functions: 
@@ -96,4 +97,59 @@ Variables
 
     days_in_month (array)
     days_before_moth (array)
+
+list-utils.sh
+-------------
+
+bash script utilities for managing lists of things
+
+In the descriptions below, `VAR` is an array variable; `VAL`, `VAL1`, .. are values.
+
+    list_add VAR VAL1 [VAL2 ...]        # add VAL1.. to the end of VAR
+
+    list_add_once VAR  VAL1 [VAL2 ..]   # add VAL1.. uniquely to the end of VAR
+
+    list_insert VAR  VAL ...            # insert VALUE at the front of VAR
+
+    list_insert_once VAR VAL ..         # insert VALUE.. at the front of VAR; 
+
+    in_list VAR  [-any|-all] VAL ...    # return true if one or more values are in a list
+
+    list_size VAR                       # returns the number of items
+
+    sort_str VAL ...                    # sort the space-separated words of VAL ..
+  
+    sort_list VAR                       # sort the contents of VAR (a list) in place
+
+
+    join_list VAR [SEP] ..
+
+Join the items in `VAR` into a list, separated by `SEP`, which can be:
+
+`AND`    -- separate with `" and "`
+`OR`     -- separate with `" or "`
+`KEYS`   -- enclose each item with `X'` and `'`, follwed by `','`
+`TAB`    -- use tabs to separate items
+`NL`     -- separate each item with newline (and some spaces)
+`NOWRAP` -- do not auto-wrap long lines (default is `WRAP`)
+`','`    -- separate items with a comma (default)
+`str`    -- separate each item with an given string.
+
+    split_into  VAR "STRING" SEP
+
+splits a STRING into parts using separator (`SEP`) (default is ',')
+and assigns the resulting separated, and quoted strings to the `VAR`.
+
+    split_str   "STRING" [SEP]
+
+outputs the split of STRING into parts using a separator SEP (defaulting
+to space/tab).
+
+For the split functions:
+
+If `SEP` is anything but " " (a space), care is taken to avoid removing whitespace from
+the split values.
+
+`SEP` can be multiple characters; for example ' ,' (a space, comma) will split using both space
+and comma.  By default, splitting is done by tabs.
 

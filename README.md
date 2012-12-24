@@ -231,7 +231,7 @@ The general structure of a test suite:
         start_test	# start the tests
         # ... do some operations to be tested
 
-        check_equal 'bar' `my_func foo` "Func on 'foo' did not match 'bar'"
+        check_equal 'bar' \`my_func foo\` "Func on 'foo' did not match 'bar'"
 
 	#... do some other tests
         end_test	# end the tests

@@ -223,7 +223,6 @@ The tests to be run must have the function name begin with "`test_`".
 
 The general structure of a test suite:
 
-```bash
     source test-utils.sh
 
     init_tests [ARGUMENTS]
@@ -246,53 +245,42 @@ The general structure of a test suite:
     ...
     run_tests
     summarize_tests
-```
 
 These are the kinds of tests that can be done:
 
-```bash
     check_value        VAL               ERROR
     check_empty        VAL               ERROR
-```
 
 Expression tests
 
-```bash
     check_true         "EXPR"            ERROR
     check_false        "EXPR"            ERROR
-```
 
 Array item tests
 
-```bash
     check_size         LIST SIZE         ERROR  # same as check_size_eq
     check_size_XX      LIST SIZE         ERROR 
 
     check_item         LIST INDEX VAL    ERROR
     check_item_equal   LIST INDEX VAL    ERROR
     check_item_unequal LIST INDEX NONVAL ERROR
-```
 
 String tests 
 
-```bash
     check_equal        VAL1 VAL2         ERROR
     check_unequal      VAL1 VAL2         ERROR
 
     check_match        VAL1 REGEXP       ERROR
     check_nomatch      VAL1 REGEXP       ERROR
-```
 
 Numeric tests
 
-```bash
     check_eq           N1 N2             ERROR
     check_ne           N1 N2             ERROR
     check_lt           N1 N2             ERROR
     check_le           N1 N2             ERROR
     check_gt           N1 N2             ERROR
     check_ge           N1 N2             ERROR
-```
 
 ERROR is optional.  `XX` above can be: `eq`, `ne`, `lt`, `le`, `gt`, `ge`.
 

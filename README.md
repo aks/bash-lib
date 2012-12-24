@@ -54,24 +54,24 @@ Algorithm from "Calendrical Calculations", by Nachum Dershowitz and Edward M. Re
 
 ```lisp
   (let* ((d0 (1- date))
-	 (n400 (/ d0 146097))
-	 (d1 (% d0 146097))
-	 (n100 (/ d1 36524))
-	 (d2 (% d1 36524))
-	 (n4 (/ d2 1461))
-	 (d3 (% d2 1461))
-	 (n1 (/ d3 365))
-	 (day (1+ (% d3 365)))
-	 (year (+ (* 400 n400) (* 100 n100) (* n4 4) n1)))
+         (n400 (/ d0 146097))
+         (d1 (% d0 146097))
+         (n100 (/ d1 36524))
+         (d2 (% d1 36524))
+         (n4 (/ d2 1461))
+         (d3 (% d2 1461))
+         (n1 (/ d3 365))
+         (day (1+ (% d3 365)))
+         (year (+ (* 400 n400) (* 100 n100) (* n4 4) n1)))
     (if (or (= n100 4) (= n1 4))
-	(list 12 31 year)
+        (list 12 31 year)
       (let ((year (1+ year))
-	    (month 1))
-	(while (let ((mdays (calendar-last-day-of-month month year)))
-		 (and (< mdays day)
-		      (setq day (- day mdays))))
-	  (setq month (1+ month)))
-	(list month day year)))))
+            (month 1))
+        (while (let ((mdays (calendar-last-day-of-month month year)))
+                 (and (< mdays day)
+                      (setq day (- day mdays))))
+          (setq month (1+ month)))
+        (list month day year)))))
 ```
 
     format_date YYYY-MM-DD or Y-M-D or Y/M/D or YYYY M D
@@ -223,61 +223,76 @@ The tests to be run must have the function name begin with "`test_`".
 
 The general structure of a test suite:
 
+```bash
     source test-utils.sh
 
     init_tests [ARGUMENTS]
 
     test_01_NAME1() {
-	start_test
-	... do some operations to be tested
+        start_test	# start the tests
+        # ... do some operations to be tested
 
-	check_equal 'bar' `my_func foo` "Func on 'foo' did not match 'bar'"
+        check_equal 'bar' `my_func foo` "Func on 'foo' did not match 'bar'"
 
-	end_test
+	#... do some other tests
+        end_test	# end the tests
     }
     ...
     test_NN_NAME() {
-	...
+	start_test
+        ...
+	end_test
     }
     ...
     run_tests
     summarize_tests
+```
 
 These are the kinds of tests that can be done:
 
+```bash
     check_value        VAL               ERROR
     check_empty        VAL               ERROR
+```
 
 Expression tests
 
+```bash
     check_true         "EXPR"            ERROR
     check_false        "EXPR"            ERROR
+```
 
 Array item tests
 
+```bash
     check_size         LIST SIZE         ERROR  # same as check_size_eq
     check_size_XX      LIST SIZE         ERROR 
 
     check_item         LIST INDEX VAL    ERROR
     check_item_equal   LIST INDEX VAL    ERROR
     check_item_unequal LIST INDEX NONVAL ERROR
+```
 
 String tests 
 
+```bash
     check_equal        VAL1 VAL2         ERROR
     check_unequal      VAL1 VAL2         ERROR
 
     check_match        VAL1 REGEXP       ERROR
     check_nomatch      VAL1 REGEXP       ERROR
+```
 
 Numeric tests
 
+```bash
     check_eq           N1 N2             ERROR
     check_ne           N1 N2             ERROR
     check_lt           N1 N2             ERROR
     check_le           N1 N2             ERROR
     check_gt           N1 N2             ERROR
     check_ge           N1 N2             ERROR
+```
 
 ERROR is optional.  `XX` above can be: `eq`, `ne`, `lt`, `le`, `gt`, `ge`.
 

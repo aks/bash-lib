@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2006-2010 by Alan K. Stebbens <aks@stebbens.orgm>
+# Copyright 2006-2013 by Alan K. Stebbens <aks@stebbens.orgm>
 #
 # sync-files.sh -- library for managing file syncs
 #

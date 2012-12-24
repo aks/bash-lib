@@ -1,6 +1,6 @@
 # bash 
 # date-utils.sh
-# Copyright 2011 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2009-2013 Alan K. Stebbens <aks@stebbens.org>
 # 
 # functions for date management
 #

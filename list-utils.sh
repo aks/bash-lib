@@ -1,5 +1,5 @@
 # list-utils.sh
-# Copyright 2011 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2009-2013 Alan K. Stebbens <aks@stebbens.org>
 #
 # sh script utilities for managing lists of things
 #

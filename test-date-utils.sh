@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2006-2011, Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2013, Alan K. Stebbens <aks@stebbens.org>
 #
 # test-template.sh -- a template on which to create new test cases
 

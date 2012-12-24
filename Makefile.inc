@@ -1,5 +1,5 @@
 # Makefile.inc
-# Copyright 2006-2011 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
 #
 # $Id$
 #
@@ -19,7 +19,7 @@
 SHELL=/bin/sh
 
 distuser ?= $$USER
-disthost ?= $(distuser)@yoda
+disthost ?= $(distuser)@$$DISTHOST
 distpath ?= .
 
 # These should be defined in the "parent" Makefile

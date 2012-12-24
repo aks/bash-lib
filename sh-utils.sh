@@ -2,7 +2,7 @@
 #
 # handy functions for writing bash-based scripts
 #
-# Copyright 2006-2011 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
 #
 #
 # chat MSG ..

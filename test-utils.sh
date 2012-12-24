@@ -1,6 +1,6 @@
 # test-utils.sh
 #
-# Copyright 2006-2011 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
 #
 # infrasructure for test-driven development of Bash scripts
 #

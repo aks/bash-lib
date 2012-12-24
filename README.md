@@ -5,6 +5,10 @@ Library of bash scripts.
 
 Author: Alan K. Stebbens <aks@stebbens.org>
 
+* [date-util.sh](#date-utils.sh)
+* [list-utils.sh](#list-utils.sh)
+* [test-utils.sh](#test-utils.sh)
+
 date-util.sh
 ------------
 
@@ -200,3 +204,81 @@ Add FILE to a list of files that will be automatically removed upon program exit
     add_trap "CMD" SIGNAL ..
 
 Add `CMD` to the trap list for `SIGNAL`, while ensuring that it is not repeated.
+
+
+test-utils.sh
+-------------
+
+Copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
+
+Infrasructure for test-driven development of Bash scripts
+
+* A _*run*_ is a collection of tests, each test has a name.
+* A _*test*_ is a set of related operations with checks on the results
+* A _*check*_ compares values, which can result in an error.
+
+At the end of each test, there are a number of checks and errors.
+
+The tests to be run must have the function name begin with "`test_`".
+
+The general structure of a test suite:
+
+    source test-utils.sh
+
+    init_tests [ARGUMENTS]
+
+    test_01_NAME1() {
+	start_test
+	... do some operations to be tested
+
+	check_equal 'bar' `my_func foo` "Func on 'foo' did not match 'bar'"
+
+	end_test
+    }
+    ...
+    test_NN_NAME() {
+	...
+    }
+    ...
+    run_tests
+    summarize_tests
+
+These are the kinds of tests that can be done:
+
+    check_value        VAL               ERROR
+    check_empty        VAL               ERROR
+
+Expression tests
+
+    check_true         "EXPR"            ERROR
+    check_false        "EXPR"            ERROR
+
+Array item tests
+
+    check_size         LIST SIZE         ERROR  # same as check_size_eq
+    check_size_XX      LIST SIZE         ERROR 
+
+    check_item         LIST INDEX VAL    ERROR
+    check_item_equal   LIST INDEX VAL    ERROR
+    check_item_unequal LIST INDEX NONVAL ERROR
+
+String tests 
+
+    check_equal        VAL1 VAL2         ERROR
+    check_unequal      VAL1 VAL2         ERROR
+
+    check_match        VAL1 REGEXP       ERROR
+    check_nomatch      VAL1 REGEXP       ERROR
+
+Numeric tests
+
+    check_eq           N1 N2             ERROR
+    check_ne           N1 N2             ERROR
+    check_lt           N1 N2             ERROR
+    check_le           N1 N2             ERROR
+    check_gt           N1 N2             ERROR
+    check_ge           N1 N2             ERROR
+
+ERROR is optional.  `XX` above can be: `eq`, `ne`, `lt`, `le`, `gt`, `ge`.
+
+

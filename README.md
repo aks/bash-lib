@@ -121,18 +121,24 @@ In the descriptions below, `VAR` is an array variable; `VAL`, `VAL1`, .. are val
   
     sort_list VAR                       # sort the contents of VAR (a list) in place
 
-
     join_list VAR [SEP] ..
 
 Join the items in `VAR` into a list, separated by `SEP`, which can be:
 
 `AND`    -- separate with `" and "`
+
 `OR`     -- separate with `" or "`
+
 `KEYS`   -- enclose each item with `X'` and `'`, follwed by `','`
+
 `TAB`    -- use tabs to separate items
+
 `NL`     -- separate each item with newline (and some spaces)
+
 `NOWRAP` -- do not auto-wrap long lines (default is `WRAP`)
+
 `','`    -- separate items with a comma (default)
+
 `str`    -- separate each item with an given string.
 
     split_into  VAR "STRING" SEP

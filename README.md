@@ -165,3 +165,38 @@ the split values.
 `SEP` can be multiple characters; for example ' ,' (a space, comma) will split using both space
 and comma.  By default, splitting is done by tabs.
 
+
+sh-utils.sh
+-----------
+handy functions for writing bash-based scripts
+
+Copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
+
+    chat MSG ..
+
+If `$norun` or `$verbose` is set, print all args on `STDERR`.
+
+    talk MSG ..
+
+Print all arguments on `STDERR`.
+
+    nvtalk MSG 
+
+Print all arguments on `STDERR` only if $verbose is not set.
+
+    error [CODE] "MSG" 
+
+Print `MSG` on `STDERR`, then exit with code CODE (or 2)
+
+    run COMMAND ARGS ..
+
+If `$verbose` is set, show the command and args before running it.
+If `$norun` is not set, run the command with args and examine the resulting status.
+
+    rm_file_later FILE
+
+Add FILE to a list of files that will be automatically removed upon program exit.
+
+    add_trap "CMD" SIGNAL ..
+
+Add `CMD` to the trap list for `SIGNAL`, while ensuring that it is not repeated.

@@ -1,10 +1,16 @@
 bash-lib
 ========
 
-Library of bash scripts
+Library of bash scripts.
+
+Author: Alan K. Stebbens <aks@stebbens.org>
 
 date-util.sh
 ------------
+
+This file is a list of functions that make it easier to manage dates and conversions in bash scripts.
+For example, if your bash script reads a date argument on the command line, the `date_arg` function is
+very handy to convert the string date format into an integer representing the day of the Epoch.
 
 Usage:
 

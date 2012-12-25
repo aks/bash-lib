@@ -16,6 +16,7 @@ known_dates=( 0001-1-1       1
               1776-3-1  648366
               1776-7-4  648491 
             )
+
 ignore_test_01_conversion_equivalencies() {
   start_test
   last_days=
@@ -61,13 +62,14 @@ test_02_known_dates() {
 test_03_years_offset() {
   start_test
   start_date="2008-03-05"
+  year=${start_date:0:4}
+  day=${start_date:5:6}
   for ((i=i; i<=5; i++)) ; do
     date_then=`get_date_x_years_since $i $start_date`
     check_value "$date_then"
-    year=${start_date:0:4}
     year2=${date_then:0:4}
     check_eq "$(( year - i ))" $year2
-    check_eq "${start_date:5:6}" "${date_then:5:6}"
+    check_eq "$day" "${date_then:5:6}"
   done
   end_test
 }

@@ -84,7 +84,7 @@ date_to_abs_days() {
   local year month day
   date_arg "$@"
   (( day += days_before_month[month] ))           # add in the days preceding the current month
-  (( month > 2 )) && is_leap_year $year && { (( days++ )) ; }
+  (( month > 2 )) && is_leap_year $year && { (( day++ )) ; }
   (( year-- ))                                    # the following are relative to the prior year
   (( day += ( 365 * year ) ))                     # days in prior years
   (( day += ( year / 4   ) ))                     # Julian leap days in prior years

@@ -218,7 +218,7 @@ TEST_check_item_func() { TEST_check_expr "test \"\${$1[$2]}\" $3 \"$4\"" "$5" ; 
 
 # TEST_check_test LVAL OP RVAL [ERROR]
 # Implied "test" function
-TEST_check_test() { TEST_check_expr "test \"$1\" $2 \"$3\"" "$4" ; }
+TEST_check_test() { TEST_check_expr "test \"$1\"" $2 "\"$3\"" "$4" ; }
 
 ########
 
@@ -262,13 +262,13 @@ check_item() { check_item_equal "$@" ; }
 #
 # Check that VALUE is not empty.
 
-check_value() { TEST_check_expr "test -n \"$1\" \"$2\"" ; }
+check_value() { TEST_check_expr "test -n \"$1\"" "\"$2\"" ; }
 
 # check_empty VALUE [ERROR]
 #
 # Check that VALUE is empty
 
-check_empty() { TEST_check_expr "test -z \"$1\" \"$2\"" ; }
+check_empty() { TEST_check_expr "test -z \"$1\"" "\"$2\"" ; }
 
 # TEST_check_func VALUE FUNC VALUE2 [ERROR]
 

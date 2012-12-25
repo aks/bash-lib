@@ -17,7 +17,7 @@ known_dates=( 0001-1-1       1
               1776-7-4  648491 
             )
 
-ignore_test_01_conversion_equivalencies() {
+test_01_conversion_equivalencies() {
   start_test
   last_days=
   for ((year=1; year<=2012; year+=100)) ; do
@@ -35,7 +35,7 @@ ignore_test_01_conversion_equivalencies() {
         check_equal "$date1" "$date2" "Bad conversion"
       done
     done
-    echo ''
+    # echo ''
   done
   end_test
 }
@@ -59,17 +59,20 @@ test_02_known_dates() {
   end_test
 }
 
+# yyyy-mm-dd
+# 0123 56 89
+
 test_03_years_offset() {
   start_test
   start_date="2008-03-05"
   year=${start_date:0:4}
-  day=${start_date:5:6}
+  mm=${start_date:5:2}
   for ((i=i; i<=5; i++)) ; do
     date_then=`get_date_x_years_since $i $start_date`
     check_value "$date_then"
     year2=${date_then:0:4}
-    check_eq "$(( year - i ))" $year2
-    check_eq "$day" "${date_then:5:6}"
+    check_eq $(( year - i )) $year2
+    check_eq $mm ${date_then:5:2}
   done
   end_test
 }

@@ -218,7 +218,7 @@ TEST_check_item_func() { TEST_check_expr "test \"\${$1[$2]}\" $3 \"$4\"" "$5" ; 
 
 # TEST_check_test LVAL OP RVAL [ERROR]
 # Implied "test" function
-TEST_check_test() { TEST_check_expr "test \"$1\"" $2 "\"$3\"" "$4" ; }
+TEST_check_test() { TEST_check_expr "test \"$1\" $2 \"$3\"" "$4" ; }
 
 ########
 

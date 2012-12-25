@@ -232,15 +232,15 @@ The general structure of a test suite:
         # ... do some operations to be tested
 
         check_equal 'bar' \`my_func foo\` "Func on 'foo' did not match 'bar'"
-
-	#... do some other tests
+        
+        #... do some other tests
         end_test	# end the tests
     }
     ...
     test_NN_NAME() {
-	start_test
+        start_test
         ...
-	end_test
+        end_test
     }
     ...
     run_tests

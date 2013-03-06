@@ -19,6 +19,13 @@ libs = 	\
 
 subdirs=
 
+tests= \
+	test-date-utils.sh	\
+	test-list-utils.sh	\
+	test-sh-utils.sh	\
+	#test-sync-files.sh	\
+	# end of tests
+
 include  Makefile.inc
 
 # vim: sw=4 ai

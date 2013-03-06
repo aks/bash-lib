@@ -9,6 +9,7 @@
 # bindirs = list of directories into which the binaries can be installed
 # libs = list of "libraries" (could be any kind of file)
 # libdirs = list of directories in which to install the libraries.
+# tests = list of test scripts
 #
 # distuser is a userid for remote distribution
 # disthost is the default host for remote distribution
@@ -90,10 +91,10 @@ help:
 
 test tests: $(tests)
 	@for file in $(tests) ; do		\
-	    echo "\nTesting $$file .." ;	\
+	    echo '' ; echo "Testing $$file .." ; \
 	    case $$file in			\
 	    *.rb) ruby -I . $$file ;;		\
-	    *.sh) sh -x $$file ;;		\
+	    *.sh) sh $$file ;;			\
 	    *.pl) perl $$file ;;		\
 	    *.py) python -I . $$file ;;		\
 	    *)	./$$file ;;			\

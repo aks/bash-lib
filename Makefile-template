@@ -1,0 +1,16 @@
+# Makefile for libraries 
+# $Id$
+#
+
+bindirs = 
+bins =	
+
+libdirs = $(HOME)/lib
+libs = 	\
+    	# end of list
+
+subdirs=
+
+include  Makefile.inc
+
+# vim: sw=4 ai

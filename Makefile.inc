@@ -61,7 +61,7 @@ default:	help
 help:
 	@echo "You can make these things:"
 	@echo " help"
-	@echo " status	 -- do svn status"
+	@echo " status	 -- do git/svn/rlog status (if ./.git exists)"
 	@echo " diff	 -- show differences with installed versions"
 	@echo " difflist -- show different files installed versions"
 	@echo " install  -- install"
@@ -111,7 +111,9 @@ getzip:
 	scp $(disthost):$(distpath)/$(zipfile) .
 
 status:
-	@if [[ -d .svn ]]; then svn status ; elif [[ -d RCS ]]; then rlog -R -L RCS/* ; fi
+	@if [[ -d .svn ]]; then svn status ; \
+	elif [[ -d .git ]]; then git status ; \
+	elif [[ -d RCS ]]; then rlog -R -L RCS/* ; fi
 
 subdirs:	$(subdirs)
 $(subdirs): ; $(MAKE) -C $@ $(MAKECMDGOALS)

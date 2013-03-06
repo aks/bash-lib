@@ -111,8 +111,8 @@ getzip:
 	scp $(disthost):$(distpath)/$(zipfile) .
 
 status:
-	@if [[ -d .svn ]]; then svn status ; \
-	elif [[ -d .git ]]; then git status ; \
+	@if [[ -d .git ]]; then git status ; \
+	elif [[ -d .svn ]]; then svn status ; \
 	elif [[ -d RCS ]]; then rlog -R -L RCS/* ; fi
 
 subdirs:	$(subdirs)

@@ -12,9 +12,11 @@ Author: Alan K. Stebbens <aks@stebbens.org>
 date-util.sh
 ------------
 
-This file is a list of functions that make it easier to manage dates and conversions in bash scripts.
-For example, if your bash script reads a date argument on the command line, the `date_arg` function is
-very handy to convert the string date format into an integer representing the day of the Epoch.
+This file is a list of functions that make it easier to manage dates
+and conversions in bash scripts.  For example, if your bash script
+reads a date argument on the command line, the `date_arg` function
+is very handy to convert the string date format into an integer
+representing the day of the Epoch.
 
 Usage:
 
@@ -158,16 +160,17 @@ and assigns the resulting separated, and quoted strings to the `VAR`.
 
     split_str   "STRING" [SEP]
 
-outputs the split of STRING into parts using a separator SEP (defaulting
-to space/tab).
+outputs the split of STRING into parts using a separator SEP
+(defaulting to space/tab).
 
 For the split functions:
 
-If `SEP` is anything but " " (a space), care is taken to avoid removing whitespace from
-the split values.
+If `SEP` is anything but " " (a space), care is taken to avoid
+removing whitespace from the split values.
 
-`SEP` can be multiple characters; for example ' ,' (a space, comma) will split using both space
-and comma.  By default, splitting is done by tabs.
+`SEP` can be multiple characters; for example ' ,' (a space, comma)
+will split using both space and comma.  By default, splitting is
+done by tabs.
 
 
 sh-utils.sh
@@ -245,6 +248,17 @@ The general structure of a test suite:
     ...
     run_tests
     summarize_tests
+
+The "`init_tests`" function invokes "`getopts`" checking for some options on
+the test command invocation.  The options recognized are:
+
+    Options
+      -h      show help
+      -d      show test status details
+      -e      show verbose messages only on errors
+      -n      don't make any changes (norun mode)
+      -v      be verbose everywhere
+
 
 These are the kinds of tests that can be done:
 

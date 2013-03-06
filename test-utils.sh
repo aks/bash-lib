@@ -82,6 +82,7 @@ Run tests with options controlling behavior.
 
 Options
   -h      show help
+  -d      show test status details
   -e      show verbose messages only on errors
   -n      don't make any changes (norun mode)
   -v      be verbose everywhere
@@ -97,12 +98,13 @@ init_tests() {
   TEST_check_status=()
   if [[ $# -gt 0 ]]; then
     set -- "$@"
-    while getopts 'envh' opt ; do
+    while getopts 'denvh' opt ; do
       case "$opt" in
+        d) test_details=1 ;;
         e) verbose_errors=1 ;;
         h) TEST_usage;;
         n) norun=1 ;;
-        v) verbose=1 ;;
+        v) test_verbose=1 ;;
       esac
     done
     shift $(( OPTIND - 1 ))
@@ -137,7 +139,7 @@ TEST_check_start() {
 TEST_check_end() {
   if [[ -n "$1" ]]; then
     TEST_check_status[$TEST_checks]='.'
-    if (( verbose )); then
+    if (( test_verbose )); then
       echo 1>&2 -n " ok"
     else
       TEST_update_status
@@ -145,7 +147,7 @@ TEST_check_end() {
   else
     TEST_check_status[$TEST_checks]='!'
     (( TEST_errors++ ))
-    if (( verbose || verbose_errors )) ; then
+    if (( test_verbose || verbose_errors )) ; then
       echo 1>&2 " error"
       TEST_error_dump "$2"
     else
@@ -168,7 +170,16 @@ TEST_print_status() {
   (( checks = TEST_checks - TEST_checks_start ))
   (( errors = TEST_errors - TEST_errors_start ))
   printf 1>&2 "%3d checks, %3d errors: " $checks $errors
-  if (( ! verbose )) ; then
+  if (( ! test_details && ! test_verbose )) ; then
+    local x st last_st=' '
+    for((x=TEST_checks_start; x<${#TEST_check_status[@]}; x++)) ; do
+      st="${TEST_check_status[$x]}"
+      if [[ "$st" != "$last_st" ]]; then
+        echo 1>&2 -n "$st"
+      fi
+      last_st="$st"
+    done
+  elif (( ! test_verbose )) ; then
     local x
     for((x=TEST_checks_start; x<${#TEST_check_status[@]}; x++)) ; do
       echo 1>&2 -n "${TEST_check_status[$x]}"
@@ -179,14 +190,14 @@ TEST_print_status() {
 # TEST_update_status [CHECKNAME CHECKNO]
 
 TEST_update_status() {
-  if (( verbose )); then
+  if (( test_verbose )); then
     echo 1>&2 ''
   else
     echo -n 1>&2 $'\r'
   fi
   TEST_print_name
   TEST_print_status
-  if [[ $# -gt 0 && -n "$verbose" ]]; then
+  if [[ $# -gt 0 && -n "$test_verbose" ]]; then
     printf 1>&2 "check %d: %s" $2 "$1"
   fi
 }

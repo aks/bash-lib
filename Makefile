@@ -15,6 +15,7 @@ libs = 	\
 	sync-files.sh		\
         test-utils.sh           \
         test-template.sh        \
+	text-utils.sh		\
     	# end of list
 
 subdirs=
@@ -22,6 +23,7 @@ subdirs=
 tests= \
 	test-date-utils.sh	\
 	test-list-utils.sh	\
+	test-text-utils.sh	\
 	test-sh-utils.sh	\
 	#test-sync-files.sh	\
 	# end of tests

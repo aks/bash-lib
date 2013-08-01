@@ -75,6 +75,8 @@
 #
 #  Alan K. Stebbens <aks@stebbens.org>
 
+source list-utils.sh
+
 TEST_usage() {
   cat 1>&2 <<EOF
 usage: ${0##*/} [opts]

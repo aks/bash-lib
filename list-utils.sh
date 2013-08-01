@@ -2,54 +2,6 @@
 # Copyright 2009-2013 Alan K. Stebbens <aks@stebbens.org>
 #
 # sh script utilities for managing lists of things
-#
-# In the descriptions below, "VAR" is an array variable; VAL, VAL1, .. are values.
-#
-# list_add VAR VAL1 [VAL2 ...]        # add VAL1.. to the end of VAR
-#
-# list_add_once VAR  VAL1 [VAL2 ..]   # add VAL1.. uniquely to the end of VAR
-#
-# list_insert VAR  VAL ...            # insert VALUE at the front of VAR
-#
-# list_insert_once VAR VAL ..         # insert VALUE.. at the front of VAR; 
-#
-# in_list VAR  [-any|-all] VAL ...    # return true if one or more values are in a list
-#
-# list_size VAR                       # returns the number of items
-#
-# sort_str VAL ...                    # sort the space-separated words of VAL ..
-#   
-# sort_list VAR                       # sort the contents of VAR (a list) in place
-#
-# join_list VAR [SEP] ..
-#   join the items in VAR into a list, separated by SEP,
-#   which can be:
-#     AND    -- separate with " and "
-#     OR     -- separate with " or "
-#     KEYS   -- enclose each item with X' and ', follwed by ','
-#     TAB    -- use tabs to separate items
-#     NL     -- separate each item with newline (and some spaces)
-#     NOWRAP -- do not auto-wrap long lines (default is WRAP)
-#     ','    -- separate items with a comma (default)
-#     str    -- separate each item with an given string.
-#
-# split_into  VAR "STRING" SEP
-#
-#   splits a STRING into parts using separator (SEP) (default is ',')
-#   and assigns the resulting separated, and quoted strings to the VAR.
-#
-# split_str   "STRING" [SEP]
-#
-#   outputs the split of STRING into parts using a separator SEP (defaulting
-#   to space/tab).
-#
-# For the split functions:
-#
-# If SEP is anything but " ", care is taken to avoid removing whitespace from
-# the split values.
-#
-# SEP can be multiple characters; for example ' ,' will split using both space
-# and comma.  By default, splitting is done by tabs.
 
 if [[ -z "$LIST_UTILS" ]]; then
 
@@ -59,6 +11,58 @@ if [[ -z "$LIST_UTILS" ]]; then
   CHAR_TAB=$'\t'
   CHAR_WS=$'\t '
 
+  list_help() {
+    cat 1>&2 <<EOF
+These are the list utilities:
+
+list_add VAR VAL1 [VAL2 ...]        # add VAL1.. to the end of VAR
+list_add_once VAR  VAL1 [VAL2 ..]   # add VAL1.. uniquely to the end of VAR
+
+list_insert VAR  VAL ...            # insert VALUE at the front of VAR
+list_insert_once VAR VAL ..         # insert VALUE.. at the front of VAR; 
+
+list_push VAR VAL                   # same as "list_add VAR VAL"
+list_pop  VAR                       # removes top VAL on VAR and returns in variable "item"
+
+in_list VAR  [-any|-all] VAL ...    # return true if one or more values are in a list
+list_size VAR                       # returns the number of items
+
+sort_str VAL ...                    # sort the space-separated words of VAL ..
+sort_list VAR                       # sort the contents of VAR (a list) in place
+
+split_into  VAR "STRING" SEP        # split "STRING" by SEP into VAR
+split_str   "STRING" [SEP]          # split "STRING" by SEP
+
+join_list VAR [SEP] ..              # join the items in VAR into a list, separated by SEP,
+  SEP can be 
+    AND    -- separate with " and "
+    OR     -- separate with " or "
+    KEYS   -- enclose each item with X' and ', follwed by ','
+    TAB    -- use tabs to separate items
+    NL     -- separate each item with newline (and some spaces)
+    NOWRAP -- do not auto-wrap long lines (default is WRAP)
+    ','    -- separate items with a comma (default)
+    str    -- separate each item with an given string.
+
+lookup_list LISTVAR KEY             # lookup KEY in LISTVAR
+grep_list LISTVAR PAT               # grep PAT across LISTVAR
+
+EOF
+  }
+  help_list() { list_help ; }
+
+
+  # split_str   "STRING" [SEP]
+  #
+  #   outputs the split of STRING into parts using a separator SEP (defaulting
+  #   to space/tab).
+  #
+  # If SEP is anything but " ", care is taken to avoid removing whitespace from
+  # the split values.
+  #
+  # SEP can be multiple characters; for example ' ,' will split using both space
+  # and comma.  By default, splitting is done by tabs.
+  
   split_str() {
     local sep="${2:-$CHAR_TAB}"
     echo "$1"			      | 
@@ -68,6 +72,13 @@ if [[ -z "$LIST_UTILS" ]]; then
   }
   split_list() { split_str "$@" ; }
 
+  # split_into  VAR "STRING" SEP
+  #
+  #   splits a STRING into parts using separator (SEP) (default is ',')
+  #   and assigns the resulting separated, and quoted strings to the VAR.
+  #   
+  #   See split_str for details on SEP
+  
   split_into() {
     local var="$1"
     local sep="${3:-' 	'}"
@@ -82,7 +93,9 @@ if [[ -z "$LIST_UTILS" ]]; then
     shift
     eval "$var=( \"\${$var[@]}\" \"\$@\" )" 
   }
-  add_list() { list_add "$@" ; }
+  add_list()  { list_add "$@" ; }
+  list_push() { list_add "$@" ; }
+  push_list() { list_add "$@" ; }
 
   # list_add_once VAR VALUE ...
   #
@@ -109,6 +122,9 @@ if [[ -z "$LIST_UTILS" ]]; then
   }
   insert_list() { list_insert "$@" ; }
 
+  # list_insert_once VAR VALUE(s)...
+  # Insert VALUE(s)... into the list only if it is not already in the list.
+
   list_insert_once() {
     local var="$1"
     shift
@@ -123,14 +139,24 @@ if [[ -z "$LIST_UTILS" ]]; then
 
   # list_pop VAR
   #
-  # Pop the last item off the list
+  # Pop the last item off the list, and return it in a variable
+  # named "item".
+  #
+  # If there are no items to pop, return nothing, and error code 1
 
   list_pop() {
     local var=${1:?'Missing list name'}
     local x=`list_size $var`
-    local val=`echo "\${${var}[$x]}"`
-    eval "unset ${var}[$x]"
-    echo "$val"
+    if (( --x < 0 )); then
+      item=
+      return 1
+    fi
+    local val
+    eval "val=\"\${$var[$x]}\""
+    unset $var[$x]
+    eval "$var=( \"\${$var[@]}\" )"
+    #echo "$val"
+    item="$val"
   }
   pop_list() { list_pop "$@" ; }
 
@@ -195,7 +221,7 @@ if [[ -z "$LIST_UTILS" ]]; then
   list_sort() { sort_list "$@" ; }
 
 
-  # join_list ARRAYNAME[, [AND|OR|KEYS|STR|TAB|NL|<sep>|NOWRAP]]
+  # join_list ARRAYNAME[, [AND|OR|KEYS|STR|TAB|NL|,|<sep>|NOWRAP]]
   # 
   # make a list of ARRAYNAME.  If KEYS given, normalize the keys
   #
@@ -207,6 +233,7 @@ if [[ -z "$LIST_UTILS" ]]; then
   # tab    - separate each list item with a TAB
   # nl     - separate each list item with a newline,
   # nowrap - do not wrap long lists (they are wrapped by default)
+  # ','    - separate items with a comma (default)
   # <other> - use <other> as a separator (e.g., ',')
   #
   # If no other arg, ',' is used as a separator.
@@ -260,6 +287,90 @@ if [[ -z "$LIST_UTILS" ]]; then
     done
     (IFS= ; /bin/echo "${list[*]}")
   }
+
+  # lookup_list LISTVAR KEY
+  #
+  #   Lookups up KEY in the items of LISTVAR, returns the matching LISTVAR, using
+  #   a case-insensitive, disambiguating search.  If there is no match, returns
+  #   the empty string, with return code of 1.  If there is a match, returns the
+  #   matching item, and a return code of 0.  If there are two or more matches,
+  #   returns empty string, and return code of 2.
+  #
+  # item=`lookup_list LIST KEY`
+  # returns item matching key, with return code 0
+  # return code 1: KEY not found
+  # return code 2: KEY ambiguous
+  
+  lookup_list() {
+    local listvar="$1"
+    local key="$2"
+    local list=()
+    eval "list=( \"\${$listvar[@]}\" )"      # get a copy of the list
+    local items=${#list[*]}                  # number of items
+    local x=0
+    local found=
+    while (( x < items )) ; do
+      if eval "[[ '${list[x]}' =~ ^$key ]]" ; then
+        if [[ -n "$found" ]]; then
+          return 2 
+        else
+          found="${list[x]}"
+        fi
+      fi
+      : $(( x++ ))
+    done
+    if [[ -n "$found" ]]; then
+      echo "$found"         # stdout is found keyword
+      return 0              # found one match
+    fi
+    return 1                # not found
+  }
+
+  # lookup_error $CODE WORD
+  #
+  # Usage: 
+  #  foundword=`lookup_list list $someword`
+  #  [[ $? != 0 ]] && lookup_error $? $someword    
+  #
+  # or:
+  #  foundword=`lookup_list list $someword || lookup_error $? $someword`
+  #
+  # You can redefine "lookup_error" to use your own messages.
+
+  lookup_error() {
+    if [[ $1 -gt 0 ]]; then
+      error "'$2' was not found."
+    elif [[ $1 -lt 0 ]]; then
+      error "'$2' is ambiguous."
+    fi
+  }
+
+  # grep_list LISTVAR PAT
+  #
+  #   Like lookup_list but returns all partially matching entries on multiple
+  #   matches.
+  
+  grep_list() {
+    local listvar="$1"
+    local pat="$2"
+    local list=()
+    eval "list=( \"\${$listvar[@]}\" )"      # get a copy of the list
+    local items=${#list[*]}                  # number of items
+    local x
+    local found=()
+    while (( x < items )) ; do
+      if eval "[[ '${list[x]}' =~ $pat ]]" ; then
+        add_list found "${list[x]}"
+      fi
+      : $(( x++ ))
+    done
+    if (( ${#found[*]} > 0 )) ; then
+      echo "${found[@]}"
+      return 0
+    fi
+    return 1                                # not found
+  }
+
 
   # Legacy name
   make_list() { join_list "$@" ; }

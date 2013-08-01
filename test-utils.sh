@@ -211,9 +211,9 @@ TEST_update_status() {
 
 TEST_check() {
   TEST_check_start
-  local ok=$3
-  eval "if $1 ; then ok=${2:-1} ; fi"
-  TEST_check_end "$ok" "$4"
+  local test_ok=$3
+  eval "if $1 ; then test_ok=${2:-1} ; fi"
+  TEST_check_end "$test_ok" "$4"
 }
 
 # TEST_check_expr "EXPR" "ERROR"
@@ -285,9 +285,9 @@ check_empty() { TEST_check_expr "test -z \"$1\"" "\"$2\"" ; }
 
 check_func() {
   TEST_check_start
-  local ok=0
-  eval "if [[ \"$1\" $2 \"$3\" ]]; then ok=1 ; fi"
-  if (( ! ok )) && [[ -z "$4" ]]; then
+  local test_ok=0
+  eval "if [[ \"$1\" $2 \"$3\" ]]; then test_ok=1 ; fi"
+  if (( ! test_ok )) && [[ -z "$4" ]]; then
     echo 1>&2 "Check failed for \"$2\": '$1' vs '$3'"
   fi
   TEST_check_end "$ok" "$4"

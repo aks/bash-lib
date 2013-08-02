@@ -237,7 +237,7 @@ If `$norun` is not set, run the command with args and examine the resulting stat
 
     rm_file_later FILE
 
-Add FILE to a list of files that will be automatically removed upon program exit.
+Add `FILE` to a list of files that will be automatically removed upon program exit.
 
     add_trap "CMD" SIGNAL ..
 
@@ -245,7 +245,8 @@ Add `CMD` to the trap list for `SIGNAL`, while ensuring that it is not repeated.
 
     fn_exists FUNCNAME
 
-Return 0 (true) if FUNCNAME is a valid function, otherwise return 1 (false).
+Return 0 (true) if `FUNCNAME` is a valid function, otherwise return 1 (false).
+
 
 text-utils.sh <a id="text_utils">
 -------------
@@ -267,6 +268,10 @@ The following functions are provided by this library:
     rtrim STRING              # trim right-side blanks from STRING
     squeeze STRING            # squeeze multiple blanks in string
     split_str STRING SEP      # split STRING using SEP [default: \t]
+    url_encode  [STRING]      # encode STRING (or STDIN) for URLs
+    url_decode  [STRING]      # decode STRING (or STDIN) from URL encoding
+    html_encode [STRING]      # encode STRING (or STDIN) for HTML presentation
+    html_decode [STRING]      # decode sTRING (or STDIN) from HTML presentation
 
 
 test-utils.sh <a id="test_utils">

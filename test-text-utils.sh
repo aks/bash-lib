@@ -15,8 +15,9 @@ source text-utils.sh
 # rtrim STRING                  # trim right-side blanks from STRING
 # squeeze STRING                # squeeze multiple blanks in string
 # split_str STRING SEP          # split STRING using SEP
+# html_encode STRING            # encode STRING for HTML
 
-test_1_lowercase() {
+test_01_lowercase() {
   start_test
 
   out=`lowercase ABC`
@@ -31,7 +32,7 @@ test_1_lowercase() {
   end_test
 }
 
-test_2_uppercase() {
+test_02_uppercase() {
    start_test
 
   out=`uppercase ABC`
@@ -47,7 +48,7 @@ test_2_uppercase() {
 }
 
 # trim STRING                   # trim blanks surrounding string
-test_3_trim() {
+test_03_trim() {
   start_test
 
   out=`trim "no blanks to trim"`
@@ -66,7 +67,7 @@ test_3_trim() {
 }
 
 # ltrim STRING                  # trim left-side blanks from STRING
-test_4_ltrim() {
+test_04_ltrim() {
   start_test
   out=`ltrim "no blanks to trim"`
   check_equal "$out" "no blanks to trim"
@@ -87,7 +88,7 @@ test_4_ltrim() {
 }
 
 # rtrim STRING                  # trim right-side blanks from STRING
-test_5_rtrim() {
+test_05_rtrim() {
   start_test
 
   out=`rtrim "no blanks to trim"`
@@ -109,7 +110,7 @@ test_5_rtrim() {
 }
 
 # squeeze STRING                # squeeze multiple blanks in string
-test_6_squeeze() {
+test_06_squeeze() {
   start_test
   out=`squeeze "no extra blanks to squeeze"`
   check_equal "$out" "no extra blanks to squeeze"  "Failed squeeze no extra blanks test"
@@ -130,7 +131,7 @@ test_6_squeeze() {
 }
 
 # split_str STRING SEP          # split STRING using SEP
-test_7_split_str() {
+test_07_split_str() {
   start_test
 
   out=( `split_str "A list of words to split" ' '` )
@@ -159,6 +160,65 @@ test_7_split_str() {
   end_test
 }
 
+test_08_url_encode() {
+  start_test
+
+  out=`url_encode "this_is_a_plain_string"`
+  check_equal "$out" "this_is_a_plain_string"           "Failed on text with underscores"
+
+  out=`url_encode "this is a plain string"`
+  check_equal "$out" "this%20is%20a%20plain%20string"   "Failed test on this is a plain string"
+
+  out=`url_encode "this(is)[a]{plain}'string'"`
+  check_equal "$out" "this%28is%29%5Ba%5D%7Bplain%7D%27string%27"   "Failed test (is)[a]{plain}'string'"
+
+  end_test
+}
+
+test_09_url_decode() {
+  start_test
+
+  for string in "this_is_a_plain_string" \
+                "this is a plain string" \
+                "this(is)[a]{plain}'string'" \
+                "~!@#$%^&*()_+1234567890-=qwertyuiop[]\\{}|asdfghjkl;':zxcvbbbnnm,./<>?" ; do
+    enc_out=`url_encode "$string"`
+    dec_out=`url_decode "$enc_out"`
+    check_equal "$string" "$dec_out"                    "Failed encode/decode test on '$string'"
+  done
+
+  end_test
+}
+
+test_10_html_encode() {
+  start_test
+
+  out=`html_encode "this_is_a_plain_string"`
+  check_equal "$out" "this_is_a_plain_string"           "Failed test with underscores"
+
+  out=`html_encode "<this is a token>"`
+  check_equal "$out" "&lt;this is a token&gt;"           "Failed test with <this is a token>"
+
+  out=`html_encode "<token1><token2>"`
+  check_equal "$out" "&lt;token1&gt;&lt;token2&gt;"       "Failed test with '<token1><token2>'"
+
+  end_test
+}
+
+test_11_html_decode() {
+  start_test
+
+  for string in "this_is_a_plain_string" \
+                "this is a plain string" \
+                "this(is)[a]{plain}'string'" \
+                "~!@#$%^&*()_+1234567890-=qwertyuiop[]\\{}|asdfghjkl;':zxcvbbbnnm,./<>?" ; do
+    enc_out=`html_encode "$string"`
+    dec_out=`html_decode "$enc_out"`
+    check_equal "$string" "$dec_out"                    "Failed html encode/decode test on '$string'"
+  done
+
+  end_test
+}
 init_tests  "$@"
 run_tests
 summarize_tests

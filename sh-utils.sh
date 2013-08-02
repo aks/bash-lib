@@ -8,7 +8,7 @@
 
 [[ -z "$SH_UTILS" ]] || return
 
-export SH_UTILS=${BASH_SOURCE[0]}
+export SH_UTILS="${BASH_SOURCE[0]}"
 
 sh_utils_help() {
     cat 1>&2 <<EOF

@@ -208,15 +208,15 @@ handy functions for writing bash-based scripts
 
 Copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
 
-    chat MSG ..
-    chatf FMT ARGS ..
-
-If `$norun` or `$verbose` is set, print (or printf) all args on `STDERR`.
-
     talk MSG ..
     talkf FMT ARGS ..
 
 Print (or printf) all arguments on `STDERR`.
+
+    vtalk MSG ..
+    vtalkf FMT ARGS ..
+
+If `$norun` or `$verbose` is set, print (or printf) all args on `STDERR`.
 
     nvtalk MSG 
     nvtalkf FMT ARGS ..

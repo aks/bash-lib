@@ -14,13 +14,13 @@ sh_utils_help() {
     cat 1>&2 <<EOF
 Shell utility functions:
 
-talk MSG ..         Print all arguments on STDERR.
-chat MSG ..         If $norun or $verbose is set, print all args on STDERR.
+  talk MSG ..       Print all arguments on STDERR.
+ vtalk MSG ..       If $norun or $verbose is set, print all args on STDERR.
 nvtalk MSG          Print all arguments on STDERR only if $verbose is not set.
 error [CODE] "MSG"  Print MSG on STDERR, then exit with code CODE (or 2)
 
-talkf FMT ARGS ..           printf FMT ARGS on STDERR
-chatf FMT ARGS ..           printf FMT ARGS on STDERR if $norun or $verbose set
+  talkf FMT ARGS ..         printf FMT ARGS on STDERR
+ vtalkf FMT ARGS ..         printf FMT ARGS on STDERR if $norun or $verbose set
 nvtalkf FMT ARGS ..         printf FMT ARGS on STDERR unless $verbose set
 errorf [CODE] FMT ARGS ..   printf FMT ARGS on STDERR, then exit $CODE [2]
 
@@ -36,14 +36,13 @@ EOF
 }
 help_sh_utils() { sh_utils_help ; }
 
-# chat MSG        - show MSG on STDERR if $norun or $verbose
-# talk MSG        - show MSG on STDERR
-# warn MSG        - show MSG on STDERR
+#   talk MSG      - show MSG on STDERR
+#  vtalk MSG      - show MSG on STDERR if $norun or $verbose
 # nvtalk MSG      - show MSG on STDERR unless $verbose is set
 
 talk()        { echo 1>&2 "$@" ; }
 warn()        { talk "$@" ; }
-chat()	{ [[ -n "$norun$verbose" ]] && talk "$@" ; }
+vtalk()	      { [[ -n "$norun$verbose" ]] && talk "$@" ; }
 nvtalk()      { [[ -z "$verbose" ]] && talk "$@" ; }
 
 # error [CODE] MSG - show MSG on STDERR then exit with error CODE [default 2]
@@ -55,14 +54,14 @@ error()       {
   exit $code
 }
 
-# chatf FMT ARGS..    printf FMT ARGS on STDERR if $norun or $verbose are set
-# talkf FMT ARGS...   printf FMT ARGS on STDERR
-# warnf FMT ARGS...   alias for talkf
-# nvtalkf FMT ARGS..  printf FMT ARGS on STDERR unless $verbose set
+#   talkf FMT ARGS...   printf FMT ARGS on STDERR
+#   warnf FMT ARGS...   alias for talkf
+#  vtalkf FMT ARGS..    printf FMT ARGS on STDERR if $norun or $verbose are set
+# nvtalkf FMT ARGS..    printf FMT ARGS on STDERR unless $verbose set
 
 talkf()       { printf 1>&2 "$@" ; }
 warnf()       { talkf "$@" ; }
-chatf()       { [[ -n "$norun$verbose" ]] && talkf "$@" ; }
+vtalkf()      { [[ -n "$norun$verbose" ]] && talkf "$@" ; }
 nvtalkf()     { [[ -z "$verbose" ]] && talkf "$@" ; }
 
 # errorf [CODE] FMT ARGS .. print FMT ARGS on STDERR, then exit with CODE[2]

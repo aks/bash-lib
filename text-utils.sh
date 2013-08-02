@@ -5,6 +5,8 @@
 
 [[ -z "$TEXT_UTILS_SH" ]] || return
 
+export TEXT_UTILS_SH="${BASH_SOURCE[0]}"
+
 help_test_utils() {
   cat 1>&2 <<EOF
 lowercase STRING              # return the lowercase string
@@ -105,9 +107,6 @@ html_decode() {
   sed -Ee "s/\&lt;/</g ; s/\&gt;/>/g ; s/\&amp;/\&/g"
 }
 
-
-# define TEXT_UTILS_SH as the source file that brought us in
-export TEXT_UTILS_SH="${BASH_SOURCE[0]}"
 
 # end text-utils.sh
 # vim: set sw=2 ai

@@ -20,8 +20,8 @@ talk "one two three"
 
 for norun in '' 1 ; do
   for verbose in '' 1 ; do
-    echo -n 1>&2 "norun=$norun verbose=$verbose : chat says: "
-    chat "this is a test"
+    echo -n 1>&2 "norun=$norun verbose=$verbose : vtalk says: "
+    vtalk "this is a test"
     echo 1>&2
   done
 done
@@ -37,9 +37,9 @@ while [[ $x -lt ${#wordlist[*]} ]]; do
   x=$((x + 1))
 done
 
-echo $'\nTesting chatf ..'
+echo $'\nTesting vtalkf ..'
 
 verobse= norun=
 for verbose in '' 1 ; do
-  chatf "Verbose = %s\n" $verbose
+  vtalkf "Verbose = %s\n" $verbose
 done

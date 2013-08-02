@@ -1,7 +1,12 @@
 # bash 
-# date-utils.sh
+# date-utils.sh  -- date management utility for bash
+#
 # Copyright 2009-2013 Alan K. Stebbens <aks@stebbens.org>
-# 
+
+[[ -z "$DATE_UTILS_SH" ]] || return 
+
+DATE_UTILS_SH="${BASH_SOURCE[0]}"
+
 # functions for date management
 #
 # date_arg YYYY-MM-DD 
@@ -250,3 +255,5 @@ get_date_last_quarter_end() {
   print_date $year $month 1
 }
 
+# end of date-utils.sh
+# vim: set ai sw=2

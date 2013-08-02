@@ -103,10 +103,10 @@ build_files() {
     file="$( eval echo \"${FILENAME_BUILDER:?'FILENAME_BUILDER not defined!'}\" )"
     if [[ -e "$file" ]]; then               # already exists?
       if [[ -z "$force" ]]; then            # force build it?
-        chat "Not building $file; already exists."
+        vtalk "Not building $file; already exists."
         continue                            # no, skip it
       else
-        chat "Rebuilding $file.."
+        vtalk "Rebuilding $file.."
       fi
     fi
     run "$( eval echo \"$FILE_GENERATOR\" )"

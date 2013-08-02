@@ -7,6 +7,7 @@ Author: Alan K. Stebbens <aks@stebbens.org>
 
 * [date-util.sh](#date-utils.sh)
 * [list-utils.sh](#list-utils.sh)
+* [text-utils.sh](#text-utils.sh)
 * [test-utils.sh](#test-utils.sh)
 
 date-util.sh
@@ -172,6 +173,34 @@ removing whitespace from the split values.
 will split using both space and comma.  By default, splitting is
 done by tabs.
 
+    lookup_list LIST "WORD"
+
+Looks up WORD in the array LIST for the uniquely matching item, using
+disambiguating case-insensitive matching.  If no match, return empty string and
+code 1; if 2 or more matches, return empty string, and error code 2.
+
+    grep_list LIST PATTERN
+
+Look up items matching PATTERN in the array LIST.  Return all matching items,
+and return code 0.  If no matching items, return empty string and return code
+1.
+
+    lookup_error CODE WORD [NOTFOUNDMSG [AMBIGMSG]]
+
+A utility function to be used in conjuction with a "lookup_list" or "grep_list"
+invocation.  CODE is an error code returned from "lookup_list" or "grep_list".
+WORD is the word used on the search, and is used as the "%s" argument in either
+error message.  NOTFOUNDMSG is the error message used in the case of error code
+1.  AMBIGMSG is the error message used in the case of error code 2.
+
+"lookup_error" is used like this:
+
+    read -p "What word do you want to use?" word
+    words=( a list of words to search from )
+    found=`lookup_list words $word` || lookup_error $? $word \
+          "'%s' is not a valid word" \
+          "'%s" is an ambiguous word"
+
 
 sh-utils.sh
 -----------
@@ -180,25 +209,31 @@ handy functions for writing bash-based scripts
 Copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
 
     chat MSG ..
+    chatf FMT ARGS ..
 
-If `$norun` or `$verbose` is set, print all args on `STDERR`.
+If `$norun` or `$verbose` is set, print (or printf) all args on `STDERR`.
 
     talk MSG ..
+    talkf FMT ARGS ..
 
-Print all arguments on `STDERR`.
+Print (or printf) all arguments on `STDERR`.
 
     nvtalk MSG 
+    nvtalkf FMT ARGS ..
 
-Print all arguments on `STDERR` only if $verbose is not set.
+Print (or printf) all arguments on `STDERR` only if $verbose is not set.
 
     error [CODE] "MSG" 
+    errorf [CODE] FMT ARGS ..
 
-Print `MSG` on `STDERR`, then exit with code CODE (or 2)
+Print (or printf) `MSG` on `STDERR`, then exit with code CODE (or 2)
 
     run COMMAND ARGS ..
+    safe_run COMMAND ARGS ..
 
 If `$verbose` is set, show the command and args before running it.
 If `$norun` is not set, run the command with args and examine the resulting status.
+"safe_run" is run regardless of the "$norun" variable.
 
     rm_file_later FILE
 
@@ -208,10 +243,34 @@ Add FILE to a list of files that will be automatically removed upon program exit
 
 Add `CMD` to the trap list for `SIGNAL`, while ensuring that it is not repeated.
 
+    fn_exists FUNCNAME
+
+Return 0 (true) if FUNCNAME is a valid function, otherwise return 1 (false).
+
+text-utils.sh
+-------------
+Copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
+
+Text processing utilities for bash scripts.
+
+usage:
+
+    export PATH=.:$HOME/lib:$PATH
+    source text-utils.sh
+
+The following functions are provided by this library:
+
+    lowercase STRING          # return the lowercase string
+    uppercase STRING          # return the uppercase string
+    trim STRING               # trim blanks surrounding string
+    ltrim STRING              # trim left-side blanks from STRING
+    rtrim STRING              # trim right-side blanks from STRING
+    squeeze STRING            # squeeze multiple blanks in string
+    split_str STRING SEP      # split STRING using SEP [default: \t]
+
 
 test-utils.sh
 -------------
-
 Copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
 
 Infrasructure for test-driven development of Bash scripts
@@ -226,6 +285,7 @@ The tests to be run must have the function name begin with "`test_`".
 
 The general structure of a test suite:
 
+    export PATH=.:$HOME/lib:$PATH   # make it easier to find this library
     source test-utils.sh
 
     init_tests [ARGUMENTS]

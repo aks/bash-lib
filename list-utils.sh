@@ -325,22 +325,26 @@ lookup_list() {
   return 1                # not found
 }
 
-# lookup_error $CODE WORD
+# lookup_error $CODE WORD ["NOT-FOUND-MSG" ["AMBIGUOUS-MSG"]]
 #
 # Usage: 
 #  foundword=`lookup_list list $someword`
 #  [[ $? != 0 ]] && lookup_error $? $someword    
 #
 # or:
-#  foundword=`lookup_list list $someword || lookup_error $? $someword`
+#  foundword=`lookup_list list $someword` || lookup_error $? $someword`
+#
+# or:
+#  foundword=`lookup_list list $someword` || \
+#       lookup_error $? $someword "%s was not found" "%s is ambiguous"
 #
 # You can redefine "lookup_error" to use your own messages.
 
 lookup_error() {
-  if [[ $1 -gt 0 ]]; then
-    error "'$2' was not found."
-  elif [[ $1 -lt 0 ]]; then
-    error "'$2' is ambiguous."
+  if [[ $1 -eq 1 ]]; then
+    errorf "${3:-'%s' was not found}" "$2"
+  elif [[ $1 -eq 2 ]]; then
+    errorf "${4:-'%s' is ambiguous.}" "$2"
   fi
 }
 

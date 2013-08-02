@@ -14,6 +14,10 @@ ltrim STRING                  # trim left-side blanks from STRING
 rtrim STRING                  # trim right-side blanks from STRING
 squeeze STRING                # squeeze multiple blanks in string
 split_str STRING SEP          # split STRING using SEP [default: \t]
+html_encode [STRING]          # encode STRING (or STDIN) for html
+url_encode  [STRING]          # encode STRING (or STDIN) for url
+html_decode [STRING]          # decode STRING (or STDIN) from HTML encoding
+url_decode  [STRING]          # decode STRING (or STDIN) from URL encoding
 EOF
   exit
 }
@@ -44,6 +48,63 @@ split_str() {
   sed -Ee 's/^(.*[ ,?*].*)$/"\1"/'  |
   tr '\n' ' '
 }
+
+# url_encode [STRING] -- encode STRING for URLs
+# url_encode          -- encode STDIN for URLs
+
+# Note: must convert % first, otherwise the other entities will
+# get double-converted.
+
+url_encode() {
+  ( [[ $# -gt 0 ]] && echo -n "$*" || cat ) |
+  sed -Ee "\
+           s/\%/%25/g  ;
+           s/ /%20/g   ; s/\\\$/%24/g ;	s/\>/%3E/g  ;\
+           s/#/%23/g   ;              ; s/\[/%5B/g  ;\
+           s/'/%27/g   ; s/\&/%26/g   ; s/\]/%5D/g  ;\
+           s/,/%2C/g   ; s/\(/%28/g   ; s/\^/%5E/g  ;\
+           s/-/%2D/g   ; s/\)/%29/g   ; s/\`/%60/g  ;\
+           s/=/%3D/g   ; s/\*/%2A/g   ; s/\{/%7B/g  ;\
+           s/[\]/%5C/g ; s/\+/%2B/g   ; s/\|/%7C/g  ;\
+           s/\!/%21/g  ; s/\//%2F/g   ; s/\}/%7D/g  ;\
+           s/\"/%22/g  ; s/\</%3C/g   ; s/\~/%7E/g"
+}
+
+# url_decode STRING -- decode STRING for urls
+# url_decode        -- decode STDIN for urls
+
+url_decode() {
+  ( [[ $# -gt 0 ]] && echo -n "$*" || cat ) |
+  sed -e "\
+           s/%20/ /g  ;  s/%29/)/g   ;   s/%5B/[/g    ;\
+           s/%21/\!/g ;  s/%2A/*/g   ;   s/%5C/\\\\/g ;\
+           s/%22/\"/g ;  s/%2B/+/g   ;   s/%5D/]/g    ;\
+           s/%23/\#/g ;  s/%2C/,/g   ;   s/%5E/^/g    ;\
+           s/%24/\$/g ;  s/%2D/-/g   ;   s/%60/\`/g   ;\
+           s/%25/%/g  ;  s/%2F/\//g  ;   s/%7B/{/g    ;\
+           s/%26/\&/g ;  s/%3C/</g   ;   s/%7C/|/g    ;\
+           s/%27/'/g  ;  s/%3D/=/g   ;   s/%7D/}/g    ;\
+           s/%28/(/g  ;  s/%3E/>/g   ;   s/%7E/~/g"
+}
+
+# html_encode STRING -- encode STRING for HTML presentation
+# html_encode        -- encode STDIN  for HTML presentation
+#
+# converts '&' => &amp;  '>' => &gt;  '<' => &lt;
+
+html_encode() {
+  ( [[ $# -gt 0 ]] && echo -n "$*" || cat ) |
+  sed -e "s/\&/\&amp;/g ; s/[<]/\&lt;/g  ; s/[>]/\&gt;/g"
+}
+
+# html_decode STRING  -- decode STRING from HTML presentation
+# html_decode         -- decode STDIN from HTML presentation
+
+html_decode() {
+  ( [[ $# -gt 0 ]] && echo -n "$*" || cat ) |
+  sed -Ee "s/\&lt;/</g ; s/\&gt;/>/g ; s/\&amp;/\&/g"
+}
+
 
 # define TEXT_UTILS_SH as the source file that brought us in
 export TEXT_UTILS_SH="${BASH_SOURCE[0]}"

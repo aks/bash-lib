@@ -5,13 +5,13 @@ Library of bash scripts.
 
 Author: Alan K. Stebbens <aks@stebbens.org>
 
-* [date-util.sh](#date-utils.sh)
-* [list-utils.sh](#list-utils.sh)
-* [text-utils.sh](#text-utils.sh)
-* [test-utils.sh](#test-utils.sh)
+* [date-util.sh](#date_utils)
+* [list-utils.sh](#list_utils)
+* [text-utils.sh](#text_utils)
+* [test-utils.sh](#test_utils)
 
-date-util.sh
-------------
+date-util.sh <a id="date_utils">
+-------------
 
 This file is a list of functions that make it easier to manage dates
 and conversions in bash scripts.  For example, if your bash script
@@ -111,7 +111,7 @@ Variables
     days_in_month (array)
     days_before_moth (array)
 
-list-utils.sh
+list-utils.sh <a id="list_utils">
 -------------
 
 bash script utilities for managing lists of things
@@ -202,7 +202,7 @@ error message.  NOTFOUNDMSG is the error message used in the case of error code
           "'%s" is an ambiguous word"
 
 
-sh-utils.sh
+sh-utils.sh <a id="sh_utils">
 -----------
 handy functions for writing bash-based scripts
 
@@ -247,7 +247,7 @@ Add `CMD` to the trap list for `SIGNAL`, while ensuring that it is not repeated.
 
 Return 0 (true) if FUNCNAME is a valid function, otherwise return 1 (false).
 
-text-utils.sh
+text-utils.sh <a id="text_utils">
 -------------
 Copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
 
@@ -269,7 +269,7 @@ The following functions are provided by this library:
     split_str STRING SEP      # split STRING using SEP [default: \t]
 
 
-test-utils.sh
+test-utils.sh <a id="test_utils">
 -------------
 Copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
 
@@ -357,5 +357,4 @@ Numeric tests
     check_ge           N1 N2             ERROR
 
 ERROR is optional.  `XX` above can be: `eq`, `ne`, `lt`, `le`, `gt`, `ge`.
-
 

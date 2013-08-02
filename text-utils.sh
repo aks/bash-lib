@@ -3,7 +3,9 @@
 #
 # Copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
 
-[[ -z "$TEXT_UTILS_SH" ]] || return
+TEXT_UTILS_VERSION="text-utils.sh v1.3"
+[[ "$TEXT_UTILS_SH" = "$TEXT_UTILS_VERSION" ]] && return
+export TEXT_UTILS_SH="$TEXT_UTILS_VERSION"
 
 export TEXT_UTILS_SH="${BASH_SOURCE[0]}"
 

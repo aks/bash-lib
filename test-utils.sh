@@ -75,6 +75,12 @@
 #
 #  Alan K. Stebbens <aks@stebbens.org>
 
+TEST_UTILS_VERSION="test-utils.sh v1.6"
+[[ "$TEST_UTILS_SH" = "$TEST_UTILS_VERSION" ]] && return
+export TEST_UTILS_SH="$TEST_UTILS_VERSION"
+
+export PATH=.:$HOME/lib:$PATH
+
 source list-utils.sh
 
 TEST_usage() {

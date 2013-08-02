@@ -3,9 +3,9 @@
 #
 # sh script utilities for managing lists of things
 
-[[ -z "$LIST_UTILS" ]] || return
-
-export LIST_UTILS="${BASH_SOURCE[0]}"
+LIST_UTILS_VERSION='list-utils.sh v1.2'
+[[ "$LIST_UTILS" = "$LIST_UTILS_VERSION" ]] && return
+export LIST_UTILS="$LIST_UTILS_VERSION"
 
 export CHAR_NL=$'\n'
 export CHAR_TAB=$'\t'

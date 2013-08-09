@@ -8,8 +8,6 @@
 
 SH_UTILS_VERSION="sh-utils.sh v1.5"
 
-[[ "$SH_UTILS" = "$SH_UTILS_VERSION" ]] && return
-
 export SH_UTILS="$SH_UTILS_VERSION"
 
 sh_utils_help() {
@@ -19,11 +17,13 @@ Shell utility functions:
   talk MSG ..       Print all arguments on STDERR.
  vtalk MSG ..       If $norun or $verbose is set, print all args on STDERR.
 nvtalk MSG          Print all arguments on STDERR only if $verbose is not set.
+nqtalk MSG          Print all arguments on STDERR only if $quiet isn not set.
 error [CODE] "MSG"  Print MSG on STDERR, then exit with code CODE (or 2)
 
   talkf FMT ARGS ..         printf FMT ARGS on STDERR
  vtalkf FMT ARGS ..         printf FMT ARGS on STDERR if $norun or $verbose set
 nvtalkf FMT ARGS ..         printf FMT ARGS on STDERR unless $verbose set
+nqtalkf FMT ARGS ..         printf FMT ARGS on STDERR unless $quiet set
 errorf [CODE] FMT ARGS ..   printf FMT ARGS on STDERR, then exit $CODE [2]
 
 run COMMAND ARGS .. Show COMMAND ARGS if $norun or $verbase; run command unless $norun.
@@ -41,11 +41,13 @@ help_sh_utils() { sh_utils_help ; }
 #   talk MSG      - show MSG on STDERR
 #  vtalk MSG      - show MSG on STDERR if $norun or $verbose
 # nvtalk MSG      - show MSG on STDERR unless $verbose is set
+# nqtalk MSG      - show MSG on STDERR unless $quiet is set
 
 talk()        { echo 1>&2 "$@" ; }
 warn()        { talk "$@" ; }
 vtalk()	      { [[ -n "$norun$verbose" ]] && talk "$@" ; }
-nvtalk()      { [[ -z "$verbose" ]] && talk "$@" ; }
+nvtalk()      { [[ -z "$verbose" ]]       && talk "$@" ; }
+nqtalk()      { [[ -z "$quiet" ]]         && talk "$@" ; }
 
 # error [CODE] MSG - show MSG on STDERR then exit with error CODE [default 2]
 
@@ -64,7 +66,8 @@ error()       {
 talkf()       { printf 1>&2 "$@" ; }
 warnf()       { talkf "$@" ; }
 vtalkf()      { [[ -n "$norun$verbose" ]] && talkf "$@" ; }
-nvtalkf()     { [[ -z "$verbose" ]] && talkf "$@" ; }
+nvtalkf()     { [[ -z "$verbose" ]]       && talkf "$@" ; }
+nqtalkf()     { [[ -z "$quiet" ]]         && talkf "$@" ; }
 
 # errorf [CODE] FMT ARGS .. print FMT ARGS on STDERR, then exit with CODE[2]
 

@@ -4,7 +4,7 @@
 # sh script utilities for managing lists of things
 
 LIST_UTILS_VERSION='list-utils.sh v1.2'
-[[ "$LIST_UTILS" = "$LIST_UTILS_VERSION" ]] && return
+#[[ "$LIST_UTILS" = "$LIST_UTILS_VERSION" ]] && return
 export LIST_UTILS="$LIST_UTILS_VERSION"
 
 export CHAR_NL=$'\n'
@@ -286,6 +286,8 @@ join_list() {
   done
   (IFS= ; /bin/echo "${list[*]}")
 }
+list_join() { join_list "$@" ; }
+
 
 # lookup_list LISTVAR KEY
 #

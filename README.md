@@ -216,12 +216,17 @@ Print (or printf) all arguments on `STDERR`.
     vtalk MSG ..
     vtalkf FMT ARGS ..
 
-If `$norun` or `$verbose` is set, print (or printf) all args on `STDERR`.
+If `$norun` or `$verbose` are set, print (or printf) all args on `STDERR`.
 
     nvtalk MSG 
     nvtalkf FMT ARGS ..
 
-Print (or printf) all arguments on `STDERR` only if $verbose is not set.
+Print (or printf) all arguments on `STDERR` unless $verbose is set.
+
+    nqtalk MSG
+    nqtalkf FMT ARGS ...
+
+Unless `$quiet` is set, print (or printf) all args on `STDERR`.
 
     error [CODE] "MSG" 
     errorf [CODE] FMT ARGS ..

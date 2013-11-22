@@ -3,7 +3,7 @@
 #
 # sh script utilities for managing lists of things
 
-LIST_UTILS_VERSION='list-utils.sh v1.2'
+LIST_UTILS_VERSION='list-utils.sh v2.0'
 #[[ "$LIST_UTILS" = "$LIST_UTILS_VERSION" ]] && return
 export LIST_UTILS="$LIST_UTILS_VERSION"
 
@@ -31,6 +31,8 @@ list_item VAR N                      # set 'item' to the Nth item of VAR
 
 list_set  VAR N VAL                  # set the Nth item of VAR to VAL
 
+list_items VAR [START [END]]         # return list items from START to END (or all)
+
 list_copy LIST NEWLIST [START [END]] # copy list LIST to NEWLIST, from START to END
 
 in_list VAR  [-any|-all] VAL ...     # return true if one or more values are in a list
@@ -39,6 +41,9 @@ list_size VAR                        # returns the number of items
 sort_str VAL ...                     # sort the space-separated words of VAL ..
 sort_list VAR                        # sort the contents of VAR (a list) in place
 sorted_list VAR                      # output the items of VAR sorted
+
+sort_str2lines                       # sort STR with each item in a separate line
+sort_list2lines                      # sort LIST with each item in a separate line
 
 split_into  VAR "STRING" SEP         # split "STRING" by SEP into VAR
 split_str   "STRING" [SEP]           # split "STRING" by SEP
@@ -53,6 +58,8 @@ join_list VAR [SEP] ..               # join the items in VAR into a list, separa
     NOWRAP -- do not auto-wrap long lines (default is WRAP)
     ','    -- separate items with a comma (default)
     str    -- separate each item with an given string.
+
+join_list                            # read STDIN and catenate lines; remove trailing NL
 
 lookup_list LISTVAR KEY              # lookup KEY in LISTVAR
 grep_list LISTVAR PAT                # grep PAT across LISTVAR
@@ -172,9 +179,7 @@ pop_list() { list_pop "$@" ; }
 # Echo the Nth item from VARLIST to output
 
 list_get() {
-  local var="${1:?'Missing list name'}"
-  local n=${2:?'Missing index'}
-  eval "echo \"\${$var[$n]}\""
+  eval "echo -n \"\${$1[$2]}\""
 }
 
 # list_item VARLIST N
@@ -198,6 +203,28 @@ list_set() {
   eval "let $var[$n]=\"$val\""
 }
 
+# list_items LIST [START [END]]
+#
+# Output the items from LIST from START to END.  If END is omitted,
+# fetch all the items to the end.  If START is omitted, fetch from
+# the beginning items.
+
+list_items() {
+  local var=${1:?'Missing list name'}
+  if (( $# == 1 || -z "$2$3")); then
+    eval "IFS=' ' ; echo \"\${$var[@]}\""
+  else
+    local size=`list_size $var`
+    local start=${2:-0}
+    local end=${3:-$size}
+    local x
+    for ((x=start; x<size && x<=end; x++)); do
+      eval "echo -n \"\${$var[$x]}\""     # output the xth item
+    done
+    echo ''
+  fi
+}
+
 # list_copy LIST NEWLIST [START [END]]
 #
 # Copy LIST to NEWLIST, entirely if START and END omitted.  Copy a part of LIST
@@ -207,18 +234,9 @@ list_set() {
 list_copy() {
   local srclist="${1:?'Missing name for source list'}"
   local dstlist="${2:?'Missing name for new list'}"
-  if (( $# == 2 )); then
-    eval "$dstlist=( \"\${$srclist[@]}\" )"
-  else
-    local len=`list_size $srclist`
-    local start=${3}
-    local end=${4:-$len}
-    local x
-    list_init $dstlist
-    for ((x=$start; x < $end; x++)) ; do
-      list_add $dstlist "`list_get $srclist $x`"
-    done
-  fi
+  shift 2
+  list_init $dstlist
+  list_add $dstlist `list_items $srclist "$@"`
 }
 
 # in_list LISTNAME [-any] VALUE ..
@@ -272,14 +290,29 @@ list_size() { eval "echo \"\${#$1[@]}\"" ; }
 #
 # sorted_list NAME -- output the list items sorted
 # list_sorted NAME
-#
+
+sort_str2lines() {
+  local w
+  ( for w in "$@" ; do echo "$w" ; done ) | sort -f
+}
+
+join_lines() {
+  tr '\n' ' ' | sed -e 's/ $//'
+}
+
 sort_str() {
-  ( for w in "$@" ; do echo "$w" ; done ) | sort -f | tr '\n' ' ' | sed -e 's/ $//'
+  sort_str2lines "$@" | join_lines
 }
 str_sort() { sort_str "$@" ; }
 
+# sort_list_lines LIST
+
+sort_list2lines() {
+  ( eval "for w in \"\${$1[@]}\" ; do echo \"\$w\" ; done" ) | sort -f
+}
+
 sorted_list() { 
-  eval "sort_str \"\${$1[@]}\""
+  sort_list2lines $1 | join_lines
 }
 list_sorted() { sorted_list "$@" ; }
 
@@ -564,53 +597,71 @@ print_list() {
   shift
   _set_args "indent width sep cols" "$@"
   # set defaults
-  width=${width:-${COLUMNS:-80}}
   sep="${sep:-2}"
-  local ourlist
-  list_copy $listvar ourlist
-  # sort the items
-  sort_list ourlist
-  local total=`list_size ourlist`
-
-  # determine the maximum column width
-  local item_sizes=( `map_list $listvar 'echo ${#item}'` )
-  cw=`max_list item_sizes`
-  local fmt="%-${cw}s%*s"
-  if [[ -n "$indent" ]]; then
-    local spaces="`printf \"%*s\" $indent ' '`"
-    fmt="$spaces$fmt"
+  widtharg= 
+  if [[ -n "$width" ]]; then
+    widtharg="-w$width "
   fi
-
-  # determine the number of columns
-  if [[ -z "$cols" ]]; then
-    # no explicit # of columns; compute from column width and line width
-    local nc=$(( width / (cw + 1) ))
-    if (( nc == 0 )) ; then
-      nc=1
-    fi
+  if [[ -n "$sep" ]]; then
+    separg="-g$sep"
+  fi
+  # sort & shape the items
+  if [[ -z "$indent" ]]; then
+    sort_list2lines $listvar | rs -t $widtharg $separg 0 $cols
   else
-    nc=$cols
+    prefix=`printf "%*s" $indent ' '`
+    sort_list2lines $listvar | rs -t $widtharg $separg 0 $cols | (
+      while read line ; do 
+        echo -n "$prefix"
+        echo "$line"
+      done
+    )
   fi
-  local nr=$(( total / nc))
-  if (( total % nc > 0 )); then let nr++ ; fi
+}
+
+# The original columnizing formatter, in bash (without rs)
+#
+# local total=`list_size ourlist`
+#
+# # determine the maximum column width
+# local item_sizes=( `map_list $listvar 'echo ${#item}'` )
+# cw=`max_list item_sizes`
+# local fmt="%-${cw}s%*s"
+# if [[ -n "$indent" ]]; then
+#   local spaces="`printf \"%*s\" $indent ' '`"
+#   fmt="$spaces$fmt"
+# fi
+
+# # determine the number of columns
+# if [[ -z "$cols" ]]; then
+#   # no explicit # of columns; compute from column width and line width
+#   local nc=$(( width / (cw + 1) ))
+#   if (( nc == 0 )) ; then
+#     nc=1
+#   fi
+# else
+#   nc=$cols
+# fi
+# local nr=$(( total / nc))
+# if (( total % nc > 0 )); then let nr++ ; fi
 
   #  R C| 0   1   2
-  # ----+-------------
-  #  0  | 0   3   6  
-  #  1  | 1   4   7
-  #  2  | 2   5
+# # ----+-------------
+# #  0  | 0   3   6  
+# #  1  | 1   4   7
+# #  2  | 2   5
 
-  # c=C*NR+R
+# # c=C*NR+R
 
-  # iterate across the values
-  local x r c
-  for ((r=0; r<nr; r++)); do
-    for ((c=0 , x=(c*nr)+r; c<nc && x<total; c++, x=(c*nr)+r)); do
-      printf "$fmt" "${ourlist[x]}" $sep ' '
-    done
-    printf "\n"
-  done
-}
+# # iterate across the values
+# local x r c
+# for ((r=0; r<nr; r++)); do
+#   for ((c=0 , x=(c*nr)+r; c<nc && x<total; c++, x=(c*nr)+r)); do
+#     printf "$fmt" "${ourlist[x]}" $sep ' '
+#   done
+#   printf "\n"
+# done
+#}
 
 # _set_args "OPT1 OPT2 ..." "$@"
 #

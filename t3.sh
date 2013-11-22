@@ -23,9 +23,9 @@ test_10_print_list() {
   echo ''
   print_list words i=3 c=4
   echo ''
-  print_list words c=3
+  print_list words c=3 i=4
   echo ''
-  print_list words c=2
+  print_list words c=2 i=5
   echo ''
   end_test
 }

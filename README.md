@@ -118,6 +118,8 @@ bash script utilities for managing lists of things
 
 In the descriptions below, `VAR` is an array variable; `VAL`, `VAL1`, .. are values.
 
+    list_init VAR                       # initialize VAR as an array
+
     list_add VAR VAL1 [VAL2 ...]        # add VAL1.. to the end of VAR
 
     list_add_once VAR  VAL1 [VAL2 ..]   # add VAL1.. uniquely to the end of VAR
@@ -126,15 +128,31 @@ In the descriptions below, `VAR` is an array variable; `VAL`, `VAL1`, .. are val
 
     list_insert_once VAR VAL ..         # insert VALUE.. at the front of VAR; 
 
+    list_get VAR N                      # get the Nth item from VAR
+
+    list_item VAR N                     # set 'item' to the Nth item of VAR
+
+    list_items VAR [START [END]]        # get the items from VAR from START to END
+
+    list_set VAR N VAL                  # set the Nth item in VAR
+
     in_list VAR  [-any|-all] VAL ...    # return true if one or more values are in a list
 
     list_size VAR                       # returns the number of items
 
     sort_str VAL ...                    # sort the space-separated words of VAL ..
-  
+
+    sort_str2lines VAL ...              # output the args into separate lines, sorted
+
     sort_list VAR                       # sort the contents of VAR (a list) in place
 
+    sorted_list VAR                     # output the sorted items from VAR
+
+    sort_list2lines VAR                 # output the sorted items from VAR in separate lines
+
     join_list VAR [SEP] ..
+
+    join_lines                          # join lines on STDIN
 
 Join the items in `VAR` into a list, separated by `SEP`, which can be:
 

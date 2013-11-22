@@ -1,0 +1,26 @@
+#!/bin/bash
+cat <<EOF
+apple
+april
+august
+banana
+cherry
+december
+dog
+elephant
+february
+fox
+giraffe
+hawk
+indigo
+january
+july
+june
+manzana
+march
+may
+milk
+november
+october
+EOF
+exit

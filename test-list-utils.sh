@@ -35,7 +35,7 @@ test_02_list_sort() {
   list_add list2  $words
   check_size list2 16
 
-  sorted_words=`sort_str "$words"`
+  sorted_words=`sort_str $words`
   check_unequal "$sorted_words" "$words"
 
   sort_list list2
@@ -260,6 +260,19 @@ test_09_push_pop_list() {
   end_test
 }
 
+test_10_print_list() {
+  start_test
+  words=<<EOF
+  apple banana cherry dog elephant fox giraffe hawk indigo manzana milk november
+  october december january february march april may june july august
+EOF
+  print_list words
+  print_list words i=1
+  print_list words i=2 c=4
+  print_list words i=3 c=3
+  print_list words i=1 c=2
+  end_test
+}
 
 
 init_tests "$@"

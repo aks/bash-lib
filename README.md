@@ -7,6 +7,7 @@ Author: Alan K. Stebbens <aks@stebbens.org>
 
 * [date-util.sh](#date_utils)
 * [list-utils.sh](#list_utils)
+* [real-utils.sh](#real_utils)
 * [text-utils.sh](#text_utils)
 * [test-utils.sh](#test_utils)
 
@@ -219,6 +220,37 @@ error message.  NOTFOUNDMSG is the error message used in the case of error code
           "'%s' is not a valid word" \
           "'%s" is an ambiguous word"
 
+real-utils.sh <a id="real_utils">
+-------------
+enable real number arithmetic in bash scripts
+
+Copyright 2013 Alan K. Stebbens <aks@stebbens.org>
+
+    real_eval "EXPRESSION" [SCALE]
+
+`EXPRESSION` is a real number expression using operators as described is the "bc"
+manual.  It is evaluated and the real numeric result is returned on the output.
+The return status is either 0 (for success) or non-zero for an error.
+
+If `SCALE` is given, it overrides the default scale factor, which is `$real_scale`.
+
+Example:
+    pmt=`real_eval "m = p * ( j / (1 - (1 + j) ^ -n))"`
+
+
+    real_cond "EXPRESSION" [SCALE]
+
+`EXPRESSION` is a real number conditional which should evaluate to 1 or 0
+
+Example:
+    if real_cond "$num > 10.0" ; then
+       ...
+    fi
+
+
+    real_scale=NUM
+
+Set the precision of real number arithmetic results.   The default is 2.
 
 sh-utils.sh <a id="sh_utils">
 -----------
@@ -256,7 +288,7 @@ Print (or printf) `MSG` on `STDERR`, then exit with code CODE (or 2)
 
 If `$verbose` is set, show the command and args before running it.
 If `$norun` is not set, run the command with args and examine the resulting status.
-"safe_run" is run regardless of the "$norun" variable.
+`safe_run` is run regardless of the `$norun` variable.
 
     rm_file_later FILE
 

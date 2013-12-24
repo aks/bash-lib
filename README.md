@@ -252,6 +252,54 @@ Example:
 
 Set the precision of real number arithmetic results.   The default is 2.
 
+The real-utils uses the `bc` tool to accomplish its calculations.  
+
+In addition to normal arithmetic expressions (+ - * / %), including the power
+function (^) which can be used within the expression passed to `real_eval`, the
+following functions area also defined:
+
+    int(x)   -- return the integer portion of a real number
+    frac(x)  -- return the fractional portion of a real number
+
+    sin(x)   -- sine of x (in radians)
+    cos(x)   -- cosine of x (in radians)
+    tan(x)   -- tangent of x
+
+    asin(x)  -- arcsine of x
+    acos(x)  -- arccosine of x
+    atan(x)  -- arctangent of x
+
+    rad(x)   -- convert degress to radians
+    deg(x)   -- confert radians to degress
+
+    round(x,y)  -- round x at the yth decimal
+
+    pi()     -- the value of PI
+
+Example:
+
+    real_eval("int($x)/3")
+
+The following shell functions are also defined:
+
+    sin x     -- the sine of X (in radians)
+    cos x     -- the cosine of X (in radians)
+    tan x     -- the tangent of X
+    rad x     -- convert x in degrees to radians
+    deg x     -- convert x in radians to degrees
+    logn x    -- return the natural (base e) logarithm of X
+    log10 x   -- return the base 10 log of x
+    exp x     -- return e^x
+    round x   -- round up x
+    round x,y -- round x at the Yth decimal
+
+These shell variables are defined:
+
+    PI='3.141592653589793'
+    TAU='6.283185307179586'
+    E='2.718281828459045'
+
+
 sh-utils.sh <a id="sh_utils">
 -----------
 handy functions for writing bash-based scripts

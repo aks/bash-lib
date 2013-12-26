@@ -300,6 +300,12 @@ These shell variables are defined:
     E='2.718281828459045'
 
 
+There is a sample script to compute mortgage payments, one which uses `awk`
+and the other which uses the `real-utils.sh` functions.
+
+    mort.sh   -- compute mortgage payments using `awk`
+    mort2.sh  -- compute mortgage payments using `real-utils.sh`
+
 sh-utils.sh <a id="sh_utils">
 -----------
 handy functions for writing bash-based scripts

@@ -12,7 +12,6 @@
 # L = length, the length (in years) of the loan, or at least the length over
 # which the loan is amortized.
 #
-#
 # The following assumes a typical conventional loan where the interest is
 # compounded monthly. First I will define two more variables to make the
 # calculations easier:
@@ -29,31 +28,34 @@
 # 
 #  where 1 is the number one (it does not appear too clearly on some browsers)
 #
-# So to calculate it, you would first calculate 1 + J then take that to the -N
-# (minus N) power, subtract that from the number 1. Now take the inverse of
-# that (if you have a 1/X button on your calculator push that). Then multiply
-# the result times J and then times P. Sorry, for the long way of explaining
-# it, but I just wanted to be clear for everybody. 
+# So to calculate it, you would first calculate 1 + J then take that
+# to the -N (minus N) power, subtract that from the number 1. Now take
+# the inverse of that (if you have a 1/X button on your calculator
+# push that). Then multiply the result times J and then times P.
+# Sorry, for the long way of explaining it, but I just wanted to be
+# clear for everybody. 
 #
-# The one-liner for a program would be (adjust for your favorite language):
+# The one-liner for a program would be (adjust for your favorite
+# language):
 # 
 #          M = P * ( J / (1 - (1 + J) ** -N))
 #
 # So now you should be able to calculate the monthly payment, M.
 #
-# To calculate the amortization table you need to do some iteration (i.e. a
-# simple loop). I will tell you the simple steps:
+# To calculate the amortization table you need to do some iteration
+# (i.e. a simple loop). I will tell you the simple steps:
 #
 # Step 1: Calculate H = P x J, this is your current monthly interest
 #
-# Step 2: Calculate C = M - H, this is your monthly payment minus your monthly
-# interest, so it is the amount of principal you pay for that month
+# Step 2: Calculate C = M - H, this is your monthly payment minus your
+# monthly interest, so it is the amount of principal you pay for that
+# month
 #
-# Step 3: Calculate Q = P - C, this is the new balance of your principal of
-# your loan.
+# Step 3: Calculate Q = P - C, this is the new balance of your
+# principal of your loan.
 #
-# Step 4: Set P equal to Q and go back to Step 1: You thusly loop around until
-# the value Q (and hence P) goes to zero.
+# Step 4: Set P equal to Q and go back to Step 1: You thusly loop
+# around until the value Q (and hence P) goes to zero.
 # 
 
 export PATH=$PATH:.:$HOME/lib

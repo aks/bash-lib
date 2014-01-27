@@ -1,0 +1,21 @@
+2014/01/26
+* date-utils.sh:
+  - added EUROPEAN_DATES envar
+  - renamed "date_arg" as "parse_date"
+  - added more formats to support in the parsing
+  - renamed "get_date_x_years_since" to "get_date_x_years_before"
+  - added "get_date_x_years_since"
+  - updated copyright
+* list-utils.sh:
+  - updated copyright
+* test-date-utils.sh:
+  - fixed some tests.
+  - added some more tests
+* test-list-utils.sh:
+  - Fixed wordlist creation
+  - Abstracted the "check_output" function.
+* test-utils.sh:
+  - Added "check_output" function to catpure & compare stdout/err.
+  - added support for filtering test name by patterns on command line
+  - added -k (keep) option for reference output retention
+  - added -r (randomize) option to randomize the test order

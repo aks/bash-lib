@@ -1,17 +1,4 @@
 Things to do
 ============
 
-* Create a function to capture and compare output from interactive scripts
-
-Scripts that generate output or accept input need to have special handling in
-order to verify their output or correct input.
-
-A possible solution: to stat off, the target test scripts generate output which
-is captured into corresponding named files.  If given a "-s|--save" option,
-these captured files are renamed as the "reference" output file for later use
-in comparing with subsequent test runs.
-
-Normal test runs would generate test output, and these test output files would
-be compared against the reference files.
-
 * Create a function to manage seed input for interactive input scripts.

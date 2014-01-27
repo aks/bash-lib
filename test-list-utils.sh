@@ -262,15 +262,15 @@ test_09_push_pop_list() {
 
 test_10_print_list() {
   start_test
-  words=<<EOF
-  apple banana cherry dog elephant fox giraffe hawk indigo manzana milk november
-  october december january february march april may june july august
-EOF
-  print_list words
-  print_list words i=1
-  print_list words i=2 c=4
-  print_list words i=3 c=3
-  print_list words i=1 c=2
+  words=(
+    apple banana cherry dog elephant fox giraffe hawk indigo manzana milk november
+    october december january february march april may june july august
+  )
+  check_output plout1 "print_list words"
+  check_output plout2 "print_list words i=1"
+  check_output plout3 "print_list words i=2 c=4"
+  check_output plout4 "print_list words i=3 c=3"
+  check_output plout5 "print_list words i=1 c=2"
   end_test
 }
 
@@ -278,54 +278,5 @@ EOF
 init_tests "$@"
 run_tests
 summarize_tests
-
-exit
-
-
-
-tstlst=()
-
-limit=100
-start=0
-while [[ $start -lt $limit ]]; do
-  aword="word${start}"
-  list_add tstlist "$aword"
-  start=$(( start + 1 ))
-done
-echo $'Test join_list tstlist'
-join_list tstlist
-
-echo $'\nTest join_list tstlist KEYS'
-join_list tstlist KEYS
-
-echo $'\nTest join_list tstlist AND'
-join_list tstlist AND
-
-namelist=( script1 script2 script3 script4 script5 )
-echo $'\nTest join_list namelist "|\\n"'
-join_list namelist $'|\n'
-
-echo $'\nTesting in_list tstlist ..'
-x=0
-while [[ $x -lt ${#tstlist[@]} ]] ; do
-  if (( (x % 10) == 0 )) ; then
-    printf "%d.." $x
-  fi
-  word="${tstlist[$x]}"
-  x=$(( x + 1 ))
-  if ! in_list tstlist "$word" ; then
-    echo "huh: $word not found in tstlist!!"
-    exit 2
-  fi
-done
-echo ''
-
-echo $'\nTest long list of column titles with default wrapping'
-col_names=( Manager Fund Status Opened Closed Action Stock Shares Price Net Comm Fees Comment )
-export COLUMNS=9999
-join_list col_names 
-
-echo $'\nTest long list of column titles without wrapping'
-join_list col_names NOWRAP
 
 exit

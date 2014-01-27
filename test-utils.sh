@@ -1,6 +1,6 @@
 # test-utils.sh
 #
-# Copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
 #
 # infrasructure for test-driven development of Bash scripts
 #
@@ -85,14 +85,26 @@ source list-utils.sh
 
 TEST_usage() {
   cat 1>&2 <<EOF
-usage: ${0##*/} [opts]
+usage: ${0##*/} [opts] [TEST-PATTERN ...]
 Run tests with options controlling behavior.
+
+If one or more TEST-PATTERNs are given, those tests not matching the given
+patterns are excluded from being run.
+
+All functions beginning with "test_" are included in the list of tests to run.
+The tests are run in alphabetic order, unless the -r option is given to cause
+them to be run in random order.
+
+The "check_output" function compares stdout/stderr against the reference copies
+captured with -k (keep) option.
 
 Options
   -h      show help
   -d      show test status details
   -e      show verbose messages only on errors
+  -k      keep test stdout/stderr for future test reference
   -n      don't make any changes (norun mode)
+  -r      randomize the order of the tests
   -v      be verbose everywhere
 EOF
   exit
@@ -104,18 +116,23 @@ init_tests() {
   TEST_tests=0
   TESTS=()
   TEST_check_status=()
+  test_details= verbose_errors= test_randomize= test_verbose= keep_ref_output=
   if [[ $# -gt 0 ]]; then
     set -- "$@"
-    while getopts 'denvh' opt ; do
+    while getopts 'deknvrh' opt ; do
       case "$opt" in
         d) test_details=1 ;;
         e) verbose_errors=1 ;;
+        k) keep_ref_output=1 ;;
         h) TEST_usage;;
         n) norun=1 ;;
+        r) test_randomize=1 ;;
         v) test_verbose=1 ;;
       esac
     done
     shift $(( OPTIND - 1 ))
+    TEST_patterns=( "$@" )
+    printf "Keeping tests on stdout for future referece.\n"
   fi
   gather_tests
 }
@@ -291,15 +308,15 @@ check_empty() { TEST_check_expr "test -z \"$1\"" "\"$2\"" ; }
 
 # TEST_check_func VALUE FUNC VALUE2 [ERROR]
 
-check_func() {
-  TEST_check_start
-  local test_ok=0
-  eval "if [[ \"$1\" $2 \"$3\" ]]; then test_ok=1 ; fi"
-  if (( ! test_ok )) && [[ -z "$4" ]]; then
-    echo 1>&2 "Check failed for \"$2\": '$1' vs '$3'"
-  fi
-  TEST_check_end "$ok" "$4"
-}
+# TEST_check_func() {
+#   TEST_check_start
+#   local test_ok=0
+#   eval "if [[ \"$1\" $2 \"$3\" ]]; then test_ok=1 ; fi"
+#   if (( ! test_ok )) && [[ -z "$4" ]]; then
+#     echo 1>&2 "Check failed for \"$2\": '$1' vs '$3'"
+#   fi
+#   TEST_check_end "$ok" "$4"
+# }
 
 # These are the string tests
 
@@ -322,6 +339,50 @@ check_eq()      {   TEST_check_test "$1" -eq "$2" "$3" ; }
 check_ne()      {   TEST_check_test "$1" -ne "$2" "$3" ; }
 check_ge()      {   TEST_check_test "$1" -ge "$2" "$3" ; }
 check_gt()      {   TEST_check_test "$1" -gt "$2" "$3" ; }
+
+# check_output NAME EXPRESSION ERROR
+#
+# Run EXPRESSION and capture the output, under NAME.  Compare it against a
+# previously stored output under the same NAME, if any.  Report differences.
+# If there is no previously stored output, save it if -k (keep) is set.
+
+check_output() {
+  local name="${1:?'Missing output name'}"
+  local expr="${2:?'Missing output-generating expression'}"
+  TEST_check_start
+  local test_out_ok= test_err_ok= test_ok=1
+  local out="test/$name.out"
+  local err="test/$name.err"
+  local outref="$out.ref"
+  local errref="$err.ref"
+  local diffout="$out.diff"
+  local differr="$err.diff"
+  if (( keep_ref_output )); then
+    out="$outref" err="$errref"
+  fi
+  eval "$expr 1>$out 2>$err"
+  [[ -f "$outref" ]] || touch "$outref"
+  [[ -f "$errref" ]] || touch "$errref"
+  #diff -w -U 0 $outref $out >$diffout && { test_out_ok=1 ; } || { test_ok= ; }
+  #diff -w -U 0 $errref $err >$differr && { test_err_ok=1 ; } || { test_ok= ; }
+  TEST_compare_output $outref $out $diffout "test_out_ok=1" "test_ok="
+  TEST_compare_output $errref $err $differr "test_err_ok=1" "test_ok="
+  TEST_check_end "$test_ok" "$name test failed"
+}
+
+# TEST_compare_output ref out diff GOODEXPR ERROREXPR
+
+TEST_compare_output() {
+  local ref="$1"
+  local out="$2"
+  local diff="$3"
+  if diff -w -U 0 $ref $out >$diff ; then
+    eval "$4"
+    rm "$out" "$diff"     # remove temp files
+  else
+    eval "$5"
+  fi
+}
 
 # TEST_error_dump ERROR
 #
@@ -348,10 +409,53 @@ TEST_error_dump() {
 
 TESTS=()
 
+# Filter the TESTS array with the TEST_patterns array.  if names from the
+# former aren't matched by any patterns from the latter, remove it from the
+# TESTS array.
+
+filter_tests() {
+  if (( ${#TEST_patterns[@]} > 0 )); then
+    local nomatches=()
+    local name nx pat
+    for ((nx=0; nx<${#TESTS[@]}; nx++)) ; do
+      name="${TESTS[nx]}"
+      local nomatch=1
+      for pat in "${TEST_patterns[@]}" ; do
+        if [[ "$name" =~ $pat ]]; then
+          nomatch= ; break
+        fi
+      done
+      if (( nomatch )) ; then
+        nomatches=( "${nomatches[@]}" $nx )
+      fi
+    done
+    if (( ${#nomatches[@]} > 0 )) ; then
+      # deletions must be done in descending index order
+      local x
+      for ((x=${#nomatches[@]} - 1; x >= 0; x--)) ; do
+        nx=${nomatches[x]}
+        unset TESTS[$nx]
+      done
+    fi
+  fi
+}
+
+# gather_tests -- find all tests with the prefix "test_"
+# filter out those not matching TEST_patterns (if any)
+# in alphabetic order, or random order (if -r).
+
+
 gather_tests() {
   if [[ "${#TESTS[@]}" -eq 0 ]]; then
     TESTS=( `compgen -A function test_` )
-    printf 1>&2 "%d tests discovered\n" ${#TESTS[@]}
+    filter_tests
+    local clause
+    case ${#TEST_patterns[@]} in 
+      0) clause= ;;
+      1) clause=" matching pattern '${TEST_patterns[0]}'" ;;
+      *) clause=" matching given patterns: ${TEST_patterns[@]}" ;;
+    esac
+    printf 1>&2 "%d tests discovered%s\n" ${#TESTS[@]} "$clause"
     TEST_max_width=0
     local tname
     for tname in "${TESTS[@]}" ; do
@@ -359,7 +463,24 @@ gather_tests() {
         TEST_max_width=${#tname}
       fi
     done
+    if (( $test_randomize )) ; then
+      randomize_tests
+      printf 1>&2 "The tests will be run in random order.\n"
+    fi
   fi
+}
+
+# randomize_tests -- place the items in random order
+randomize_tests() {
+  local newtests=()
+  local x
+  while (( ${#TESTS[*]} > 0 )) ; do
+    x=`jot -r 1 0 $(( ${#TESTS[*]} - 1 ))`
+    newtests=( "${newtests[@]}" "${TESTS[$x]}" )
+    unset TESTS[$x]
+    TESTS=( "${TESTS[@]}" )
+  done
+  TESTS=( "${newtests[@]}" )
 }
 
 run_tests() {

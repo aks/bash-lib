@@ -1,29 +1,54 @@
 # bash 
 # date-utils.sh  -- date management utility for bash
 #
-# Copyright 2009-2013 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2009-2014 Alan K. Stebbens <aks@stebbens.org>
 
 [[ -z "$DATE_UTILS_SH" ]] || return 
 
 DATE_UTILS_SH="${BASH_SOURCE[0]}"
 
+# ensure EUROPEAN_DATES is unset by default
+if [[ -z "$EUROPEAN_DATES" ]]; then
+  export EUROPEAN_DATES=
+fi
+
 # functions for date management
 #
-# date_arg YYYY-MM-DD 
-# date_arg YYYY MM DD
-#    set year, month, and days
+# parse_date YYYY-MM-DD
+#            YYYY.MM.DD
+#            YYYY/MM/DD
+#            YYYY MM DD
+#            MM DD YYYY
+#            DD MM YYYY  if EUROPEAN_DATES is set
 #
-date_arg() {
-  if (( $# == 3 )); then
-    year=$(( 10#$1 ))  month=$(( 10#$2 ))  day=$(( 10#$3 ))
-  else
+# parse out year, month, and days into these vars:
+#   year, month, day
+
+parse_date() {
+  case $# in
+  0|1)                  # zero or one args
     local date="${1:-`date +%F`}"
-    year=$((  10#${date%-*-*} ))
-    mmdd="${date#*-}"
-    month=$(( 10#${mmdd%-*}   ))
-    day=$((   10#${mmdd#*-}   ))
-  fi
+    case "$date" in
+      *-*-*) date="${date//-/ }"  ;;  # replace '-' with blanks
+      *.*.*) date="${date//./ }"  ;;  # replace '.' with blanks
+      */*/*) date="${date//\// }" ;;  # repace '/' with blanks
+    esac
+    date_arg $date ;;
+  3)                  # exactly three args
+    year=$(( 10#$1 ))  month=$(( 10#$2 ))  day=$(( 10#$3 ))
+    if (( day > 31 )) ; then
+      if (( EUROPEAN_DATES )) ; then
+        day=$(( 10#$1 ))  month=$(( 10#$2 )) year=$(( 10#$3 ))
+      else
+        month=$(( 10#$1 ))  day=$(( 10#$2 )) year=$(( 10#$3 ))
+      fi
+    fi
+    ;;
+  *)                    # huh?
+    echo "parse_date: Bad arguments: $@" ; exit 2
+  esac
 }
+date_arg() { parse_date "$@" ; }
 #
 # days_in_month MM 
 #
@@ -87,7 +112,7 @@ last_day_of_month() {
 
 date_to_abs_days() {
   local year month day
-  date_arg "$@"
+  parse_date "$@"
   (( day += days_before_month[month] ))           # add in the days preceding the current month
   (( month > 2 )) && is_leap_year $year && { (( day++ )) ; }
   (( year-- ))                                    # the following are relative to the prior year
@@ -179,15 +204,9 @@ abs_days_to_date() {
 format_date() {
   local year month day
   if [[ $# -eq 3 ]]; then
-    date_arg "$@"
+    parse_date "$@"
   else
-    case "$1" in
-      *-*-*) year="${1%%-*}" mmdd="${1#*-}" month="${mmdd%-*}" day="${mmdd#*-}" ;;
-      */*/*) year="${1%%/*}" mmdd="${1#*/}" month="${mmdd%/*}" day="${mmdd#*/}" ;;
-      *.*.*) year="${1%%.*}" mmdd="${1#*.}" month="${mmdd%.*}" day="${mmdd#*.}" ;;
-      *) echo 1>&2 "Unknown date format! $1" ; exit 2 ;;
-    esac
-    date_arg $year $month $day
+    parse_date "${1:-`date +%F`}"
   fi
   print_date $year $month $day
 }
@@ -198,7 +217,7 @@ format_date() {
 
 print_date() {
   local year month day
-  date_arg "$@"
+  parse_date "$@"
   printf "%04d-%02d-%02d\n" $year $month $day
 }
 printd() { print_date "$@" ; }
@@ -214,34 +233,37 @@ date_to_days_since_epoch() {
   echo $(( adays - days_at_epoch ))
 }
 
-# get_date_5_years-since [YYYY-MM-DD]
+# get_date_5_years-before [YYYY-MM-DD]
 #
 # get_date_last_quarter_end YYYY-MM-DD
 #
 # Both the above routines output a date string, in YYYY-MM-DD format.
 # Both accept a date as input, the absence of which defaults to now.
 
-# get_date_5_years_since [YYYY-MM-DD]
+# get_date_5_years_before [YYYY-MM-DD]
 #
 # Get the date five years before the given date
 
-get_date_5_years_since() {
-  get_date_x_years_since 5
+get_date_5_years_before() {
+  get_date_x_years_before 5
 }
 
-# get_date_x_years_since [YEARSOFFSET] [YYYY-MM-DD] 
+# get_date_x_years_before [YEARSOFFSET] [YYYY-MM-DD] 
 #
 # Get the date X years before the given date
 
-get_date_x_years_since() {
+get_date_x_years_before() {
   local yoffset="${1:?'Missing number of years'}"
   shift
   local year month day
-  date_arg "$@"
+  parse_date "$@"
   (( year -= yoffset )) # get X years ago
   print_date $year $month $day
 }
 
+get_date_x_years_since() {
+  get_date_x_years_before "-$1" "$@"
+}
 
 # get_date_last_quarter_end YYYY-MM-DD
 #
@@ -250,7 +272,7 @@ get_date_x_years_since() {
 
 get_date_last_quarter_end() {
   local year month day
-  date_arg "$@"
+  parse_date "$@"
   month=$(( ( ( ( month - 1 ) / 3 ) * 3 ) + 1 ))    # get previous quarter month
   print_date $year $month 1
 }

@@ -1,5 +1,5 @@
-#!/bin/sh
-# copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
+#!/usr/bin/env sh
+# copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
 #
 # Test module for date-utils.sh
 

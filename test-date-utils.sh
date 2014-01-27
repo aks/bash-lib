@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright 2006-2014, Alan K. Stebbens <aks@stebbens.org>
 #
 # test date-utils.sh
@@ -69,7 +69,7 @@ test_03_years_offset() {
   start_date="2008-03-05"
   year=${start_date:0:4}
   mm=${start_date:5:2}
-  for ((i=i; i<=5; i++)) ; do
+  for ((i=1; i<=5; i++)) ; do
     date_then=`get_date_x_years_before $i $start_date`
     check_value "$date_then"
     year2=${date_then:0:4}
@@ -82,6 +82,13 @@ test_03_years_offset() {
     check_eq $(( year + i )) $year3
     check_eq $mm ${date_since:5:2}
   done
+  today=`date +%F`
+  odate1=`get_date_x_years_before 1`
+  odate2=`get_date_x_years_before 1 $today`
+  check_equal "$odate1" "$odate2" "get_date_x_years_before default doesn't match explicit"
+  odate1=`get_date_x_years_after 10`
+  odate2=`get_date_x_years_after 10 $today`
+  check_equal "$odate1" "$odate2" "get_date_x_years_after default doesn't match explicit"
   end_test
 }
 
@@ -198,11 +205,18 @@ check_date_x_years_before() {
   dt=`get_date_x_years_before $1 "$2"`
   check_equal $dt `format_date "$3"` "get_date_x_years_before failed: $1 years from $2 should be \"$3\", got \"$dt\""
 }
+check_date_x_years_after() {
+  local dt
+  dt=`get_date_x_years_after $1 "$2"`
+  check_equal $dt `format_date "$3"` "get_date_x_years_after failed: $1 years after $2 should be \"$3\", got \"$dt\""
+}
 
 test_10_date_x_years_before() {
   start_test
-  check_date_x_years_before 1 '2001/11/1' 2000/11/1
-  check_date_x_years_before 5 '2011/8/5'  2006/8/5
+  check_date_x_years_before 1 2001/11/1 2000/11/1
+  check_date_x_years_before 5 2011/8/5  2006/8/5
+  check_date_x_years_after  1 2001/11/1 2002/11/1
+  check_date_x_years_after  5 2011/8/5  2016/8/5
   end_test
 }
 

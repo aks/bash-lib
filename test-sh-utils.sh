@@ -1,45 +1,73 @@
-#!/bin/sh
-# Copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
+#!/usr/bin/env bash
+# Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
 #
 # Test module for sh-utils.sh
 #
 export PATH=.:$PATH
 source sh-utils.sh
+source test-utils.sh
 
-echo "Testing basic functions"
 
-echo ">> talk with one argument"
+test_01_talk_basic() {
+  start_test
+  check_output talk1 'talk "one"'
+  check_output talk2 'talk "two"'
+  check_output talk3 'talk "three"'
+  end_test
+}
 
-talk "one"
-talk "two"
-talk "three"
+test_02_talk_advanced() {
+  start_test
+  check_output talk_w_2_args 'talk "one two three"'
+  check_output talk_w_2_args2 'talk one two three words'
+  end_test
+}
 
-echo ">> talk with more args"
+test_03_talk_varying_norun_verbose() {
+  check_output talk_with_varying_norun_verbose
+}
 
-talk "one two three"
-
-for norun in '' 1 ; do
-  for verbose in '' 1 ; do
-    echo -n 1>&2 "norun=$norun verbose=$verbose : vtalk says: "
-    vtalk "this is a test"
-    echo 1>&2
+talk_with_varying_norun_verbose() {
+  local norun verbose
+  for norun in '' 1 ; do
+    for verbose in '' 1 ; do
+      echo -n 1>&2 "norun=$norun verbose=$verbose : vtalk says: "
+      vtalk "this is a test"
+      echo 1>&2
+    done
   done
-done
+}
 
-echo "Testing talkf .."
+test_04_talkf_basic() {
+  start_test
+  check_output talkf_basic_test
+  end_test
+}
 
 wordlist=( the time has come to talk of ceiling wax and cabbages and kings )
 
-x=0
-while [[ $x -lt ${#wordlist[*]} ]]; do
-  word=${wordlist[$x]}
-  talkf "The %d word is '%s'\n" $x "$word"
-  x=$((x + 1))
-done
+talkf_basic_test() {
+  local x=0
+  for (( x=0; x < ${#wordlist[*]}; x++ )) ; do
+    word=${wordlist[$x]}
+    talkf "The %d word is '%s'\n" $x "$word"
+  done
+}
 
-echo $'\nTesting vtalkf ..'
+test_vtalkf_basic() {
+  start_test
+  check_output vtalkf_basic_test
+  end_test
+}
 
-verobse= norun=
-for verbose in '' 1 ; do
-  vtalkf "Verbose = %s\n" $verbose
-done
+vtalkf_basic_test() {
+  verobse= norun=
+  for verbose in '' 1 ; do
+    vtalkf "Verbose = %s\n" $verbose
+  done
+}
+
+init_tests "$@"
+run_tests
+summarize_tests
+exit

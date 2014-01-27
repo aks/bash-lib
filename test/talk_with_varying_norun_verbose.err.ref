@@ -1,0 +1,7 @@
+norun= verbose= : vtalk says: 
+norun= verbose=1 : vtalk says: this is a test
+
+norun=1 verbose= : vtalk says: this is a test
+
+norun=1 verbose=1 : vtalk says: this is a test
+

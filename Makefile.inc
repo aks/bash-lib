@@ -17,7 +17,7 @@
 #          the files will be installed.
 #
 
-SHELL=/bin/sh
+SHELL ?= /usr/local/bin/bash
 
 distuser ?= $$USER
 disthost ?= $(distuser)@$$DISTHOST
@@ -94,7 +94,7 @@ test tests: $(tests)
 	    echo '' ; echo "Testing $$file .." ; \
 	    case $$file in			\
 	    *.rb) ruby -I . $$file ;;		\
-	    *.sh) sh $$file ;;			\
+	    *.sh) $${SHELL:-bash} $$file ;;	\
 	    *.pl) perl $$file ;;		\
 	    *.py) python -I . $$file ;;		\
 	    *)	./$$file ;;			\

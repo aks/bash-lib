@@ -233,7 +233,7 @@ date_to_days_since_epoch() {
   echo $(( adays - days_at_epoch ))
 }
 
-# get_date_5_years-before [YYYY-MM-DD]
+# get_date_5_years_before [YYYY-MM-DD]
 #
 # get_date_last_quarter_end YYYY-MM-DD
 #
@@ -245,25 +245,25 @@ date_to_days_since_epoch() {
 # Get the date five years before the given date
 
 get_date_5_years_before() {
-  get_date_x_years_before 5
+  get_date_x_years_before 5 $1
 }
 
-# get_date_x_years_before [YEARSOFFSET] [YYYY-MM-DD] 
+# get_date_x_years_before YEARSOFFSET [YYYY-MM-DD]
+# get_date_x_years_after  YEARSOFFSET [YYYY-MM-DD]
+# get_date_x_years_since  YEARSOFFSET [YYYY-MM-DD]
 #
-# Get the date X years before the given date
+# Get the date X years before or after the given date
 
-get_date_x_years_before() {
+get_date_x_years_after() {
   local yoffset="${1:?'Missing number of years'}"
   shift
   local year month day
   parse_date "$@"
-  (( year -= yoffset )) # get X years ago
+  (( year += yoffset )) # get X years later/before
   print_date $year $month $day
 }
-
-get_date_x_years_since() {
-  get_date_x_years_before "-$1" "$@"
-}
+get_date_x_years_since()  { get_date_x_years_after "$@" ; }
+get_date_x_years_before() { get_date_x_years_after "-$@" ; }
 
 # get_date_last_quarter_end YYYY-MM-DD
 #

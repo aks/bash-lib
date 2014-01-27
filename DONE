@@ -14,8 +14,15 @@
 * test-list-utils.sh:
   - Fixed wordlist creation
   - Abstracted the "check_output" function.
+* test-sh-utils.sh
+  - reorganized to use test-util.sh
+  - encapsulated all tests within "test_" functions.
 * test-utils.sh:
   - Added "check_output" function to catpure & compare stdout/err.
   - added support for filtering test name by patterns on command line
   - added -k (keep) option for reference output retention
   - added -r (randomize) option to randomize the test order
+* Makefile.inc
+  - when invoking shell functions, use bash by default
+* test/*
+  - lots of captured new reference output

@@ -2,6 +2,7 @@
 # $Id$
 #
 
+SHELL = /usr/local/bin/bash
 bindirs = 
 bins =	
 

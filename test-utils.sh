@@ -116,14 +116,14 @@ init_tests() {
   TEST_tests=0
   TESTS=()
   TEST_check_status=()
-  test_details= verbose_errors= test_randomize= test_verbose= keep_ref_output=
+  test_details= verbose_errors= test_randomize= test_verbose= test_keep_ref_output=
   if [[ $# -gt 0 ]]; then
     set -- "$@"
     while getopts 'deknvrh' opt ; do
       case "$opt" in
         d) test_details=1 ;;
         e) verbose_errors=1 ;;
-        k) keep_ref_output=1 ;;
+        k) test_keep_ref_output=1 ;;
         h) TEST_usage;;
         n) norun=1 ;;
         r) test_randomize=1 ;;
@@ -132,7 +132,9 @@ init_tests() {
     done
     shift $(( OPTIND - 1 ))
     TEST_patterns=( "$@" )
-    printf "Keeping tests on stdout for future referece.\n"
+    if (( test_keep_ref_output )); then
+      printf "Saving stdout/stderr for future reference.\n"
+    fi
   fi
   gather_tests
 }
@@ -148,6 +150,7 @@ start_test() {
 
 TEST_check_start() {
   local check_name x
+  # find the first function name that does NOT begin with "TEST_"
   for ((x=1; x<${#FUNCNAME}; x++)) ; do
     check_name="${FUNCNAME[$x]}"
     if [[ "$check_name" != TEST_* ]]; then
@@ -182,7 +185,7 @@ TEST_check_end() {
 }
 
 end_test() {
-  TEST_update_status
+  (( test_verbose )) || TEST_update_status
   echo 1>&2 ''
 }
 
@@ -340,15 +343,29 @@ check_ne()      {   TEST_check_test "$1" -ne "$2" "$3" ; }
 check_ge()      {   TEST_check_test "$1" -ge "$2" "$3" ; }
 check_gt()      {   TEST_check_test "$1" -gt "$2" "$3" ; }
 
-# check_output NAME EXPRESSION ERROR
+# check_output [NAME] EXPRESSION [ERROR]
 #
-# Run EXPRESSION and capture the output, under NAME.  Compare it against a
-# previously stored output under the same NAME, if any.  Report differences.
+# Run EXPRESSION and capture the both stdout & stderr, under NAME.  Compare
+# them against previously stored output under the same NAME, if any.  Report
+# differences.
+#
 # If there is no previously stored output, save it if -k (keep) is set.
+#
+# Be wary of comparying time-varying output, such as dates & times: they will
+# always cause differences.
 
 check_output() {
-  local name="${1:?'Missing output name'}"
-  local expr="${2:?'Missing output-generating expression'}"
+  local name expr errm
+  if (( $# == 1 )); then
+    expr="$1" name="${1//[^a-zA-Z0-9_-]/}"
+  elif (( $# > 1 )) ; then
+    name="$1" expr="$2"
+  fi
+  if (( $# > 2 )); then
+    errm="$3"
+  else
+    errm="$name test failed; diffs in $diffout and $differr"
+  fi
   TEST_check_start
   local test_out_ok= test_err_ok= test_ok=1
   local out="test/$name.out"
@@ -357,20 +374,22 @@ check_output() {
   local errref="$err.ref"
   local diffout="$out.diff"
   local differr="$err.diff"
-  if (( keep_ref_output )); then
+  if (( test_keep_ref_output )); then
     out="$outref" err="$errref"
   fi
   eval "$expr 1>$out 2>$err"
   [[ -f "$outref" ]] || touch "$outref"
   [[ -f "$errref" ]] || touch "$errref"
-  #diff -w -U 0 $outref $out >$diffout && { test_out_ok=1 ; } || { test_ok= ; }
-  #diff -w -U 0 $errref $err >$differr && { test_err_ok=1 ; } || { test_ok= ; }
   TEST_compare_output $outref $out $diffout "test_out_ok=1" "test_ok="
   TEST_compare_output $errref $err $differr "test_err_ok=1" "test_ok="
-  TEST_check_end "$test_ok" "$name test failed"
+  TEST_check_end "$test_ok" "$errm"
 }
 
 # TEST_compare_output ref out diff GOODEXPR ERROREXPR
+#
+# Used by "check_output" to compare current and reference output.  If the
+# comparison is successful (no changes), evaluate GOODEXPR, otherwise, evaluate
+# ERROREXPR.
 
 TEST_compare_output() {
   local ref="$1"
@@ -378,7 +397,10 @@ TEST_compare_output() {
   local diff="$3"
   if diff -w -U 0 $ref $out >$diff ; then
     eval "$4"
-    rm "$out" "$diff"     # remove temp files
+    if (( ! test_keep_ref_output )); then
+      rm "$out" # remove temp files
+    fi
+    rm "$diff"
   else
     eval "$5"
   fi

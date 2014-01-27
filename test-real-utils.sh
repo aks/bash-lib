@@ -1,5 +1,5 @@
-#!/bin/bash
-# Copyright 2013, Alan K. Stebbens <aks@stebbens.org>
+#!/usr/bin/env bash
+# Copyright 2014, Alan K. Stebbens <aks@stebbens.org>
 #
 # test-real-utils.sh -- test the real-utils script
 

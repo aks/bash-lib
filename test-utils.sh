@@ -248,16 +248,38 @@ TEST_check() {
 TEST_check_expr() { TEST_check "$1" 1 '' "$2" ; }
 
 # TEST_check_size_func VAR FUNC VALUE [ERROR]
-TEST_check_size_func() { TEST_check_expr "test `list_size $1` $2 $3" "$4" ; }
+
+TEST_check_size_func() { 
+  local insize=`list_size $1`
+  TEST_check_test $insize $2 $3 "${4:-"Size check failed; got: $insize; should be: $3"}"
+}
 
 # TEST_check_item_func VAR INDEX OPERATOR VALUE [error]
 # Check a specific item of VAR at INDEX for OPERATOR VALUE
 
-TEST_check_item_func() { TEST_check_expr "test \"\${$1[$2]}\" $3 \"$4\"" "$5" ; }
+TEST_check_item_func() { 
+  local val
+  eval "val=\"\${$1[$2]}\""
+  TEST_check_test "$val" $3 "$4" "${5:-"Item check failed; got '$val', should be '$4'"}"
+}
 
-# TEST_check_test LVAL OP RVAL [ERROR]
-# Implied "test" function
-TEST_check_test() { TEST_check_expr "test \"$1\" $2 \"$3\"" "$4" ; }
+# TEST_check_key    VAR KEY [ERROR]
+# TEST_check_no_key VAR KEY [ERROR]
+# Check that a key exists (with a non-empty value), or does not exist, in a hash VAR
+
+TEST_check_key() {    TEST_check_test2 -n "\${$1[$2]}" "$3" ; }
+TEST_check_no_key() { TEST_check_test2 -z "\${$1[$2]}" "$3" ; }
+
+# TEST_check_key_value VAR KEY VALUE [ERROR]
+
+TEST_check_key_value() { TEST_check_test "\${$1['$2']}\"" '==' "$3" "$4" ; }
+
+# TEST_check_test  LVAL OP RVAL [ERROR]
+# TEST_check_test2      OP  VAL [ERROR]
+
+TEST_check_test()  { TEST_check_expr "test \"$1\" $2 \"$3\"" "$4" ; }
+TEST_check_test2() { TEST_check_expr "test        $1 \"$2\"" "$3" ; }
+TEST_check_test3() { TEST_check_test "$@" ; }
 
 ########
 
@@ -287,7 +309,7 @@ check_size_lt() { TEST_check_size_func "$1" -lt $2 "$3" ; }
 #
 # Check that the array VAR has size VAL
 
-check_size()    { check_size_eq   "$1"     $2 "$3" ; }
+check_size()    { check_size_eq   "$@" ; }
 
 # check_item_equal    VAR INDEX VAL ERROR
 # check_item_unequal  VAR INDEX VAL ERROR
@@ -297,17 +319,20 @@ check_item_unequal() { TEST_check_item_func $1 "$2" '!=' "$3" "$4" ; }
 
 check_item() { check_item_equal "$@" ; }
 
+# check_key VAR KEY [ERROR]
+check_key()    { TEST_check_key "$@" ; }
+check_no_key() { TEST_check_no_key "$@" ; }
+
+# check_key_value VAR KEY VALUE [ERROR]
+check_key_value() { TEST_check_key_value "$@" ; }
+
 # check_value VALUE [ERROR]
-#
-# Check that VALUE is not empty.
-
-check_value() { TEST_check_expr "test -n \"$1\"" "\"$2\"" ; }
-
 # check_empty VALUE [ERROR]
 #
-# Check that VALUE is empty
+# Check that VALUE is empty or not empty.
 
-check_empty() { TEST_check_expr "test -z \"$1\"" "\"$2\"" ; }
+check_value() { TEST_check_test2 -n "$1" "$2" ; }
+check_empty() { TEST_check_test2 -z "$1" "$2" ; }
 
 # TEST_check_func VALUE FUNC VALUE2 [ERROR]
 

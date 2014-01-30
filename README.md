@@ -7,6 +7,7 @@ Author: Alan K. Stebbens <aks@stebbens.org>
 
 * [date-util.sh](#date_utils)
 * [list-utils.sh](#list_utils)
+* [hash-utils.sh](#hash_utils)
 * [real-utils.sh](#real_utils)
 * [text-utils.sh](#text_utils)
 * [test-utils.sh](#test_utils)
@@ -219,6 +220,61 @@ error message.  NOTFOUNDMSG is the error message used in the case of error code
     found=`lookup_list words $word` || lookup_error $? $word \
           "'%s' is not a valid word" \
           "'%s" is an ambiguous word"
+
+hash-utils.sh <a id="hash_utils">
+-------------
+
+Hashes are associative arrays. Hashes have __keys__ and associated
+__values__.   Use this library to simplify and ease your use of
+associated arrays.
+
+These are the hash utilities:
+
+    hash_init VAR [DEFAULT]           # initialize VAR as an empty hash
+
+    hash_default VAR                  # return the default value for HASH
+
+    hash_set_default VAR DEFAULT      # set the default value for HASH
+
+    hash_put VAR KEY VAL ...          # insert KEY=>VAL into the hash
+    hash_set VAR KEY VAL              # alias to "hash_put"
+
+    hash_get  VAR KEY                 # get the Nth item of VAR to stdout
+
+    hash_delete VAR KEY               # delete VAR[KEY]
+
+    hash_delete_if VAR KEY CONDITION  # delete VAR[KEY} if CONDITION is true
+
+    hash_keys VAR                     # return all the keys in hash
+    hash_values VAR                   # return all the values in hash
+
+    hash_each VAR KEYVAR EXPR         # eval EXPR, setting KEYVAR to each key in VAR
+
+    hash_copy HASH NEWHASH KEY1 ...   # copy items at KEY1, .. from HASH1 to NEWHASH
+
+    in_hash VAR KEY                   # test if KEY is in the hash VAR
+    has_key VAR KEY
+    hash_member VAR KEY
+    hash_include VAR KEY
+
+    hash_size VAR                     # returns the number of key=>value pairs
+
+    hash_merge VAR1 VAR2              # merge key/value pairs from VAR2 with VAR1
+
+    hash_print HASHVAR [indent=INDENT] [width=WIDTH] [gutter=GUTTER] [cols=COLS] [sep=SEP]
+
+print the items in HASHVAR in vertically-sorted columns.  The number of columns
+is determined by COLS, if given, or by WIDTH (defaults to 80) divided by the
+maximum width of all items in HASHVAR.
+
+Use GUTTER blanks (default 2) to separate columns.
+
+If SEP is given, it is used to delimit columns intead of blanks.
+
+Each option may be abbreviated to its leading character (e.g., "g" for "gutter").
+
+    hash_help                             # describe the list functions
+
 
 real-utils.sh <a id="real_utils">
 -------------

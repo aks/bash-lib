@@ -1,4 +1,19 @@
+2014/01/29
+
+* hash-utils.sh:
+  - inception, based on ruby methods
+* test-all.sh
+  - run all tests named "test-*-*.sh"
+* test-utils.sh
+  - refactored for new usage in test-hash-utils.sh
+  - added more informative default error messages
+* test-hash-utils.sh
+  - new tests against hash-util functions.
+* README.md:
+  - updated with hash-utils info
+
 2014/01/26
+
 * date-utils.sh:
   - added EUROPEAN_DATES envar
   - renamed "date_arg" as "parse_date"

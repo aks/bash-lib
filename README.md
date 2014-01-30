@@ -278,89 +278,76 @@ Each option may be abbreviated to its leading character (e.g., "g" for "gutter")
 
 real-utils.sh <a id="real_utils">
 -------------
-enable real number arithmetic in bash scripts
+real-utils.sh is a bash library that enables real number arithmetic in bash
+scripts.  Real numbers are managed as flaoting point strings in the format
+"X.Y", where X is the integer portion, and "Y" is the fractional part.
 
-Copyright 2013 Alan K. Stebbens <aks@stebbens.org>
+Usage:
+
+    source real-utils.sh
+
+    real_eval "EXPRESSION" [SCALE]
+    real_cond EXPRESSION [SCALE]
+    real_int REAL
+    real_frac REAL
+
+Function Descriptions:
 
     real_eval "EXPRESSION" [SCALE]
 
-`EXPRESSION` is a real number expression using operators as described is the "bc"
-manual.  It is evaluated and the real numeric result is returned on the output.
-The return status is either 0 (for success) or non-zero for an error.
+The 0 bash function evaluates EXPRESSION using syntax, operators and
+functions as described is the "bc" manual.  All numbers and variables within
+EXPRESSION are interpreted by .  If 1 > 0, an error occured.
 
-If `SCALE` is given, it overrides the default scale factor, which is `$real_scale`.
+In addition to the operators and functions defined by , the following
+additional functions are also made available:
 
-Example:
-    pmt=`real_eval "m = p * ( j / (1 - (1 + j) ^ -n))"`
+    abs(x)           deg(x)           log10(x)         rad(x)
+    acos(x)          exp(x)           logn(x)          round(x,s)
+    asin(x)          frac(x)          ndeg(x)          sin(x)
+    atan(x)          int(x)           pi()             tan(x)
+    cos(x)           log(x)           pow(x,y)
 
 
     real_cond "EXPRESSION" [SCALE]
 
-`EXPRESSION` is a real number conditional which should evaluate to 1 or 0
-
-Example:
-    if real_cond "$num > 10.0" ; then
-       ...
-    fi
-
+EXPRESSION is a real number conditional which should evaluate to 1 or 0.  The
+return status is 0 for true, 1 for false.
 
     real_scale=NUM
 
-Set the precision of real number arithmetic results.   The default is 2.
+Set the precision of subsequent real number arithmetic results.   The
+default is 2.
 
-The real-utils uses the `bc` tool to accomplish its calculations.  
+    real_int  REAL          -- outputs the integer portion of a REAL number
+    real_frac  REAL         -- outputs the fractional portion of a REAL number
 
-In addition to normal arithmetic expressions (+ - * / %), including the power
-function (^) which can be used within the expression passed to `real_eval`, the
-following functions area also defined:
+    real_help               -- show this help
 
-    int(x)   -- return the integer portion of a real number
-    frac(x)  -- return the fractional portion of a real number
+Bash scripts that perform arithmetic functions:
 
-    sin(x)   -- sine of x (in radians)
-    cos(x)   -- cosine of x (in radians)
-    tan(x)   -- tangent of x
+    sin R, cos R, tan R     -- trig functions on radians R
+    asin X, acos X, atan X  -- inverse trig functions
+    cotan X, sec X, cosec X -- cotangent, secant, cosecant
+    arccot X                -- arc-cotangent
+    hypot X Y               -- hypotenuse X, Y [sqrt(X^2 + Y^2)]
+    sqrt X                  -- square-root of X
+    logn X, log X           -- natural log, log base 10
+    exp X                   -- exponent X of E (e.g., e^X)
+    pow X Y                 -- power function [X^Y]
+    rad D                   -- convert degrees D to radians
+    deg R                   -- convert radians R to degrees
+    ndeg R                  -- convert radians R to natural degrees (0..360)
+    round X S               -- Round X to S decimals.  When S=0, rounds to the nearest integer.
+    real_int X              -- outputs integer portion of X
+    real_frac X             -- outputs fractional portion of X
+    abs X                   -- Return the absolute value of X.
 
-    asin(x)  -- arcsine of x
-    acos(x)  -- arccosine of x
-    atan(x)  -- arctangent of x
+Constants:
 
-    rad(x)   -- convert degress to radians
-    deg(x)   -- confert radians to degress
-
-    round(x,y)  -- round x at the yth decimal
-
-    pi()     -- the value of PI
-
-Example:
-
-    real_eval("int($x)/3")
-
-The following shell functions are also defined:
-
-    sin x     -- the sine of X (in radians)
-    cos x     -- the cosine of X (in radians)
-    tan x     -- the tangent of X
-    rad x     -- convert x in degrees to radians
-    deg x     -- convert x in radians to degrees
-    logn x    -- return the natural (base e) logarithm of X
-    log10 x   -- return the base 10 log of x
-    exp x     -- return e^x
-    round x   -- round up x
-    round x,y -- round x at the Yth decimal
-
-These shell variables are defined:
-
-    PI='3.141592653589793'
-    TAU='6.283185307179586'
-    E='2.718281828459045'
-
-
-There is a sample script to compute mortgage payments, one which uses `awk`
-and the other which uses the `real-utils.sh` functions.
-
-    mort.sh   -- compute mortgage payments using `awk`
-    mort2.sh  -- compute mortgage payments using `real-utils.sh`
+    PI   = 3.141592653589793
+    TAU  = 6.283185307179586   # 2*PI
+    E    = 2.718281828459045
 
 sh-utils.sh <a id="sh_utils">
 -----------

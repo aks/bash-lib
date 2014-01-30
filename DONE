@@ -9,8 +9,11 @@
   - added more informative default error messages
 * test-hash-utils.sh
   - new tests against hash-util functions.
+* real-utils.sh
+  - added real_help function; updated the docs
 * README.md:
   - updated with hash-utils info
+  - updated with new real-utils info
 
 2014/01/26
 

@@ -2,34 +2,76 @@
 # real-utils.sh
 #
 # Copyright 2013 Alan K. Stebbens <aks@stebbens.org>
-#
-# enable real number arithmetic in bash scripts
-#
-#  real_eval "EXPRESSION" [SCALE]
-#
-#    EXPRESSION is a real number expression using operators as described
-#    is the "bc" manual.
-#
-#  real_cond "EXPRESSION" [SCALE]
-#
-#    EXPRESSION is a real number conditional which should evaluate to 1 or 0
-#
-# real_scale=NUM
-#
-#    Set the precision of real number arithmetic results.   The default is 2.
-#
-# real_int  REAL
-#
-#   returns the integer portion of a REAL number
-#
-# real_frac  REAL
-#
-#   returns the fractional portion of a REAL number
-#
-# Math functions on real numbers:
-#
-#  sin X, cos X, tan X, sqrt X, loge X, log10 X, exp X
-#
+
+real_help() {
+  cat <<EOF
+real-utils.sh is a bash library that enables real number arithmetic in bash
+scripts.  Real numbers are managed as flaoting point strings in the format
+"X.Y", where X is the integer portion, and "Y" is the fractional part.
+
+Usage:
+
+   source real-utils.sh
+
+   real_eval "EXPRESSION" [SCALE]
+   real_cond EXPRESSION [SCALE]
+   real_int REAL
+   real_frac REAL
+
+Function Descriptions:
+
+real_eval "EXPRESSION" [SCALE]
+
+    The `real_eval` bash function evaluates EXPRESSION using syntax, operators and
+    functions as described is the "bc" manual.  All numbers and variables within
+    EXPRESSION are interpreted by `bc`.  If $? > 0, an error occured.
+
+    In addition to the operators and functions defined by `bc`, the following
+    additional functions are also made available:
+
+    abs(x)           deg(x)           log10(x)         rad(x)
+    acos(x)          exp(x)           logn(x)          round(x,s)
+    asin(x)          frac(x)          ndeg(x)          sin(x)
+    atan(x)          int(x)           pi()             tan(x)
+    cos(x)           log(x)           pow(x,y)
+
+real_cond "EXPRESSION" [SCALE]
+
+    EXPRESSION is a real number conditional which should evaluate to 1 or 0.  The
+    return status is 0 for true, 1 for false.
+
+real_scale=NUM
+
+    Set the precision of subsequent real number arithmetic results.   The
+    default is 2.
+
+real_int  REAL          -- outputs the integer portion of a REAL number
+real_frac  REAL         -- outputs the fractional portion of a REAL number
+
+sin R, cos R, tan R     -- trig functions on radians R
+asin X, acos X, atan X  -- inverse trig functions
+cotan X, sec X, cosec X -- cotangent, secant, cosecant
+arccot X                -- arc-cotangent
+hypot X Y               -- hypotenuse X, Y [sqrt(X^2 + Y^2)]
+sqrt X                  -- square-root of X
+logn X, log X           -- natural log, log base 10
+exp X                   -- exponent X of E (e.g., e^X)
+pow X Y                 -- power function [X^Y]
+rad D                   -- convert degrees D to radians
+deg R                   -- convert radians R to degrees
+ndeg R                  -- convert radians R to natural degrees (0..360)
+round X S               -- Round X to S decimals.  When S=0, rounds to the nearest integer.
+real_int X              -- outputs integer portion of X
+real_frac X             -- outputs fractional portion of X
+abs X                   -- Return the absolute value of X.
+
+    PI   = 3.141592653589793
+    TAU  = 6.283185307179586   # 2*PI
+    E    = 2.718281828459045
+
+EOF
+}
+help_real() { real_help ; }
 
 # Default scale used by real functions.
 [[ -n "$real_scale" ]] || export real_scale=2
@@ -76,7 +118,7 @@ EOF
 #
 # Performs evaluation of an arithmentic expression, supporting real numbers.
 #
-# $? == 0 => bad calculation
+# $? == 1 => bad calculation
 
 real_eval()
 {

@@ -1,0 +1,83 @@
+.Dd Feb 17, 2014
+.Dt calfunc 1
+.Os
+.Sh NAME
+.Nm calfunc
+.Nd Program to exercise and display various Calendar functions
+.Sh SYNOPSIS
+.Nm calfunc
+.Op Fl dhinv
+.Ar command argument
+.Sh DESCRIPTION
+The
+.Nm calfunc
+program reads various calendar commands and arguments from the command line or from 
+.Nm stdin ,
+and executes them.
+.Pp
+.Nm caltest 
+performs date calculations using the 
+.Nm 'calfaq' 
+C library.
+.Pp
+Options:
+.Bl -tag -width indent
+.It Fl d
+Debug mode
+.It Fl h
+show this help
+.It Fl i
+interactive mode -- read commands from
+.Va STDIN
+.It Fl n
+no run: don't compute, just show the parsed tokens
+.It Fl v
+verbose (talk a lot)
+.El
+.Pp
+Commands: 
+.Pp 
+The commands may be given as unique abbreviations, or
+as the specific alternative.
+.Pp
+.Bl -column 15 "Command   " "Alt" " Argument" "Function"
+.It Sy Command      Ta Sy Alt Ta Sy Argument Ta Sy Function
+.It Ic julian       Ta Ic j  Ta DATE Ta convert DATE to Julian days
+.It Ic "date "      Ta Ic d  Ta JDN  Ta convert Julian Day Number (JDN) into a date
+.It Ic absdays      Ta Ic a  Ta DATE Ta convert DATE to absolute days
+.It Ic weeknum      Ta Ic wn Ta Ar "DATE|JDN" Ta the weeknum for the given DATE/JDN
+.It Ic weekday      Ta Ic wd Ta Ar "DATE|JDN" Ta The weekday for the given DATE/JDN
+.It Ic leapyear     Ta Ic ly Ta YEAR Ta waether or not YEAR is a leap year
+.It Ic solarnum     Ta Ic sn Ta YEAR Ta the solar number of YEAR
+.It Ic epact        Ta Ic ep Ta YEAR Ta the epact for YEAR
+.It Ic pashcalmoon  Ta Ic pm Ta YEAR Ta the date of the Paschal full moon
+.It Ic easter       Ta Ic e  Ta YEAR Ta The date of Easter for an absolute YEAR
+.It Ic eastersunday Ta Ic es Ta YEAR Ta Easter Sunday (Gregorian Calendar) for YEAR
+.It Ic julianperiod Ta Ic jp Ta YEAR Ta the Julian Year for the given absolute YEAR
+.El
+.Pp
+The 
+.Nm DATE 
+can be in any of the following formats:
+.Bl indent
+.It YYYY-MM-DD
+.It MM/DD/YYYY
+.It DD.MM.YYYY
+.It DD-MMM-YYYY
+.It MMMM DD, YYYY
+.It DDD MMM DD HH:MM:SS YYYY TZONE
+.El
+
+\.".Sh FILES
+
+\.".Sh SEE ALSO
+
+\.".Sh HISTORY
+
+The 
+.Nm calfaq.c 
+library functions are copyright (c) 2008 by Claus Tondering (claus@tondering.dk).
+
+.Sh AUTHOR
+
+Alan K. Stebbens <aks@stebbens.org>

@@ -1,7 +1,15 @@
 #!/bin/bash
 # real-utils.sh
 #
-# Copyright 2013 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2014 Alan K. Stebbens <aks@stebbens.org>
+
+# Don't read ourselves multiple times
+
+[[ -n "$REAL_UTILS" ]] && return 0
+
+REAL_UTILS_VERSION="real-utils.sh v1.1"
+
+export REAL_UTILS="$REAL_UTILS_VERSION"
 
 real_help() {
   cat <<EOF

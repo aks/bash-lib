@@ -73,9 +73,49 @@
 #     ERROR is optional.
 #     XX above can be: eq, ne, lt, le, gt, ge
 #
+#  Output tests
+#
+#    check_output [NAME] EXPRESSION [ERROR]
+#
+#          Evaluate EXPRESSION and compare its output against a previously
+#          collected reference output.  If the output matches, the test
+#          succeeds.  If the output does not match, print ERROR or a default
+#          error message.
+#
+#          Use NAME as the unique identifier for files in which the stdout,
+#          stderr, and reference output is identified.
+#
+#          Reference output can be created by the '-k' ($keep) option when the
+#          test is run.
+#
+#          The first time a new check_output test is evaluated, there will not
+#          be a collected reference output to compare against, and the test
+#          will fail.
+#
+#    check_out      [NAME] EXPRESSION [ERROR]
+#    check_out_none [NAME] EXPRESSION [ERROR]
+#    check_err      [NAME] EXPRESSION [ERROR]
+#    check_err_none [NAME] EXPRESSION [ERROR]
+#
+#         Check that STDOUT or STDERR is or is not empty when evaluating
+#         EXPRESSION, or show the ERROR (or default) message.
+#
+#    check_out_eq   [NAME] EXPRESSION VALUE [ERROR]
+#    check_err_eq   [NAME] EXPRESSION VALUE [ERROR]
+#
+#         Check that the STDOUT, or STDERR of the evaluated EXPRESSION matches
+#         "VALUE", or show the ERROR (or a default error message).
+#
+#    check_out_ne [NAME] EXPRESSION VALUE [ERROR]
+#    check_err_ne [NAME] EXPRESSION VALUE [ERROR]
+#
+#         Check that the STDOUT or STDERR of the evaluated EXPRESSION does not
+#         contain "VALUE", or show the ERROR.
+#
+#
 #  Alan K. Stebbens <aks@stebbens.org>
 
-TEST_UTILS_VERSION="test-utils.sh v1.6"
+TEST_UTILS_VERSION="test-utils.sh v1.7"
 [[ "$TEST_UTILS_SH" = "$TEST_UTILS_VERSION" ]] && return
 export TEST_UTILS_SH="$TEST_UTILS_VERSION"
 
@@ -430,6 +470,40 @@ TEST_compare_output() {
     eval "$5"
   fi
 }
+
+# check_out NAME EXPR ERROR
+check_out() {
+ :
+}
+# check_out_none NAME EXPR ERROR
+check_out_none() {
+  :
+}
+# check_err NAME EXPR ERROR
+check_err() {
+  :
+}
+# check_err_none NAME EXPR ERROR
+check_err_none() {
+  :
+}
+# check_out_eq NAME EXPR VALUE ERROR
+check_out_eq() {
+  :
+}
+# check_out_ne NAME EXPR VALUE ERROR
+check_out_ne() {
+  :
+}
+# check_err_eq NAME EXPR VALUE ERROR
+check_err_eq() {
+  :
+}
+# check_err_ne NAME EXPR VALUE ERROR
+check_err_ne() {
+  :
+}
+
 
 # TEST_error_dump ERROR
 #

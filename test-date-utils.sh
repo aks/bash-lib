@@ -11,30 +11,28 @@ source test-utils.sh
 
 . date-utils.sh
 
-known_dates=( 0001-1-1       1
-              1492-1-1  544577
-              1492-3-1  544637
-              1776-1-1  648306
-              1776-3-1  648366
-              1776-7-4  648491 
-            )
+testdata='test-dates.dat'
+
 
 test_01_conversion_equivalencies() {
   start_test
-  last_days=
-  for ((year=1; year<=2082; year+=100)) ; do
-    for month in 1 3 ; do
+  last_adays='-1'
+  for ((year=1; year<=2082; year+=300)) ; do
+    for month in 1 2 3 6 9 12; do
       mdays=`last_day_of_month $year $month`
-      for day in 1 15 $mdays ; do
+      for day in 1 15 25 $mdays ; do
         date1=`printd $year $month $day`
-        days=`date_to_abs_days $date1`
-        check_value "$days"         "Empty days!?"              # should never be empty
-        if [[ -n "$last_days" ]]; then
-          check_gt $days $last_days "Days failed to increase"   # should keep incrementing
-        fi
-        last_days=$days
-        date2=`abs_days_to_date $days`
-        check_equal "$date1" "$date2" "Bad conversion"
+        adays=`date_to_adays $date1`
+        check_value "$adays"         "Empty days!?"              # should never be empty
+        check_lt $last_adays $adays  "ADays should increase"
+        last_adays=$adays
+        date2=`adays_to_date $adays`
+        check_value "$date1" "$date2" "ADays conversion failed: $date1 vs. $date2"
+        jdays=`date_to_jdays $date1`
+        date3=`jdays_to_date $jdays`
+        check_equal "$date1" "$date3" "Bad conversion: $date1 vs. $date3"
+        date4=`date_to_jdays $date1 | jdays_to_date`
+        check_equal "$date1" "$date4" "Bad pipe conversion: $date1 vs. $date4"
       done
     done
     # echo ''
@@ -42,22 +40,23 @@ test_01_conversion_equivalencies() {
   end_test
 }
 
-test_02_known_dates() {
+test_02_test_dates() {
   start_test
-  check_gt "$dates_count" 0
-  limit="${#known_dates[@]}"
-  for ((x=0; x<${#known_dates[@]}; x+=2)); do
-    date_in="${known_dates[$x]}" 
-    days_in="${known_dates[$x+1]}"
+  check_true "test -f $testdata" "Test file '$testdata' does not exist"
+  local tdate tadays tjdays
+  while read tdate tadays tjdays ; do
+    if [[ -z "$tdate" ]]; then break ; fi
     if (( verbose )) ; then
-      echo 1>&2 $'\n'"testing $date_in and $days_in .."
+      echo ''
+      echo "ref date  = $tdate"
+      echo "ref adays = $tadays"
+      echo "ref jdays = $tjdays"
     fi
-    days_out=`date_to_abs_days $date_in`
-    check_eq $days_out $days_in "Incorrect conversion of $date_in; should be: $days_in ; was $days_out"
-    date_out=`abs_days_to_date $days_in`
-    fmt_date_in=`print_date $date_in`
-    check_equal $date_out $fmt_date_in "Incorrect conversion of $days_in; should be: $fmt_date_in; was $date_out"
-  done
+    jdays=`date_to_jdays $tdate`
+    adays=`date_to_adays $tdate`
+    check_equal "$jdays" "$tjdays" "Wrong jdays for $tdate: got $jdays; should be $tjdays"
+    check_equal "$adays" "$adays"  "Wrong adays for $tdate: got $adays; should be $tadays"
+  done <$testdata
   end_test
 }
 
@@ -203,12 +202,12 @@ test_09_last_day_of_month() {
 check_date_x_years_before() {
   local dt
   dt=`get_date_x_years_before $1 "$2"`
-  check_equal $dt `format_date "$3"` "get_date_x_years_before failed: $1 years from $2 should be \"$3\", got \"$dt\""
+  check_equal $dt `print_date "$3"` "get_date_x_years_before failed: $1 years from $2 should be \"$3\", got \"$dt\""
 }
 check_date_x_years_after() {
   local dt
   dt=`get_date_x_years_after $1 "$2"`
-  check_equal $dt `format_date "$3"` "get_date_x_years_after failed: $1 years after $2 should be \"$3\", got \"$dt\""
+  check_equal $dt `print_date "$3"` "get_date_x_years_after failed: $1 years after $2 should be \"$3\", got \"$dt\""
 }
 
 test_10_date_x_years_before() {
@@ -219,9 +218,6 @@ test_10_date_x_years_before() {
   check_date_x_years_after  5 2011/8/5  2016/8/5
   end_test
 }
-
-(( dates_count=${#known_dates[@]} / 2 ))
-echo 1>&2 "$dates_count date-day pairs defined."
 
 init_tests "$@"
 run_tests

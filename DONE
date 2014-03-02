@@ -1,3 +1,18 @@
+2014/03/01
+* calfaq/ 
+  calfaq/calfunc.c
+  - added reference code to compute julian/absolute day numbers.
+* gen-test-dates.sh:
+  - creates "test-dates.dat" file using 500 random dates.
+* date-utils.sh:
+  - rewritten date_to_jdays, date_to_adays, and reciprocal functions.
+* test-date-utils.sh:
+  - incorporate new changes.
+* calendar.l:
+  - a reference Lisp library for calendrical calculations.
+* calendar-utils.sh:
+  - a bash implemnentation of calendar.l, but not used anywhere else yet.
+
 2014/01/29
 
 * hash-utils.sh:

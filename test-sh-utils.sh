@@ -54,7 +54,7 @@ talkf_basic_test() {
   done
 }
 
-test_vtalkf_basic() {
+test_05_vtalkf_basic() {
   start_test
   check_output vtalkf_basic_test
   end_test
@@ -65,6 +65,33 @@ vtalkf_basic_test() {
   for verbose in '' 1 ; do
     vtalkf "Verbose = %s\n" $verbose
   done
+}
+
+numarg_test_func() {
+  local arg=`numarg_or_input "$1"`
+  echo "$arg"
+}
+
+args_test_func() {
+  local args=( `args_or_input "$@"` )
+  echo "${args[@]}"
+}
+
+test_10_num_args_or_input() {
+  start_test
+  local num=`numarg_test_func 62`
+  check_eq "$num" 62 "numarg_test_func failed on arg 62"
+  local num=`echo 229 | numarg_test_func`
+  check_eq "$num" 229 "numarg_test_func failed on stdin 229"
+  local args=()
+  testdata="foo bar bif baf"
+  args=( `args_test_func $testdata ` )
+  check_size args 4 "args is the wrong size"
+  check_equal "${args[*]}" "$testdata" "args_test_func failed on arg input"
+  args=( )
+  args=( `echo foo bar bif baf | args_test_func` )
+  check_equal "${args[*]}" "$testdata" "args_test_func failed on stdin"
+  end_test
 }
 
 init_tests "$@"

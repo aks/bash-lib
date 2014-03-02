@@ -62,9 +62,15 @@ join_list VAR [SEP] ..               # join the items in VAR into a list, separa
 join_list                            # read STDIN and catenate lines; remove trailing NL
 
 lookup_list LISTVAR KEY              # lookup KEY in LISTVAR
-grep_list LISTVAR PAT                # grep PAT across LISTVAR
+grep_list   LISTVAR PAT              # grep PAT across LISTVAR
 
+map_list    LISTVAR EXPR             # create a list of EXPR applied to each item in LISTVAR
 reduce_list LISTVAR EXPR [INIT]      # reduce LISTVAR using EXPR, with initial value INIT
+
+sum_list LISTVAR                     # sum the items in LISTVAR
+max_list LISTVAR                     # return the maximum item in LISTVAR
+min_list LISTVAR                     # return the minimum item in LISTVAR
+avg_list LISTVAR                     # return the average of the items in LISTVAR
 
 print_list LISTVAR [indent=INDENT] [width=WIDTH] [sep=SEP] [cols=COLS]
 print_list LISTVAR [i=INDENT] [w=WIDTH] [s=SEP]  [c=COLS]
@@ -575,6 +581,11 @@ max_list() {
 min_list() {
   local listvar="${1:-Missing list variable name}"
   reduce_list $listvar 'a >= b ? b : a'
+}
+
+sum_list() {
+  local listvar="${1:-Missing list variable name}"
+  reduce_list $listvar 'a + b'
 }
 
 avg_list() {

@@ -12,15 +12,15 @@ Author: Alan K. Stebbens <aks@stebbens.org>
 * [text-utils.sh](#text_utils)
 * [test-utils.sh](#test_utils)
 
-date-util.sh <a id="date_utils">
+date-util.sh <a name="date_utils" id="date_utils">
 -------------
 
 The `date-utils` library enables easy management of dates and its year, month,
 and day components.  A variety of date formats are supported both on input
 parsing, and on output formatting.  The envar `EUROPEAN_DATES` controls how the
 format `NN/NN/NNNN` is interpreted: if set to 1, that format is taken to mean
-"DD/MM/YYYY", where DD is the day of the month; otherwise, it is parsed as
-'MM/DD/YYYY'.
+`DD/MM/YYYY`, where DD is the day of the month; otherwise, it is parsed as
+`MM/DD/YYYY`.
 
     date_parse [DATESTRING]
     date_arg   [DATESTRING]
@@ -72,13 +72,13 @@ arguments, or a single string argument, which must be parseable by
 
     jdays_to_date JDAYS
 
-Converts JDAYS (a Julian day number) into the corresponding date.  If the date
-is greater than October 10, 1584, then the Gregorian calendar is used,
+Converts `JDAYS` (a Julian day number) into the corresponding date.  If the
+date is greater than October 10, 1584, then the Gregorian calendar is used,
 otherwise the Julian calendar is used for earlier dates.
 
     adays_to_date ABSDAYS
 
-Converts ABSDAYS into a date formatted by `print_date`.
+Converts `ABSDAYS` into a date formatted by `print_date`.
 
     adays_to_jdays ADAYS
     jdays_to_adays JDAYS
@@ -87,19 +87,19 @@ These functions convert from absolute days to Julian day number, and vice-versa.
 
     weeknumber [DATESTRING | YYYY MM DD]
 
-Returns the week number for the given DATESTRING or DATE.
+Returns the week number for the given `DATESTRING` or date components.
 
     date_to_weekday_name [DATESTRING | YYYY MM DD]
 
-Returns the weekday name for the given DATESTRING or DATE.
+Returns the weekday name for the given `DATESTRING` or date components.
 
     date_to_weekday_num [DATESTRING | YYYY MM DD]
 
-Returns the wekday number (0..6) for the given DATESTRING or DATE.
+Returns the wekday number (0..6) for the given `DATESTRING` or date components.
 
     date_day_num [DATESTRING | YYYY MM DD]
 
-Returns the day number for the given DATESTRING or DATE.
+Returns the day number for the given `DATESTRING` or date components.
 
     date_format [FORMAT] YYYY MM DD
     date_format [FORMAT] YYYY-MM-DD
@@ -110,7 +110,7 @@ argument in any of the parsable date formats, and reformats into the default
 date format, given by `DATE_FORMAT`.  If `DATE_FORMAT` is not defined, the format
 `%F` is used.  (See `man strftime` for details).
 
-list-utils.sh <a id="list_utils">
+list-utils.sh <a name="list_utils" id="list_utils">
 -------------
 
 bash script utilities for managing lists of things
@@ -218,7 +218,7 @@ error message.  NOTFOUNDMSG is the error message used in the case of error code
           "'%s' is not a valid word" \
           "'%s" is an ambiguous word"
 
-hash-utils.sh <a id="hash_utils">
+hash-utils.sh <a name="hash_utils" id="hash_utils">
 -------------
 
 Hashes are associative arrays. Hashes have __keys__ and associated
@@ -260,20 +260,20 @@ These are the hash utilities:
 
     hash_print HASHVAR [indent=INDENT] [width=WIDTH] [gutter=GUTTER] [cols=COLS] [sep=SEP]
 
-print the items in HASHVAR in vertically-sorted columns.  The number of columns
-is determined by COLS, if given, or by WIDTH (defaults to 80) divided by the
-maximum width of all items in HASHVAR.
+print the items in `HASHVAR` in vertically-sorted columns.  The number of
+columns is determined by `COLS`, if given, or by `WIDTH` (defaults to 80)
+divided by the maximum width of all items in `HASHVAR`.
 
-Use GUTTER blanks (default 2) to separate columns.
+Use `GUTTER` blanks (default 2) to separate columns.
 
-If SEP is given, it is used to delimit columns intead of blanks.
+If `SEP` is given, it is used to delimit columns intead of blanks.
 
 Each option may be abbreviated to its leading character (e.g., "g" for "gutter").
 
     hash_help                             # describe the list functions
 
 
-real-utils.sh <a id="real_utils">
+real-utils.sh <a name="real_utils" id="real_utils">
 -------------
 real-utils.sh is a bash library that enables real number arithmetic in bash
 scripts.  Real numbers are managed as flaoting point strings in the format
@@ -292,9 +292,9 @@ Function Descriptions:
 
     real_eval "EXPRESSION" [SCALE]
 
-The 0 bash function evaluates EXPRESSION using syntax, operators and
-functions as described is the "bc" manual.  All numbers and variables within
-EXPRESSION are interpreted by .  If 1 > 0, an error occured.
+The 0 bash function evaluates `EXPRESSION` using syntax, operators and
+functions as described is the `bc` manual.  All numbers and variables within
+`EXPRESSION` are interpreted by .  If 1 > 0, an error occured.
 
 In addition to the operators and functions defined by , the following
 additional functions are also made available:
@@ -308,7 +308,7 @@ additional functions are also made available:
 
     real_cond "EXPRESSION" [SCALE]
 
-EXPRESSION is a real number conditional which should evaluate to 1 or 0.  The
+`EXPRESSION` is a real number conditional which should evaluate to 1 or 0.  The
 return status is 0 for true, 1 for false.
 
     real_scale=NUM
@@ -346,7 +346,7 @@ Constants:
     TAU  = 6.283185307179586   # 2*PI
     E    = 2.718281828459045
 
-sh-utils.sh <a id="sh_utils">
+sh-utils.sh <a name="sh_utils" id="sh_utils">
 -----------
 handy functions for writing bash-based scripts
 
@@ -365,7 +365,7 @@ If `$norun` or `$verbose` are set, print (or printf) all args on `STDERR`.
     nvtalk MSG 
     nvtalkf FMT ARGS ..
 
-Print (or printf) all arguments on `STDERR` unless $verbose is set.
+Print (or printf) all arguments on `STDERR` unless `$verbose` is set.
 
     nqtalk MSG
     nqtalkf FMT ARGS ...
@@ -397,7 +397,7 @@ Add `CMD` to the trap list for `SIGNAL`, while ensuring that it is not repeated.
 Return 0 (true) if `FUNCNAME` is a valid function, otherwise return 1 (false).
 
 
-text-utils.sh <a id="text_utils">
+text-utils.sh <a name="text_utils" id="text_utils">
 -------------
 Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
 
@@ -423,7 +423,7 @@ The following functions are provided by this library:
     html_decode [STRING]      # decode sTRING (or STDIN) from HTML presentation
 
 
-test-utils.sh <a id="test_utils">
+test-utils.sh <a name="test_utils" id="test_utils">
 -------------
 Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
 

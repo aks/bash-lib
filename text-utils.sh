@@ -1,7 +1,7 @@
 #!/bin/bash
 # text-utils.sh -- utilities for processing text
 #
-# Copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
 
 TEXT_UTILS_VERSION="text-utils.sh v1.3"
 [[ "$TEXT_UTILS_SH" = "$TEXT_UTILS_VERSION" ]] && return

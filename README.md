@@ -15,103 +15,100 @@ Author: Alan K. Stebbens <aks@stebbens.org>
 date-util.sh <a id="date_utils">
 -------------
 
-This file is a list of functions that make it easier to manage dates
-and conversions in bash scripts.  For example, if your bash script
-reads a date argument on the command line, the `date_arg` function
-is very handy to convert the string date format into an integer
-representing the day of the Epoch.
+The `date-utils` library enables easy management of dates and its year, month,
+and day components.  A variety of date formats are supported both on input
+parsing, and on output formatting.  The envar `EUROPEAN_DATES` controls how the
+format `NN/NN/NNNN` is interpreted: if set to 1, that format is taken to mean
+"DD/MM/YYYY", where DD is the day of the month; otherwise, it is parsed as
+'MM/DD/YYYY'.
 
-Usage:
+    date_parse [DATESTRING]
+    date_arg   [DATESTRING]
 
-    source date-util.sh
+Parse `DATESTRING` in one of several recognized formats: `YYYY-MM-DD`,
+`YYYY.MM.DD`, `YYYY/MM/DD`, `YYYY MM DD`, `MM DD YYYYY`, `DD.MM.YYYY`, and `DD
+MM YYYYY` (if `EUROPEAN_DATES` is set).  If the `DATESTRING` is successfully
+parsed, the variables `year`, `month`, and `day` are set to their respective
+numbers.  `date_arg` is another name for the same function.
 
-Functions: 
-----------
+If `DATESTRING` is empty, a line of input from STDIN is read and used instead.
 
-    date_arg YYYY-MM-DD 
-    date_arg YYYY MM DD
+    month_number MONTHNAME
+    month_num    MONTHNAME
 
-set year, month, and days
+Given a month name, output it's index.
 
-    days_in_month MM 
+    days_in_month MONTH
 
-where MM = 01 .. 12 , or Jan, Feb, ...,  or Ja, Fe, .. 
+The `days_in_month` function converts a month number or name (spelled out or
+abbreviated) into a number of days corresponding to that month (not including
+leap-year effects).  Example: `days_in_month Feb` ==> 28
 
-    is_leap_year YYYY 
+    days_in_month[M]
 
-Returns 0 (true) if YYYY is a leap year; 1 (false) otherwise
+Array of integers, indexed by month number, corresponding to the number of
+days in the given month `M`.
 
-    last_day_of_month yyyy mm
-    date_to_abs_days YYYY MM DD
-    date_to_abs_days YYYY-MM-DD
+    days_before_month[M]
 
-Date must be in YYYY-MM-DD (or YYYY/MM/DD or YYYY.MM.DD) format
+Array of integers representing the number of days from the beginning of the
+year up to the month `M`.
 
-    abs_days_to_date  DAYS
+    is_leap_year YEAR
 
-returns YYYY-MM-DD
+Return 0 (true) if `YEAR` is a leap year; return 1 (false) otherwise.
 
-    abs_days_to_date ABSDAYS
+    last_day_of_month YYYY MM
 
-date is returned in YYYY-MM-DD format
+Return the last day of the month corresponding to year `YYYY` and month `MM`.
 
-Algorithm from "Calendrical Calculations", by Nachum Dershowitz and Edward M. Reingold
+    date_to_adays YYYY MM DD
+    date_to_adays YYYY-MM-DD
 
-```lisp
-  (let* ((d0 (1- date))
-         (n400 (/ d0 146097))
-         (d1 (% d0 146097))
-         (n100 (/ d1 36524))
-         (d2 (% d1 36524))
-         (n4 (/ d2 1461))
-         (d3 (% d2 1461))
-         (n1 (/ d3 365))
-         (day (1+ (% d3 365)))
-         (year (+ (* 400 n400) (* 100 n100) (* n4 4) n1)))
-    (if (or (= n100 4) (= n1 4))
-        (list 12 31 year)
-      (let ((year (1+ year))
-            (month 1))
-        (while (let ((mdays (calendar-last-day-of-month month year)))
-                 (and (< mdays day)
-                      (setq day (- day mdays))))
-          (setq month (1+ month)))
-        (list month day year)))))
-```
+Returns the number of absolute days from the beginning of the Gregorian
+calendar for the given date, which can be specified with three numeric
+arguments, or a single string argument, which must be parseable by
+`date_parse`.
 
-    format_date YYYY-MM-DD or Y-M-D or Y/M/D or YYYY M D
+    jdays_to_date JDAYS
 
-    print_date YYYY MM DD
+Converts JDAYS (a Julian day number) into the corresponding date.  If the date
+is greater than October 10, 1584, then the Gregorian calendar is used,
+otherwise the Julian calendar is used for earlier dates.
 
-Print the date in the YYYY-MM-DD format.
+    adays_to_date ABSDAYS
 
-    days_at_epoch =  a constant for the epoch
+Converts ABSDAYS into a date formatted by `print_date`.
 
-    date_to_days_since_epoch YYYY-MM-DD
+    adays_to_jdays ADAYS
+    jdays_to_adays JDAYS
 
-    get_date_5_years-since [YYYY-MM-DD]
+These functions convert from absolute days to Julian day number, and vice-versa.
 
-    get_date_last_quarter_end YYYY-MM-DD
+    weeknumber [DATESTRING | YYYY MM DD]
 
-Both the above routines output a date string, in YYYY-MM-DD format.
-Both accept a date as input, the absence of which defaults to now.
+Returns the week number for the given DATESTRING or DATE.
 
-    get_date_5_years_since [YYYY-MM-DD]
+    date_to_weekday_name [DATESTRING | YYYY MM DD]
 
-    get_date_x_years_since [YEARSOFFSET] [YYYY-MM-DD] 
+Returns the weekday name for the given DATESTRING or DATE.
 
-Get the date X years before the given date
+    date_to_weekday_num [DATESTRING | YYYY MM DD]
 
-    get_date_last_quarter_end YYYY-MM-DD
+Returns the wekday number (0..6) for the given DATESTRING or DATE.
 
-given a date, get the previous quarter end date plus one.
-If no date, use the current date.
+    date_day_num [DATESTRING | YYYY MM DD]
 
-Variables 
----------
+Returns the day number for the given DATESTRING or DATE.
 
-    days_in_month (array)
-    days_before_moth (array)
+    date_format [FORMAT] YYYY MM DD
+    date_format [FORMAT] YYYY-MM-DD
+
+The `format_date` function accepts an optional format string, followed by
+three numeric arguments, for the year, month, and day, or a single string
+argument in any of the parsable date formats, and reformats into the default
+date format, given by `DATE_FORMAT`.  If `DATE_FORMAT` is not defined, the format
+`%F` is used.  (See `man strftime` for details).
 
 list-utils.sh <a id="list_utils">
 -------------
@@ -353,7 +350,7 @@ sh-utils.sh <a id="sh_utils">
 -----------
 handy functions for writing bash-based scripts
 
-Copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
+Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
 
     talk MSG ..
     talkf FMT ARGS ..
@@ -402,7 +399,7 @@ Return 0 (true) if `FUNCNAME` is a valid function, otherwise return 1 (false).
 
 text-utils.sh <a id="text_utils">
 -------------
-Copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
+Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
 
 Text processing utilities for bash scripts.
 
@@ -428,7 +425,7 @@ The following functions are provided by this library:
 
 test-utils.sh <a id="test_utils">
 -------------
-Copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
+Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
 
 Infrasructure for test-driven development of Bash scripts
 

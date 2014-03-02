@@ -1,5 +1,5 @@
 # Makefile.inc
-# Copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
 #
 # $Id$
 #

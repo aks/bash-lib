@@ -2,8 +2,7 @@
 #
 # handy functions for writing bash-based scripts
 #
-# Copyright 2006-2013 Alan K. Stebbens <aks@stebbens.org>
-#
+# Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
 #
 
 # Don't read ourselves multiple times

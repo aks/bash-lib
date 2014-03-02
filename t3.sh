@@ -1,5 +1,5 @@
 #/bin/sh
-# Copyright 2006-2013, Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2014, Alan K. Stebbens <aks@stebbens.org>
 # 
 # Test module for list-utils.sh
 #

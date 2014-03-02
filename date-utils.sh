@@ -260,7 +260,8 @@ date_parse_mmmdy() {
 # Given a monthname or its abbrevation, return its index
 
 month_number() {
-  case "${1,,*}" in
+  local mon="`echo "$1" | tr 'A-Z' 'a-z'`"
+  case "$mon" in
     january|jan|ja)   echo 1 ;;
     february|feb|fe)  echo 2 ;;
     march|mar|ma)     echo 3 ;;
@@ -284,7 +285,8 @@ month_num() { month_number "$@" ; }
 # (where MM = 01 .. 12 , or Jan, Feb, ...,  or Ja, Fe, .. )
 
 days_in_month() {
-  case "${1,,*}" in
+  local mon=`echo "$1" | tr 'A-Z' 'a-z'`
+  case "$mon" in
     1|01|january|jan|ja)   echo 31 ;;
     2|02|february|feb|fe)  echo 28 ;;
     3|03|march|mar|ma)     echo 31 ;;

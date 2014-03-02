@@ -6,6 +6,9 @@ COPYRIGHT
   These functions are Copyright (c) 2008 by Claus Tondering
   (claus@tondering.dk).
 
+  The "calfunc.c" program is Copyright (c) 2014 by Alan K. Stebbens
+  <aks@stebbens.org>
+
 LICENSE
 -------
   The code is distributed under the Boost Software License, which says:

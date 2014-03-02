@@ -77,6 +77,10 @@ can be in any of the following formats:
 The 
 .Nm calfaq.c 
 library functions are copyright (c) 2008 by Claus Tondering (claus@tondering.dk).
+.Pp
+The
+.Nm calfunc.c
+program is copyright (c) 2014 by Alan K. Stebbens <aks@stebbens.org>
 
 .Sh AUTHOR
 

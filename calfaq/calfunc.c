@@ -1,4 +1,8 @@
-/* calfunc -- calendar functions */
+/* calfunc -- calendar functions 
+ *
+ * Author: Alan K. Stebbens <aks@stebbens.org>
+ */
+
 
 #include <stdio.h>
 #include <string.h>

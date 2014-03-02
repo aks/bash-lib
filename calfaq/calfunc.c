@@ -92,7 +92,7 @@ const int GREGORIAN_START_DAY   =    4;
 const int GREGORIAN_START_JDAY = 2299150;
 
 /* The difference between Julian Day Number and an absolute day number is just an offset */
-const int JDAY_ADAY_OFFSET = 1721425;
+const int JDAY_ADAY_OFFSET = 1721424;
 
 /* Generic RE parsing routines 
  *
@@ -401,13 +401,13 @@ int kw_date_jdn_arg(int argc, const char *argstr) {
 // Convert JDN to AbsDays
 
 int jdn_to_adays(int jdn) {
-  return (jdn - JDAY_ADAY_OFFSET);
+  return (jdn - JDAY_ADAY_OFFSET + 1);
 }
 
 // convert ADAY to JDN
 
 int adays_to_jdn(int adays) {
-  return (adays + JDAY_ADAY_OFFSET);
+  return (adays + JDAY_ADAY_OFFSET - 1);
 }
 
 

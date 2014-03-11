@@ -117,59 +117,103 @@ bash script utilities for managing lists of things
 
 In the descriptions below, `VAR` is an array variable; `VAL`, `VAL1`, .. are values.
 
-    list_init VAR                       # initialize VAR as an array
+These are the list utilities:
 
-    list_add VAR VAL1 [VAL2 ...]        # add VAL1.. to the end of VAR
+    list_init VAR                        # initialize VAR as an empty list
 
-    list_add_once VAR  VAL1 [VAL2 ..]   # add VAL1.. uniquely to the end of VAR
+    list_add      VAR VAL1 [VAL2 ...]    # add VAL1.. to the end of VAR
 
-    list_insert VAR  VAL ...            # insert VALUE at the front of VAR
+    list_add_once VAR  VAL1 [VAL2 ..]    # add VAL1.. uniquely to the end of VAR
 
-    list_insert_once VAR VAL ..         # insert VALUE.. at the front of VAR; 
+    add_list      VAR VAL1 [VAL2 ...]    # alias to list_add
 
-    list_get VAR N                      # get the Nth item from VAR
+    add_list_once VAR VAL ...            # alias to list_add_once
 
-    list_item VAR N                     # set 'item' to the Nth item of VAR
+    list_push VAR VAL ...                # alias to list_add
 
-    list_items VAR [START [END]]        # get the items from VAR from START to END
+    push_list VAR VAL ...                # alias to list_add
 
-    list_set VAR N VAL                  # set the Nth item in VAR
+    list_insert      VAR VAL ...         # insert VAL.. at the front of VAR
 
-    in_list VAR  [-any|-all] VAL ...    # return true if one or more values are in a list
+    list_insert_once VAR VAL ...         # insert VAL.. at the front of VAR; 
 
-    list_size VAR                       # returns the number of items
+    insert_list      VAR VAL ...         # alias to list_insert
 
-    sort_str VAL ...                    # sort the space-separated words of VAL ..
+    insert_list_once VAR VAL ...         # alias to list_insert_once
 
-    sort_str2lines VAL ...              # output the args into separate lines, sorted
+    list_pop VAR                         # removes top VAL on VAR and returns in variable "item"
 
-    sort_list VAR                       # sort the contents of VAR (a list) in place
+    pop_list VAR                         # an alias to list_pop 
 
-    sorted_list VAR                     # output the sorted items from VAR
+    list_get  VAR N                      # get the Nth item of VAR to stdout
 
-    sort_list2lines VAR                 # output the sorted items from VAR in separate lines
+    list_item VAR N                      # set 'item' to the Nth item of VAR
 
-    join_list VAR [SEP] ..
+    list_set  VAR N VAL                  # set the Nth item of VAR to VAL
 
-    join_lines                          # join lines on STDIN
+    list_items VAR [START [END]]         # return list items from START to END (or all)
 
-Join the items in `VAR` into a list, separated by `SEP`, which can be:
+    list_copy LIST NEWLIST [START [END]] # copy list LIST to NEWLIST, from START to END
 
-`AND`    -- separate with `" and "`
+    in_list VAR  [-any|-all] VAL ...     # return true if one or more values are in a list
 
-`OR`     -- separate with `" or "`
+    list_size VAR                        # returns the number of items
 
-`KEYS`   -- enclose each item with `X'` and `'`, follwed by `','`
+    sort_str VAL ...                     # sort the space-separated words of VAL ..
 
-`TAB`    -- use tabs to separate items
+    sort_list VAR                        # sort the contents of VAR (a list) in place
 
-`NL`     -- separate each item with newline (and some spaces)
+    sorted_list VAR                      # output the items of VAR sorted
 
-`NOWRAP` -- do not auto-wrap long lines (default is `WRAP`)
+    sort_str2lines                       # sort STR with each item in a separate line
 
-`','`    -- separate items with a comma (default)
+    sort_list2lines                      # sort LIST with each item in a separate line
 
-`str`    -- separate each item with an given string.
+    split_into  VAR "STRING" SEP         # split "STRING" by SEP into VAR
+
+    split_str   "STRING" [SEP]           # split "STRING" by SEP
+
+    join_list VAR [SEP] ..               # join the items in VAR into a list, separated by SEP,
+      SEP can be 
+        AND    -- separate with " and "
+        OR     -- separate with " or "
+        KEYS   -- enclose each item with X' and ', follwed by ','
+        TAB    -- use tabs to separate items
+        NL     -- separate each item with newline (and some spaces)
+        NOWRAP -- do not auto-wrap long lines (default is WRAP)
+        ','    -- separate items with a comma (default)
+        str    -- separate each item with an given string.
+
+    join_lines                           # read STDIN and catenate lines; remove trailing NL
+
+    lookup_list LISTVAR KEY              # lookup KEY in LISTVAR
+
+    grep_list   LISTVAR PAT              # grep PAT across LISTVAR
+
+    map_list    LISTVAR EXPR             # create a list of EXPR applied to each item in LISTVAR
+
+    reduce_list LISTVAR EXPR [INIT]      # reduce LISTVAR using EXPR, with initial value INIT
+
+    sum_list LISTVAR                     # sum the items in LISTVAR
+
+    max_list LISTVAR                     # return the maximum item in LISTVAR
+
+    min_list LISTVAR                     # return the minimum item in LISTVAR
+
+    avg_list LISTVAR                     # return the average of the items in LISTVAR
+
+    print_list LISTVAR [indent=INDENT] [width=WIDTH] [sep=SEP] [cols=COLS]
+
+    print_list LISTVAR [i=INDENT] [w=WIDTH] [s=SEP]  [c=COLS]
+
+        print the items in LIST in vertically-sorted columns.  Use COLS if given,
+        otherwise the number of columns is computed from WIDTH (defaults to 80) and
+        the maximum width of all the items in LISTVAR
+
+    list_help                             # describe the list functions
+
+Splitting
+---------
 
     split_into  VAR "STRING" SEP
 
@@ -178,7 +222,7 @@ and assigns the resulting separated, and quoted strings to the `VAR`.
 
     split_str   "STRING" [SEP]
 
-outputs the split of STRING into parts using a separator SEP
+outputs the split of `STRING` into parts using a separator `SEP`
 (defaulting to space/tab).
 
 For the split functions:
@@ -190,27 +234,30 @@ removing whitespace from the split values.
 will split using both space and comma.  By default, splitting is
 done by tabs.
 
+Lookup functions
+----------------
+
     lookup_list LIST "WORD"
 
-Looks up WORD in the array LIST for the uniquely matching item, using
+Looks up `WORD` in the array `LIST` for the uniquely matching item, using
 disambiguating case-insensitive matching.  If no match, return empty string and
 code 1; if 2 or more matches, return empty string, and error code 2.
 
     grep_list LIST PATTERN
 
-Look up items matching PATTERN in the array LIST.  Return all matching items,
+Look up items matching `PATTERN` in the array `LIST`.  Return all matching items,
 and return code 0.  If no matching items, return empty string and return code
 1.
 
     lookup_error CODE WORD [NOTFOUNDMSG [AMBIGMSG]]
 
-A utility function to be used in conjuction with a "lookup_list" or "grep_list"
-invocation.  CODE is an error code returned from "lookup_list" or "grep_list".
-WORD is the word used on the search, and is used as the "%s" argument in either
-error message.  NOTFOUNDMSG is the error message used in the case of error code
-1.  AMBIGMSG is the error message used in the case of error code 2.
+A utility function to be used in conjuction with a `lookup_list` or `grep_list`
+invocation.  `CODE` is an error code returned from `lookup_list` or `grep_list`.
+`WORD` is the word used on the search, and is used as the "%s" argument in either
+error message.  `NOTFOUNDMSG` is the error message used in the case of error 
+code 1.  `AMBIGMSG` is the error message used in the case of error code 2.
 
-"lookup_error" is used like this:
+`lookup_error` is used like this:
 
     read -p "What word do you want to use?" word
     words=( a list of words to search from )

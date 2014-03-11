@@ -141,6 +141,10 @@ test_round() {
   end_test
 }
 
+if (( BASH_VERSINFO[0] < 4 )); then
+  echo "The real-utils library needs bash version 4 or greater"
+  exit 2
+fi
 
 init_tests "$@"
 run_tests

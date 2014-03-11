@@ -148,6 +148,10 @@ test_10_print_hash() {
   end_test
 }
 
+if (( BASH_VERSINFO[0] < 4 )); then
+  echo "The hash-utils library needs bash version 4 or greater"
+  exit
+fi
 
 init_tests "$@"
 run_tests

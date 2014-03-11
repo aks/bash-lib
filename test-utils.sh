@@ -53,6 +53,12 @@
 #     check_item_equal   LIST INDEX VAL    ERROR
 #     check_item_unequal LIST INDEX NONVAL ERROR
 #
+#  Hash tets
+#
+#     check_key          HASH KEY          ERROR
+#     check_no_key       HASH KEY          ERROR
+#     check_key_value    HASH KEY VALUE    ERROR
+#
 #  String tests 
 #
 #     check_equal        VAL1 VAL2         ERROR
@@ -426,11 +432,6 @@ check_output() {
   elif (( $# > 1 )) ; then
     name="$1" expr="$2"
   fi
-  if (( $# > 2 )); then
-    errm="$3"
-  else
-    errm="$name test failed; diffs in $diffout and $differr"
-  fi
   TEST_check_start
   local test_out_ok= test_err_ok= test_ok=1
   local out="test/$name.out"
@@ -441,6 +442,11 @@ check_output() {
   local differr="$err.diff"
   if (( test_keep_ref_output )); then
     out="$outref" err="$errref"
+  fi
+  if (( $# > 2 )); then
+    errm="$3"
+  else
+    errm="$name test failed; diffs in $diffout and $differr"
   fi
   eval "$expr 1>$out 2>$err"
   [[ -f "$outref" ]] || touch "$outref"
@@ -473,7 +479,7 @@ TEST_compare_output() {
 
 # check_out NAME EXPR ERROR
 check_out() {
- :
+  :
 }
 # check_out_none NAME EXPR ERROR
 check_out_none() {

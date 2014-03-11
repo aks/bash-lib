@@ -94,7 +94,9 @@ test_05_list_insert_once() {
 test_06_in_list() {
   start_test
   tlist=()
+  tlist2=()
   list_add_once tlist foo bar baf
+  list_add_once tlist2 "foo bar" "bif baf" "+" "-" "/" "*"
   check_size tlist 3
   check_true  "in_list tlist foo"
   check_false "in_list tlist foo2"
@@ -104,20 +106,27 @@ test_06_in_list() {
   check_true  "in_list tlist -any foo1 baf bar2"
   check_false "in_list tlist -all foo bar baf gonzo"
   check_true  "in_list tlist      foo1 baf bar2"
+  check_true  "in_list tlist -any foo1 baf bar2"
+  check_false "in_list tlist -all foo1 baf bar2"
   check_false "in_list tlist      foo1 baf2 bar2"
+  # check weird matches
+  check_true  "in_list tlist2 '+'"
+  check_false "in_list tlist2 '?'"
+  check_false "in_list tlist2 'bif'"
+  check_true  "in_list tlist2 'bif baf'"
   end_test
 }
 
 test_07_lookup_list() {
   start_test
-  tlist1=( now is the time for all good men to come to the aid of their country )
+  tlist1=( now is the 'time' 'for' all good men to come to the aid of their country )
 
   item=`lookup_list tlist1 now`
   code=$?
   check_eq $code 0
   check_equal "$item" 'now'
 
-  item=`lookup_list tlist1 time`
+  item=`lookup_list tlist1 'time'`
   code=$?
   check_eq $code 0
   check_equal $item 'time'
@@ -157,7 +166,7 @@ test_07_lookup_list() {
 
 test_08_grep_list() {
   start_test
-  tlist1=( now is the time for all good men to come to the aid of their country )
+  tlist1=( now is the 'time' 'for' all good men to come to the aid of their country )
 
   items=( `grep_list tlist1 now` )      # 1
   code=$?
@@ -165,7 +174,7 @@ test_08_grep_list() {
   check_size items 1
   check_item_equal items 0 'now'
 
-  items=( `grep_list tlist1 time` )     # 2
+  items=( `grep_list tlist1 'time'` )     # 2
   code=$?
   check_eq $code 0
   check_size items 1
@@ -273,7 +282,77 @@ test_10_print_list() {
   check_output plout5 "print_list words i=1 c=2"
   end_test
 }
+test_11_join_list() {
+  start_test
+  list_init tlist
+  list_add tlist apple banana cherry
+  check_size tlist 3
+  check_output join_list_3    "join_list tlist"
+  check_output join_list_3sp  "join_list tlist ' '"
+  check_output join_list_3tab "join_list tlist TAB"
+  check_output join_list_3and "join_list tlist AND"
+  check_output join_list_3or  "join_list tlist OR"
+  check_output join_list_3nl  "join_list tlist NL"
+  words=(
+    apple banana cherry dog elephant fox giraffe hawk indigo manzana milk november
+    october december january february march april may june july august
+  )
+  check_output join_list_words        "join_list words"
+  check_output join_list_words_nowrap "join_list words NOWRAP"
+  end_test
+}
 
+test_12_map_list() {
+  start_test
+  words=( now is the 'time' 'for' all good men to come to the aid of their country )
+  num_words=`list_size words`
+
+  items=( `map_list words 'echo ${#item}'` )
+  check_size items $num_words
+  check_item_equal items 0 3
+  check_item_equal items 1 2
+  check_item_equal items 2 3
+  check_item_equal items 3 4
+  check_item_equal items 4 3
+  check_item_equal items 5 3
+  check_item_equal items 14 5
+  check_item_equal items 15 7
+  end_test
+}
+
+test_14_reductions() {
+  start_test
+  words=( now is the 'time' 'for' all good men to come to the aid of their country )
+  num_words=`list_size words`
+  items=( `map_list words 'echo ${#item}'` )
+  count_chars_orig=`echo "${words[@]}" | wc -c`
+  count_chars=$(( `sum_list items` + num_words ))
+  check_eq $count_chars $count_chars_orig 'sum_list count error; got $count_chars'
+  min=`min_list items`
+  check_eq $min 2  "min test failed; got $min, should be 2"
+  max=`max_list items`
+  check_eq $max 7  "max test failed; got $max, should be 7"
+  avg=`avg_list items`
+  check_eq $avg 3 "avg test failed; got $avg, should be 3"
+  end_test
+}
+
+test_19_list_help_func() {
+  start_test
+  check_output list_help          "list_help"
+  check_output list_init_help     "list_init"
+  check_output list_init_nohelp   "list_init foo"
+  check_output list_add_help      "list_add"
+  check_output list_add_nohelp    "list_add foo bar"
+  check_output list_add_once_help "list_add_once"
+  check_output list_get_help      "list_get"
+  check_output list_get2_help     "list_get nolist"
+  check_output list_item_help     "list_item"
+  check_output list_item2_help    "list_item nolist"
+  check_output list_push_help     "list_push"
+  check_output list_push2_help    "list_push nolist"
+  end_test
+}
 
 init_tests "$@"
 run_tests

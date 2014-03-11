@@ -8,8 +8,8 @@ LIST_UTILS_VERSION='list-utils.sh v2.0'
 export LIST_UTILS="$LIST_UTILS_VERSION"
 
 export CHAR_NL=$'\n'
-# export CHAR_TAB=$'\t'
-# export CHAR_WS=$'\t '
+export CHAR_TAB=$'\t'
+export CHAR_WS=$'\t '
 
 list_help() {
   cat 1>&2 <<EOF
@@ -17,16 +17,32 @@ These are the list utilities:
 
 list_init VAR                        # initialize VAR as an empty list
 
-list_add VAR VAL1 [VAL2 ...]         # add VAL1.. to the end of VAR
+list_add      VAR VAL1 [VAL2 ...]    # add VAL1.. to the end of VAR
+
 list_add_once VAR  VAL1 [VAL2 ..]    # add VAL1.. uniquely to the end of VAR
 
-list_insert VAR  VAL ...             # insert VALUE at the front of VAR
-list_insert_once VAR VAL ..          # insert VALUE.. at the front of VAR; 
+add_list      VAR VAL1 [VAL2 ...]    # alias to list_add
 
-list_push VAR VAL                    # same as "list_add VAR VAL"
-list_pop  VAR                        # removes top VAL on VAR and returns in variable "item"
+add_list_once VAR VAL ...            # alias to list_add_once
+
+list_push VAR VAL ...                # alias to list_add
+
+push_list VAR VAL ...                # alias to list_add
+
+list_insert      VAR VAL ...         # insert VAL.. at the front of VAR
+
+list_insert_once VAR VAL ...         # insert VAL.. at the front of VAR; 
+
+insert_list      VAR VAL ...         # alias to list_insert
+
+insert_list_once VAR VAL ...         # alias to list_insert_once
+
+list_pop VAR                         # removes top VAL on VAR and returns in variable "item"
+
+pop_list VAR                         # an alias to list_pop 
 
 list_get  VAR N                      # get the Nth item of VAR to stdout
+
 list_item VAR N                      # set 'item' to the Nth item of VAR
 
 list_set  VAR N VAL                  # set the Nth item of VAR to VAL
@@ -36,16 +52,21 @@ list_items VAR [START [END]]         # return list items from START to END (or a
 list_copy LIST NEWLIST [START [END]] # copy list LIST to NEWLIST, from START to END
 
 in_list VAR  [-any|-all] VAL ...     # return true if one or more values are in a list
+
 list_size VAR                        # returns the number of items
 
 sort_str VAL ...                     # sort the space-separated words of VAL ..
+
 sort_list VAR                        # sort the contents of VAR (a list) in place
+
 sorted_list VAR                      # output the items of VAR sorted
 
 sort_str2lines                       # sort STR with each item in a separate line
+
 sort_list2lines                      # sort LIST with each item in a separate line
 
 split_into  VAR "STRING" SEP         # split "STRING" by SEP into VAR
+
 split_str   "STRING" [SEP]           # split "STRING" by SEP
 
 join_list VAR [SEP] ..               # join the items in VAR into a list, separated by SEP,
@@ -59,20 +80,26 @@ join_list VAR [SEP] ..               # join the items in VAR into a list, separa
     ','    -- separate items with a comma (default)
     str    -- separate each item with an given string.
 
-join_list                            # read STDIN and catenate lines; remove trailing NL
+join_lines                           # read STDIN and catenate lines; remove trailing NL
 
 lookup_list LISTVAR KEY              # lookup KEY in LISTVAR
+
 grep_list   LISTVAR PAT              # grep PAT across LISTVAR
 
 map_list    LISTVAR EXPR             # create a list of EXPR applied to each item in LISTVAR
+
 reduce_list LISTVAR EXPR [INIT]      # reduce LISTVAR using EXPR, with initial value INIT
 
 sum_list LISTVAR                     # sum the items in LISTVAR
+
 max_list LISTVAR                     # return the maximum item in LISTVAR
+
 min_list LISTVAR                     # return the minimum item in LISTVAR
+
 avg_list LISTVAR                     # return the average of the items in LISTVAR
 
 print_list LISTVAR [indent=INDENT] [width=WIDTH] [sep=SEP] [cols=COLS]
+
 print_list LISTVAR [i=INDENT] [w=WIDTH] [s=SEP]  [c=COLS]
 
     print the items in LIST in vertically-sorted columns.  Use COLS if given,
@@ -93,30 +120,31 @@ errorf() { printf "$@" 1>&2 ; exit 1 ; }
 # Initialize VAR as an empty list
 
 list_init() {
-  local var=${1:?'Missing list name'}
-  eval "$var=()"
+  list_help_func $# 1 || return
+  eval "${1}=()"
 }
 
 # list_add VAR VALUE ...
 #  Supports insertion of multiple values into the list
 
 list_add() { 
+  list_help_func $# 2 || return
   local var="$1"
   shift
-  local w len
+  local w
   for w in "$@" ; do
-    eval "len=\${#$var[*]}"
-    eval "$var[$len]=\"$w\""
+    eval "$var+=( \"$w\" )"
   done
 }
-add_list()  { list_add "$@" ; }
 list_push() { list_add "$@" ; }
+add_list()  { list_add "$@" ; }
 push_list() { list_add "$@" ; }
 
 # list_add_once VAR VALUE ...
 #
 # Add each VALUE only once to VAR
 list_add_once() {
+  list_help_func $# 2 || return
   local var="$1"
   shift
   while [[ $# -gt 0 ]]; do
@@ -132,6 +160,7 @@ add_list_once() { list_add_once "$@" ; }
 # Insert VALUE at the front of the list
 
 list_insert() {
+  list_help_func $# 2 || return
   local var="$1"
   shift
   eval "$var=( \"\$@\" \"\${$var[@]}\" )"
@@ -142,6 +171,7 @@ insert_list() { list_insert "$@" ; }
 # Insert VALUE(s)... into the list only if it is not already in the list.
 
 list_insert_once() {
+  list_help_func $# 2 || return
   local var="$1"
   shift
   while (( $# > 0 )); do
@@ -160,12 +190,13 @@ insert_list_once() { list_insert_once "$@" ; }
 #
 # If there are no items to pop, return nothing, and error code 1
 #
-# Note: because this function modifies the list, it won't work correctly
-# if it is invoked within back-quotes.  This is why its return value
-# inserted into a variable.
+# Note: because this function modifies the list, it won't work correctly if it
+# is invoked within back-quotes (within a subshell).  This is why its return
+# value inserted into a variable ("item").
 
 list_pop() {
-  local var=${1:?'Missing list name'}
+  list_help_func $# 1 || return
+  local var="$1"
   local x=`list_size $var`
   if (( --x < 0 )); then
     item=
@@ -175,7 +206,6 @@ list_pop() {
   eval "val=\"\${$var[$x]}\""
   unset $var[$x]
   eval "$var=( \"\${$var[@]}\" )"
-  #echo "$val"
   item="$val"
 }
 pop_list() { list_pop "$@" ; }
@@ -185,6 +215,7 @@ pop_list() { list_pop "$@" ; }
 # Echo the Nth item from VARLIST to output
 
 list_get() {
+  list_help_func $# 2 || return
   eval "echo -n \"\${$1[$2]}\""
 }
 
@@ -193,8 +224,9 @@ list_get() {
 # Set the variable 'item' to the Nth item from VARLIST
 
 list_item() {
-  local var="${1:?'Missing list name'}"
-  local n=${2:?'Missing index'}
+  list_help_func $# 2 || return
+  local var="$1"
+  local n=$(( 10#$2 ))
   eval "item=\"\${$var[$n]}\""
 }
 
@@ -203,11 +235,13 @@ list_item() {
 # Set the Nth item in VARLIST to VAL
 
 list_set() {
+  list_help_func $# 3 || return
   local var="${1:?'Missing list name'}"
   local n=${2:?'Missing index'}
   local val="${3:?'Missing value'}"
   eval "let $var[$n]=\"$val\""
 }
+set_list() { list_set "$@" ; }
 
 # list_items LIST [START [END]]
 #
@@ -216,6 +250,7 @@ list_set() {
 # the beginning items.
 
 list_items() {
+  list_help_func $# 1 || return
   local var=${1:?'Missing list name'}
   if (( $# == 1 || -z "$2$3")); then
     eval "IFS=' ' ; echo \"\${$var[@]}\""
@@ -238,8 +273,9 @@ list_items() {
 # omitted).
 
 list_copy() {
-  local srclist="${1:?'Missing name for source list'}"
-  local dstlist="${2:?'Missing name for new list'}"
+  list_help_func $# 2 || return
+  local srclist="$1"
+  local dstlist="$2"
   shift 2
   list_init $dstlist
   list_add $dstlist `list_items $srclist "$@"`
@@ -254,8 +290,8 @@ list_copy() {
 # If "-all" given, require all values to be in the list in order
 # to return 0.
 
-in_list () 
-{ 
+in_list () {
+  list_help_func $# 2 || return
   local vals val1 val2 match_all=
   eval "vals=( \"\${$1[@]}\" )"
   shift
@@ -286,46 +322,59 @@ in_list ()
 
 
 # list_size NAME -- return list size
-list_size() { eval "echo \"\${#$1[@]}\"" ; }
+list_size() { 
+  list_help_func $# 1 || return
+  eval "echo \"\${#$1[@]}\"" 
+}
+
+# args2lines ARG .. 
+#
+# echo each ARG on a separate line
+
+args2lines() { local w ; for w in "$@" ; do echo "$w" ; done ; }
 
 # sort_str [WORDS TO BE SORTED]
 # str_sort
 #
-# sort_list NAME -- sort the list items inplace
-# list_sort NAME
+# sort_list LISTVAR -- sort the list items inplace; modifies LISTVAR
+# list_sort LISTVAR
 #
-# sorted_list NAME -- output the list items sorted
-# list_sorted NAME
+# sorted_list LISTVAR -- output the list items sorted; does not modify LISTVAR
+# list_sorted LISTVAR
+#
+# join_lines -- join lines on STDIN together with newlines
+#
+# sort_list2lines LISTVAR -- output the items of LISTVAR, sorted, one per line
 
-sort_str2lines() {
-  local w
-  ( for w in "$@" ; do echo "$w" ; done ) | sort -f
+sort_str2lines()  { 
+  list_help_func $# 1 || return
+  args2lines "$@"                 | sort -f
 }
-
-join_lines() {
-  tr '\n' ' ' | sed -e 's/ $//'
-}
-
-sort_str() {
-  sort_str2lines "$@" | join_lines
-}
-str_sort() { sort_str "$@" ; }
-
-# sort_list_lines LIST
 
 sort_list2lines() {
-  ( eval "for w in \"\${$1[@]}\" ; do echo \"\$w\" ; done" ) | sort -f
+  list_help_func $# 1 || return
+  eval "args2lines \"\${$1[@]}\"" | sort -f
 }
 
-sorted_list() { 
-  sort_list2lines $1 | join_lines
+join_lines()      { tr '\n' ' ' | sed -e 's/ $//' ; }
+
+sort_str() {
+  list_help_func $# 1 || return
+  sort_str2lines "$@" | join_lines 
 }
-list_sorted() { sorted_list "$@" ; }
+sorted_list() {
+  list_help_func $# 1 || return
+  sort_list2lines $1  | join_lines 
+}
 
 sort_list() {
+  list_help_func $# 1 || return
   eval "$1=( `sorted_list $1` )"
 }
-list_sort() { sort_list "$@" ; }
+
+list_sort()       { sort_list   "$@" ; }
+list_sorted()     { sorted_list "$@" ; }
+str_sort()        { sort_str    "$@" ; }
 
 #############################
 # split_str   "STRING" [SEP]
@@ -340,13 +389,15 @@ list_sort() { sort_list "$@" ; }
 # and comma.  By default, splitting is done by tabs.
 
 split_str() {
+  list_help_func $# 1 || return
   local sep="${2:-$CHAR_TAB}"
-  echo "$1"			      | 
-  tr "$sep" '\n'		      | 
-  sed -Ee 's/^(.*[ ,?*].*)$/"\1"/'  | 
+  echo "$1"			      |
+  tr "$sep" '\n'		      |
+  sed -Ee 's/^(.*[ ,?*].*)$/"\1"/'    |
   tr '\n' ' '
 }
-split_list() { split_str "$@" ; }
+
+str_split() { split_str "$@" ; }
 
 # split_into  VAR "STRING" SEP
 #
@@ -356,6 +407,7 @@ split_list() { split_str "$@" ; }
 #   See split_str for details on SEP
 
 split_into() {
+  list_help_func $# 2 || return
   local var="$1"
   local sep="${3:-' 	'}"
   eval "$var=( `split_str \"$2\" \"$sep\"` )"
@@ -381,6 +433,7 @@ split_into() {
 # All keywords are case-insensitive.
 
 join_list() {
+  list_help_func $# 1 || return
   local var="$1"
   local count=`list_size $var`
   local val key index
@@ -414,9 +467,11 @@ join_list() {
         val="`quoted_string \"$val\"`"	        # quote as a string
       fi
       if [[ ${#list[@]} -gt 0 ]] ; then	        # list not empty?
-        list=( "${list[@]}" "$sep" "$val" )     # append new items
+        list+=( "$sep" "$val" )
+        #list=( "${list[@]}" "$sep" "$val" )    # append new items
         if (( $nowrap == 0 && ( ( $index % 10 ) == 0 ) )) ; then    # every 10 items, cause a newline
-          list=( "${list[@]}" "$CHAR_NL" )	# append a new line
+          #list=( "${list[@]}" "$CHAR_NL" )	# append a new line
+          list+=( "$CHAR_NL" )	                # append a new line
         fi
       else
         list=( "$val" )			        # start the list
@@ -442,6 +497,7 @@ list_join() { join_list "$@" ; }
 # return code 2: KEY ambiguous
 
 lookup_list() {
+  list_help_func $# 2 || return
   local listvar="$1"
   local key="$2"
   local nitems=`list_size $listvar`        # number of items
@@ -479,6 +535,7 @@ lookup_list() {
 # You can redefine "lookup_error" to use your own messages.
 
 lookup_error() {
+  list_help_func $# 2 || return
   if [[ $1 -eq 1 ]]; then
     errorf "${3:-'%s' was not found}" "$2"
   elif [[ $1 -eq 2 ]]; then
@@ -492,6 +549,7 @@ lookup_error() {
 #   matches.
 
 grep_list() {
+  list_help_func $# 2 || return
   local listvar="$1"
   local pat="$2"
   local nitems=`list_size $listvar`
@@ -524,9 +582,10 @@ grep_list() {
 #       prod=`reduce_list list_of_nums 'a * b' 1`
 
 reduce_list() {
-  local listvar="${1:-Missing list variable name}"
-  local expr="${2:-Missing expression}"
-  local init="${3}"
+  list_help_func $# 2 || return
+  local listvar="$1"
+  local expr="$2"
+  local init="$3"
   local start=0
   if [[ -z "$init" ]]; then
     init=`list_get $listvar 0`      # use the 1st item as the initial value
@@ -558,8 +617,9 @@ reduce_list() {
 #     is referenced as "$item".  Otherwise, "EXPR $item"
 
 map_list() {
-  local listvar="${1:-Missing list variable name}"
-  local expr="${2:-Missing expression}"
+  list_help_func $# 2 || return
+  local listvar="$1"
+  local expr="$2"
   local newlist=()
   local x item
   local item_count=`list_size $listvar`
@@ -574,22 +634,24 @@ map_list() {
 # max_list listname
 
 max_list() {
-  local listvar="${1:-Missing list variable name}"
-  reduce_list $listvar 'a >= b ? a : b'
+  list_help_func $# 1 || return
+  reduce_list $1 'a >= b ? a : b'
 }
 
+# min_list LISTNAME
 min_list() {
-  local listvar="${1:-Missing list variable name}"
-  reduce_list $listvar 'a >= b ? b : a'
+  list_help_func $# 1 || return
+  reduce_list $1 'a >= b ? b : a'
 }
 
 sum_list() {
-  local listvar="${1:-Missing list variable name}"
-  reduce_list $listvar 'a + b'
+  list_help_func $# 1 || return
+  reduce_list $1 'a + b'
 }
 
 avg_list() {
-  local listvar="${1:-Missing list variable name}"
+  list_help_func $# 1 || return
+  local listvar="$1"
   local size=`list_size $listvar`
   if (( size > 0 )); then
     local sum=`reduce_list $listvar 'a + b'`
@@ -599,11 +661,11 @@ avg_list() {
 
 # print_list list [indent=INDENT] [width=WIDTH] [sep=SEP] [cols=COLS]
 #
-#   Print list in vertically sorted columns, optionally indented,
-#   limit output to `maxwidth`
-#   separate columns by `sep` blanks (defaults to 2)
+#   Print list in vertically sorted columns, optionally indented, limit output
+#   to `maxwidth`, separate columns by `sep` blanks (defaults to 2)
 
 print_list() {
+  list_help_func $# 1 || return
   local listvar="$1"
   shift
   _set_args "indent width sep cols" "$@"
@@ -699,6 +761,25 @@ _set_args() {
 
 # Legacy name
 make_list() { join_list "$@" ; }
+
+# list_help_func GIVEN [NEED] || return
+#
+# If GIVEN is less than NEED, provide the help for the function named NAME.
+#
+# Typical call:
+#
+#    list_help_func $# 2 || return
+
+list_help_func() {
+  local func="${FUNCNAME[1]}"         # who called us?
+  if (( $1 < ${2:-1} )) ; then
+    list_help 2>&1 | awk "/^$func/{p=1; print;next}
+                          /^[^ ▸]/{if(p){exit}}
+                          {if(p){print}}" 1>&2
+    return 1
+  fi
+  return 0
+}
 
 # end of list-utils.sh
 # vim: sw=2 ai

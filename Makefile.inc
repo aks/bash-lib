@@ -94,7 +94,7 @@ test tests: $(tests)
 	    echo '' ; echo "Testing $$file .." ; \
 	    case $$file in			\
 	    *.rb) ruby -I . $$file ;;		\
-	    *.sh) $${SHELL:-bash} $$file ;;	\
+	    *.sh) bash $$file ;;	        \
 	    *.pl) perl $$file ;;		\
 	    *.py) python -I . $$file ;;		\
 	    *)	./$$file ;;			\

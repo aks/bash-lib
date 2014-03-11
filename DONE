@@ -1,3 +1,11 @@
+2014/03/10
+* list-utils.sh:
+  - improved list_add; added interactive help when there are insufficient arguments
+  - the interactive help required improved "help" text.
+* README.md:
+  - improved the list-utils descriptions (from the help text).
+  - improved the real-utils descriptions.
+
 2014/03/01
 * calfaq/ 
   calfaq/calfunc.c

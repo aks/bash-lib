@@ -5,7 +5,7 @@
 
 # Don't read ourselves multiple times
 
-REAL_UTILS_VERSION="real-utils.sh v1.1"
+REAL_UTILS_VERSION="real-utils.sh v1.2"
 
 [[ "$REAL_UTILS_VERSION" = "$REAL_UTILS" ]] && return 0
 

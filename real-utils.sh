@@ -5,14 +5,14 @@
 
 # Don't read ourselves multiple times
 
-[[ -n "$REAL_UTILS" ]] && return 0
-
 REAL_UTILS_VERSION="real-utils.sh v1.1"
+
+[[ "$REAL_UTILS_VERSION" = "$REAL_UTILS" ]] && return 0
 
 export REAL_UTILS="$REAL_UTILS_VERSION"
 
 real_help() {
-  cat <<EOF
+  cat <<'EOF'
 real-utils.sh is a bash library that enables real number arithmetic in bash
 scripts.  Real numbers are managed as flaoting point strings in the format
 "X.Y", where X is the integer portion, and "Y" is the fractional part.

@@ -11,7 +11,9 @@ libs = 	\
 	Makefile.inc 		\
 	Makefile-template	\
         date-utils.sh           \
+	hash-utils.sh		\
 	list-utils.sh		\
+	real-utils.sh		\
         sh-utils.sh             \
 	sync-files.sh		\
         test-utils.sh           \
@@ -23,7 +25,9 @@ subdirs=
 
 tests= \
 	test-date-utils.sh	\
+	test-hash-utils.sh	\
 	test-list-utils.sh	\
+	test-real-utils.sh	\
 	test-text-utils.sh	\
 	test-sh-utils.sh	\
 	#test-sync-files.sh	\

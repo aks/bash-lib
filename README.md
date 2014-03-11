@@ -217,7 +217,7 @@ Splitting
 
     split_into  VAR "STRING" SEP
 
-splits a STRING into parts using separator (`SEP`) (default is ',')
+splits a `STRING` into parts using separator (`SEP`) (default is ',')
 and assigns the resulting separated, and quoted strings to the `VAR`.
 
     split_str   "STRING" [SEP]
@@ -323,7 +323,7 @@ Each option may be abbreviated to its leading character (e.g., "g" for "gutter")
 real-utils.sh <a name="real_utils" id="real_utils">
 -------------
 real-utils.sh is a bash library that enables real number arithmetic in bash
-scripts.  Real numbers are managed as flaoting point strings in the format
+scripts.  Real numbers are managed as floating point strings in the format
 "X.Y", where X is the integer portion, and "Y" is the fractional part.
 
 Usage:
@@ -339,11 +339,11 @@ Function Descriptions:
 
     real_eval "EXPRESSION" [SCALE]
 
-The 0 bash function evaluates `EXPRESSION` using syntax, operators and
-functions as described is the `bc` manual.  All numbers and variables within
-`EXPRESSION` are interpreted by .  If 1 > 0, an error occured.
+The `real_eval` bash function evaluates `EXPRESSION` using syntax, operators
+and functions as described is the `bc` manual.  All numbers and variables
+within `EXPRESSION` are interpreted by `bc`.  If $? > 0, an error occured.
 
-In addition to the operators and functions defined by , the following
+In addition to the operators and functions defined by `bc`, the following
 additional functions are also made available:
 
     abs(x)           deg(x)           log10(x)         rad(x)

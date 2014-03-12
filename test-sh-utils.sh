@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# test-sh-utils.sh
+#
 # Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
 #
 # Test module for sh-utils.sh

@@ -10,8 +10,8 @@ REAL_UTILS_SH="$REAL_UTILS_VERSION"
 
 source sh-utils.sh
 
-real_utils_help() {
-  cat <<'EOF'
+real_help() {
+  cat 1>&2 <<'EOF'
 real-utils.sh is a bash library that enables real number arithmetic in bash
 scripts.  Real numbers are managed as flaoting point strings in the format
 "X.Y", where X is the integer portion, and "Y" is the fractional part.
@@ -30,7 +30,7 @@ Usage:
 
     real_frac  REAL
 
-    real_utils_help 
+    real_help
 
 Descriptions:
 
@@ -104,7 +104,7 @@ default is 2.
 
 EOF
 }
-help_real_utils() { real_utils_help ; }
+help_real() { real_help ; }
 
 # Default scale used by real functions.
 [[ -n "$real_scale" ]] || export real_scale=2

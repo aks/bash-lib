@@ -56,10 +56,9 @@
 #   values of almost 2,500,000) are assumed to be representable as
 #   variables of type 'int'.
 
-# [[ -n "$CALENDAR_UTILS" ]] && return 0
-
 CALENDAR_UTILS_VERSION="calendar-utils.sh v1.1"
-CALENDAR_UTILS="$CALENDAR_UTILS_VERSION"
+[[ "$CALENDAR_UTILS_SH" = "$CALENDAR_UTILS_VERSION" ]] && return
+CALENDAR_UTILS_SH="$CALENDAR_UTILS_VERSION"
 
 calendar_help() {
   cat 1>&2 <<EOF

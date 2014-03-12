@@ -4,7 +4,7 @@
 # Copyright 2009-2014 Alan K. Stebbens <aks@stebbens.org>
 
 DATE_UTILS_VERSION="date-utils.sh v1.8"
-[[ "$DATE_UTILS_SH" = "$DATE_UTILS_VERSION" ]] && return 
+[[ "$DATE_UTILS_SH" = "$DATE_UTILS_VERSION" ]] && return
 DATE_UTILS_SH="$DATE_UTILS_VERSION"
 
 export DATE_FORMAT="%F"

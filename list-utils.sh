@@ -4,8 +4,8 @@
 # sh script utilities for managing lists of things
 
 LIST_UTILS_VERSION='list-utils.sh v2.0'
-[[ "$LIST_UTILS" = "$LIST_UTILS_VERSION" ]] && return
-LIST_UTILS="$LIST_UTILS_VERSION"
+[[ "$LIST_UTILS_SH" = "$LIST_UTILS_VERSION" ]] && return
+LIST_UTILS_SH="$LIST_UTILS_VERSION"
 
 export CHAR_NL=$'\n'
 export CHAR_TAB=$'\t'

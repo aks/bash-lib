@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# test-real-utils.sh
+#
 # Copyright 2014, Alan K. Stebbens <aks@stebbens.org>
 #
 # test-real-utils.sh -- test the real-utils script
@@ -144,6 +146,12 @@ test_07_round() {
   TEST_math  "round(1.5,1)"   "1.5"
   TEST_math  "round(1.99,1)"  "2.0"
   TEST_math  "round(1.99,2)"  "1.99"
+  end_test
+}
+
+test_08_real_help() {
+  start_test
+  check_output real_help "real_help"
   end_test
 }
 

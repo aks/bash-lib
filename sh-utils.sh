@@ -5,11 +5,9 @@
 # Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
 #
 
-# Don't read ourselves multiple times
-
 SH_UTILS_VERSION="sh-utils.sh v1.5"
-[[ "$SH_UTILS" = "$SH_UTILS_VERSION" ]] && return 0
-SH_UTILS="$SH_UTILS_VERSION"
+[[ "$SH_UTILS_SH" = "$SH_UTILS_VERSION" ]] && return
+SH_UTILS_SH="$SH_UTILS_VERSION"
 
 sh_utils_help() {
     cat 1>&2 <<'EOF'

@@ -29,25 +29,31 @@ function TEST_cond() {
   check_equal "$res" "$expect" "'$expr' evaluated to '$res', not '$expect'"
 }
 
-# TEST_math 'MATH_EXPRESSION'  ANSWER
+# TEST_math 'MATH_EXPRESSION'  [SCALE] ANSWER
 
 function TEST_math() {
   local expr="$1"
-  local ans=`real_eval "$1"`
-  check_equal "$ans" "$2"  "'$1' evaluated to '$ans', not '$2'"
+  local scale= answer=
+  if (( $# > 2 )) ; then
+    scale="$2" answer="$3"
+  else
+    answer="$2"
+  fi
+  local res=`real_eval "$expr" $scale`
+  check_equal "$res" "$answer"  "'$expr' evaluated to '$res', not '$answer'"
 }
 
 # Use command line arguments if there are any.
 
-test_basic_arithmetic() {
+test_01_basic_arithmetic() {
   start_test
-  TEST_math "scale=3; 21.5 / 6.4"       "3.359"
-  TEST_math "200.5 / 5.3 + 3.6 * 7.2"   "63.75"
-  TEST_math "scale=1; (12.0 / 3.0)"     "4.0"
+  TEST_math "scale=3 ; 21.5 / 6.4"                "3.359"
+  TEST_math "scale=2 ; 200.5 / 5.3 + 3.6 * 7.2"   "63.75"
+  TEST_math "scale=1; 12.0 / 3.0"                 "4.0"
   end_test
 }
 
-test_cond_evals() {
+test_02_cond_evals() {
   start_test
   TEST_cond "10.1 > 10.0"
   TEST_cond "10.1 >= 10.1"
@@ -60,7 +66,7 @@ test_cond_evals() {
   end_test
 }
 
-test_powers() {
+test_03_powers() {
   start_test
   TEST_cond "2^2 == 4"
   TEST_cond "2^3 == 8"
@@ -71,20 +77,20 @@ test_powers() {
   end_test
 }
 
-test_int_frac_funcs() {
+test_04_int_frac_funcs() {
   start_test
-  TEST_math "int(3)"        "3"
-  TEST_math "int(3.1)"      "3"
-  TEST_math "int(3.99)"     "3"
-  TEST_math "frac(3.99)"    ".99"
-  TEST_math "frac(123.456)" ".456"
-  TEST_math "scale=1;int(3)/2"      "1.5"
-  TEST_math "scale=1;int(3.2)/2"    "1.5"
-  TEST_math "scale=1;frac(3.2)*2"   ".4"
+  TEST_math "int(3)"         "3"
+  TEST_math "int(3.1)"       "3"
+  TEST_math "int(3.99)"      "3"
+  TEST_math "frac(3.99)"     ".99"
+  TEST_math "frac(123.456)"  ".456"
+  TEST_math "int(3)/2"   1   "1.5"
+  TEST_math "int(3.2)/2" 1   "1.5"
+  TEST_math "frac(3.2)*2" 1  ".4"
   end_test
 }
 
-test_trig_funcs() {
+test_05_trig_funcs() {
   start_test
   export real_scale=8
   TEST_math  "sin(0)"       "0"
@@ -108,14 +114,14 @@ test_trig_funcs() {
   end_test
 }
 
-test_conversions() {
+test_06_conversions() {
   start_test
   for ((deg = 0; deg <= 360; deg += 5)); do
     # test conversion functions
     rad=`rad $deg 2`
-    TEST_math "scale=2 ; rad($deg)" "$rad"
+    TEST_math "rad($deg)" 2 "$rad"
     deg2=`deg $rad 2`
-    TEST_math "scale=2 ; deg($rad)" "$deg2"
+    TEST_math "deg($rad)" 2 "$deg2"
     diff=`real_eval '$deg - $deg2'`
     # we must allow for a single digit rounding error
     TEST_cond "abs($deg - $deg2) <= 1"
@@ -130,7 +136,7 @@ test_conversions() {
   end_test
 }
 
-test_round() {
+test_07_round() {
   start_test
   TEST_math  "round(1.4,0)"   "1"
   TEST_math  "round(1.5,0)"   "2"
@@ -141,10 +147,10 @@ test_round() {
   end_test
 }
 
-if (( BASH_VERSINFO[0] < 4 )); then
-  echo "The real-utils library needs bash version 4 or greater"
-  exit 2
-fi
+#if (( BASH_VERSINFO[0] < 4 )); then
+#  echo "The real-utils library needs bash version 4 or greater"
+#  exit 2
+#fi
 
 init_tests "$@"
 run_tests

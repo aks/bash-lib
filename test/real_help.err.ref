@@ -1,0 +1,90 @@
+real-utils.sh is a bash library that enables real number arithmetic in bash
+scripts.  Real numbers are managed as flaoting point strings in the format
+"X.Y", where X is the integer portion, and "Y" is the fractional part.
+
+Usage:
+
+    source real-utils.sh
+
+    real_compute "EXPRESSIN"  [SCALE]
+
+    real_eval    "EXPRESSION" [SCALE]
+
+    real_cond     EXPRESSION  [SCALE]
+
+    real_int   REAL
+
+    real_frac  REAL
+
+    real_help
+
+Descriptions:
+
+    real_compute "EXPRESSION" [SCALE]
+
+The `real_compute` bash function evaluates `EXPRESSION` using syntax, operators
+and functions as described in the `bc` manual.  All numbers and variables
+within `EXPRESSION` are interpreted by `bc`.  The result of the computation is
+output to `STDOUT`.
+
+If an error occurs, there is no indication.  This function does not set a
+  return code, nor does it set the shell status variable `$?`.  Use `real_eval`
+  for those effects.
+
+In addition to the operators and functions defined by `bc`, the following
+additional functions are also made available within the `EXPRESSION`:
+
+    abs(x)           deg(x)           log10(x)         rad(x)
+    acos(x)          exp(x)           logn(x)          round(x,s)
+    asin(x)          frac(x)          ndeg(x)          sin(x)
+    atan(x)          int(x)           pi()             tan(x)
+    cos(x)           log(x)           pow(x,y)
+
+To see the `bc` definitions of these functions, use the `real_functions`
+function.
+
+    real_eval "EXPRESSION" [SCALE]
+
+The `real_eval` bash function invokes `real_compute` on the arguments, prints
+the result on `STDOUT`, and returns with the `bc` return code `$?` (0 or 1, for
+success or error, respectively).
+
+    real_cond "EXPRESSION" [SCALE]
+
+`EXPRESSION` is a real number conditional which should evaluate to 1 or 0.  The
+return status is 0 for true, 1 for false.  Example usage:
+
+     if real_cond "$num < $max" 2 ; then
+       ...
+     fi
+
+
+    real_scale=NUM
+
+Set the precision of subsequent real number arithmetic results.   The
+default is 2.
+
+    real_int  REAL          -- outputs the integer portion of a REAL number
+    real_frac  REAL         -- outputs the fractional portion of a REAL number
+
+    sin R, cos R, tan R     -- trig functions on radians R
+    asin X, acos X, atan X  -- inverse trig functions
+    cotan X, sec X, cosec X -- cotangent, secant, cosecant
+    arccot X                -- arc-cotangent
+    hypot X Y               -- hypotenuse X, Y [sqrt(X^2 + Y^2)]
+    sqrt X                  -- square-root of X
+    logn X, log X           -- natural log, log base 10
+    exp X                   -- exponent X of E (e.g., e^X)
+    pow X Y                 -- power function [X^Y]
+    rad D                   -- convert degrees D to radians
+    deg R                   -- convert radians R to degrees
+    ndeg R                  -- convert radians R to natural degrees (0..360)
+    round X S               -- Round X to S decimals.  When S=0, rounds to the nearest integer.
+    real_int X              -- outputs integer portion of X
+    real_frac X             -- outputs fractional portion of X
+    abs X                   -- Return the absolute value of X.
+
+    PI   = 3.141592653589793
+    TAU  = 6.283185307179586   # 2*PI
+    E    = 2.718281828459045
+

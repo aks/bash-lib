@@ -7,6 +7,7 @@ bindirs =
 bins =	
 
 libdirs = $(HOME)/lib
+
 libs = 	\
 	Makefile.inc 		\
 	Makefile-template	\

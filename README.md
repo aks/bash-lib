@@ -5,6 +5,67 @@ Library of bash scripts.
 
 Author: Alan K. Stebbens <aks@stebbens.org>
 
+Usage:
+------
+
+    export PATH=$PATH:$HOME/lib
+    source bash-lib.sh
+
+Replace `$HOME/lib` with wherever these files are installed
+
+This bash library is modular, and the individual utilities can be independently
+sourced, as needed.
+
+Each library has a corresponding test script to ensure proper operation before 
+installation.  These test scripts are also the basis for regression tests, after
+new features are added (or bugs are fixed).
+
+For example, the `text-utils.sh` library has a test script called
+`test-text-utils.sh`.  The `test-utils.sh` library is used to operate all the
+tests and makes a very good example of how to implement TDD in bash scripts.
+
+Installation:
+-------------
+
+The installation is managed with `make`, using `Makefile` which, in turn,
+sources `Makefile.inc`.  If any changes are needed to support your
+installation, the changes should be made within the `Makefile`.
+
+    make
+
+Show the various make targets.
+
+    make tests
+
+Run all the tests to confirm proper operation.  Some of the tests can take a
+few minutes.  Progress will be shown, so there is no guessing.
+
+    make install
+
+Install the bash library into `$HOME/lib` (the default).
+
+    make install libdirs=/usr/local/lib
+
+Install into `/usr/local/lib`.
+
+If this bash library is installed into an alternative path, e.g., `/opt/lib`,
+then any scripts that wish to make use of them will need to modify the `PATH`
+environment variable, in order to source the library files without explicit
+paths.
+
+This library is available at [https://github.com/aks/bash-lib.git].
+
+If you wish to make improvements, feel free to fork this repo, make and test
+your changes, and the issue a pull request.
+
+As part of your testing, you'll probably need to source `reset-util-vars.sh`,
+which defines `reset_util_vars`, which you can then invoke to reset the shell
+variables that prevent redundant sourcings.  Alternatively, you can increment
+the version number in the utility libraries that you are modifying.
+
+
+Follow the links below for detailed descriptiops of each module.
+
 * [date-util.sh](#date_utils)
 * [list-utils.sh](#list_utils)
 * [hash-utils.sh](#hash_utils)

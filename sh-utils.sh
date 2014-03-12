@@ -247,16 +247,16 @@ _arg_or_input() { arg_or_input "$1" ; }
 # Return the arguments or read input
 
 args_or_input() {
-  local -a args
   if (( $# == 0 )) ; then
+    local -a args
     local func="${FUNCNAME[1]}"
     while (( ${#args[*]} == 0 )); do
       read -p "$func? " -a args
     done
+    echo "${args[@]}"
   else
-    args=( "$@" )
+    echo "$@"
   fi
-  echo "${args[@]}"
 }
 _args_or_input() { args_or_input "$@" ; }
 

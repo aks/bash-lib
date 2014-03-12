@@ -4,9 +4,8 @@
 # bash script utilities for managing hashes (associative arrays)
 
 HASH_UTILS_VERSION='hash-utils.sh v1.1'
-
 [[ "$HASH_UTILS" = "$HASH_UTILS_VERSION" ]] && return
-export HASH_UTILS="$HASH_UTILS_VERSION"
+HASH_UTILS="$HASH_UTILS_VERSION"
 
 source list-utils.sh
 

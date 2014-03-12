@@ -3,14 +3,12 @@
 #
 # Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
 
-TEXT_UTILS_VERSION="text-utils.sh v1.3"
+TEXT_UTILS_VERSION="text-utils.sh v1.4"
 [[ "$TEXT_UTILS_SH" = "$TEXT_UTILS_VERSION" ]] && return
-export TEXT_UTILS_SH="$TEXT_UTILS_VERSION"
-
-export TEXT_UTILS_SH="${BASH_SOURCE[0]}"
+TEXT_UTILS_SH="$TEXT_UTILS_VERSION"
 
 help_test_utils() {
-  cat 1>&2 <<EOF
+  cat 1>&2 <<'EOF'
 lowercase STRING              # return the lowercase string
 uppercase STRING              # return the uppercase string
 trim STRING                   # trim blanks surrounding string
@@ -29,10 +27,10 @@ EOF
 lowercase() { echo "$*" | tr 'A-Z' 'a-z' ; }
 uppercase() { echo "$*" | tr 'a-z' 'A-Z' ; }
 
-ltrim()   { echo "$*" | sed -Ee 's/^[[:space:]]*//' ; }
-rtrim()   { echo "$*" | sed -Ee 's/[[:space:]]*$//' ; }
-trim()    { echo "$*" | sed -Ee 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' ; }
-squeeze() { echo "$*" | tr '\t' ' ' | tr -s ' ' ; }
+ltrim()     { echo "$*" | sed -Ee 's/^[[:space:]]*//' ; }
+rtrim()     { echo "$*" | sed -Ee 's/[[:space:]]*$//' ; }
+trim()      { echo "$*" | sed -Ee 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' ; }
+squeeze()   { echo "$*" | tr '\t' ' ' | tr -s ' ' ; }
 
 # split_str   "STRING" [SEP]
 #

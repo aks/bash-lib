@@ -3,9 +3,9 @@
 #
 # Copyright 2009-2014 Alan K. Stebbens <aks@stebbens.org>
 
-#[[ -z "$DATE_UTILS_SH" ]] || return 
-
-DATE_UTILS_SH="${BASH_SOURCE[0]}"
+DATE_UTILS_VERSION="date-utils.sh v1.8"
+[[ "$DATE_UTILS_SH" = "$DATE_UTILS_VERSION" ]] && return 
+DATE_UTILS_SH="$DATE_UTILS_VERSION"
 
 export DATE_FORMAT="%F"
 

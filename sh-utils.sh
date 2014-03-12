@@ -6,11 +6,10 @@
 #
 
 # Don't read ourselves multiple times
-#[[ -n "$SH_UTILS" ]] && return 0
 
 SH_UTILS_VERSION="sh-utils.sh v1.5"
-
-export SH_UTILS="$SH_UTILS_VERSION"
+[[ "$SH_UTILS" = "$SH_UTILS_VERSION" ]] && return 0
+SH_UTILS="$SH_UTILS_VERSION"
 
 sh_utils_help() {
     cat 1>&2 <<'EOF'

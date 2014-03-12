@@ -1,133 +1,164 @@
 # test-utils.sh
-#
 # Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
-#
-# infrasructure for test-driven development of Bash scripts
-#
-# A run is a collection of tests, each test has a name.
-# A test is a set of related operations with checks on the results
-# A check compares values, which can result in an error.
-#
-# At the end of each test, there are a number of checks and errors.
-#
-# The tests to be run must have the function name begin with "test_".
-#
-# The general structure of a test suite:
-#
-#  source test-utils.sh
-#
-#  init_tests [ARGUMENTS]
-#
-#  test_01_NAME1() {
-#     start_test
-#     ... do some operations to be tested
-#
-#     check_equal 'bar' `my_func foo` "Func on 'foo' did not match 'bar'"
-#
-#     end_test
-#   }
-#  ...
-#  test_NN_NAME() {
-#     ...
-#   }
-#  ...
-#  run_tests
-#  summarize_tests
-#
-# These are the kinds of tests that can be done:
-#
-#     check_value        VAL               ERROR
-#     check_empty        VAL               ERROR
-#
-#  Expression tests
-#
-#     check_true         "EXPR"            ERROR
-#     check_false        "EXPR"            ERROR
-#
-#  Array item tests
-#
-#     check_size         LIST SIZE         ERROR  # same as check_size_eq
-#     check_size_XX      LIST SIZE         ERROR 
-#
-#     check_item         LIST INDEX VAL    ERROR
-#     check_item_equal   LIST INDEX VAL    ERROR
-#     check_item_unequal LIST INDEX NONVAL ERROR
-#
-#  Hash tets
-#
-#     check_key          HASH KEY          ERROR
-#     check_no_key       HASH KEY          ERROR
-#     check_key_value    HASH KEY VALUE    ERROR
-#
-#  String tests 
-#
-#     check_equal        VAL1 VAL2         ERROR
-#     check_unequal      VAL1 VAL2         ERROR
-#
-#     check_match        VAL1 REGEXP       ERROR
-#     check_nomatch      VAL1 REGEXP       ERROR
-#
-#  Numeric tests
-#
-#     check_eq           N1 N2             ERROR
-#     check_ne           N1 N2             ERROR
-#     check_lt           N1 N2             ERROR
-#     check_le           N1 N2             ERROR
-#     check_gt           N1 N2             ERROR
-#     check_ge           N1 N2             ERROR
-#
-#     ERROR is optional.
-#     XX above can be: eq, ne, lt, le, gt, ge
-#
-#  Output tests
-#
-#    check_output [NAME] EXPRESSION [ERROR]
-#
-#          Evaluate EXPRESSION and compare its output against a previously
-#          collected reference output.  If the output matches, the test
-#          succeeds.  If the output does not match, print ERROR or a default
-#          error message.
-#
-#          Use NAME as the unique identifier for files in which the stdout,
-#          stderr, and reference output is identified.
-#
-#          Reference output can be created by the '-k' ($keep) option when the
-#          test is run.
-#
-#          The first time a new check_output test is evaluated, there will not
-#          be a collected reference output to compare against, and the test
-#          will fail.
-#
-#    check_out      [NAME] EXPRESSION [ERROR]
-#    check_out_none [NAME] EXPRESSION [ERROR]
-#    check_err      [NAME] EXPRESSION [ERROR]
-#    check_err_none [NAME] EXPRESSION [ERROR]
-#
-#         Check that STDOUT or STDERR is or is not empty when evaluating
-#         EXPRESSION, or show the ERROR (or default) message.
-#
-#    check_out_eq   [NAME] EXPRESSION VALUE [ERROR]
-#    check_err_eq   [NAME] EXPRESSION VALUE [ERROR]
-#
-#         Check that the STDOUT, or STDERR of the evaluated EXPRESSION matches
-#         "VALUE", or show the ERROR (or a default error message).
-#
-#    check_out_ne [NAME] EXPRESSION VALUE [ERROR]
-#    check_err_ne [NAME] EXPRESSION VALUE [ERROR]
-#
-#         Check that the STDOUT or STDERR of the evaluated EXPRESSION does not
-#         contain "VALUE", or show the ERROR.
-#
-#
-#  Alan K. Stebbens <aks@stebbens.org>
 
-TEST_UTILS_VERSION="test-utils.sh v1.7"
+TEST_UTILS_VERSION="test-utils.sh v1.8"
 [[ "$TEST_UTILS_SH" = "$TEST_UTILS_VERSION" ]] && return
-export TEST_UTILS_SH="$TEST_UTILS_VERSION"
+TEST_UTILS_SH="$TEST_UTILS_VERSION"
 
 export PATH=.:$HOME/lib:$PATH
 
 source list-utils.sh
+
+test_utils_help() {
+  cat <<'EOF'
+The `test-utils.sh` library provides an infrasructure for test-driven
+development (TDD) of `bash` scripts.
+
+Usage:
+
+    source test-utils.sh
+
+    test_NAME1() {
+      start_test
+      ... # perform operations and test the results
+      end_test
+    }
+
+    test_NAME2() {
+      start_test
+      ... # perform operations and test the results
+      end_test
+    }
+
+    init_tests [ARGUMENTS]
+    run_tests
+    summarize_tests
+
+Description:
+
+A *run* is a collection of *tests* (within a single file); each test has a name.
+
+A *test* is a set of related operations with *checks* on the results.
+
+A *check*` tests or compares values, which quietly succeeds, or results in an
+error.  The error message can be provided, or a default one is used.
+
+At the end of each test, the number of checks and errors is remembered for
+later summarization.
+
+At the end of the run, all checks and error counts are summarized.
+
+While the tests and checks are being performed, output is occuring to show the
+progress.  There are three modes of output: terse, errors-only, and detailed.
+
+Terse mode shows each test name followed by the number of checks, and how many
+of those checks had errors.  Terse mode is the default.
+
+In errors-only mode, successful tests still show the same as terse mode, but 
+tests with error checks show the error message followed by a stack dump
+indicating the location of the error.  Errors-mode is indicated by the `-e`
+option when invoking the test script.
+
+In details mode, the tests and checks are run in verbose mode, showing both
+successful checks and errors.  Details mode is indicated by the `-d` option.
+
+When invoking the test script, the command line argument can be used to pass a
+`PATTERN` that is used to match a subset of the test names.  By default, all
+tests with the pattern `test_*` are run.  For example, if the pattern `basic`
+is used, all tests with the string `basic` will be run, and no others.
+
+In order to be discovered for automatic test runs, the tests functions must
+have the function name begin with "test_".
+
+A common technique for test naming is: `test_NN_some_descriptive_name`, where
+`NN` is a number.  This allows easy referency by the `NN` to selectively run a
+test or tests.
+
+Below are the tests that are currently supported:
+
+      check_value        VAL               ERROR
+      check_empty        VAL               ERROR
+
+ Expression tests
+
+      check_true         "EXPR"            ERROR
+      check_false        "EXPR"            ERROR
+
+ Array item tests
+
+      check_size         LIST SIZE         ERROR  # same as check_size_eq
+      check_size_XX      LIST SIZE         ERROR 
+
+      check_item         LIST INDEX VAL    ERROR
+      check_item_equal   LIST INDEX VAL    ERROR
+      check_item_unequal LIST INDEX NONVAL ERROR
+
+ Hash tets
+
+      check_key          HASH KEY          ERROR
+      check_no_key       HASH KEY          ERROR
+      check_key_value    HASH KEY VALUE    ERROR
+
+ String tests
+
+      check_equal        VAL1 VAL2         ERROR
+      check_unequal      VAL1 VAL2         ERROR
+
+      check_match        VAL1 REGEXP       ERROR
+      check_nomatch      VAL1 REGEXP       ERROR
+
+ Numeric tests
+
+      check_eq           N1 N2             ERROR
+      check_ne           N1 N2             ERROR
+      check_lt           N1 N2             ERROR
+      check_le           N1 N2             ERROR
+      check_gt           N1 N2             ERROR
+      check_ge           N1 N2             ERROR
+
+Output tests
+
+     check_output [NAME] EXPRESSION [ERROR]
+
+Evaluate `EXPRESSION` and compare its output against a previously collected
+reference output.  If the output matches, the test succeeds.  If the output
+does not match, print `ERROR` or a default error message.
+
+Use `NAME` as the unique identifier for files in which the `stdout`, `stderr`,
+and reference output is identified.
+
+Reference output can be created by the `-k` (`$keep`) option when the test is
+run.
+
+The first time a new check_output test is evaluated, there will not be a
+collected reference output to compare against, and the test will fail.
+
+NOTE: The following functions are not yet implemented.
+
+     check_out      [NAME] EXPRESSION [ERROR]
+     check_out_none [NAME] EXPRESSION [ERROR]
+     check_err      [NAME] EXPRESSION [ERROR]
+     check_err_none [NAME] EXPRESSION [ERROR]
+
+Check that `STDOUT` or `STDERR` is or is not empty when evaluating
+`EXPRESSION`, or show the `ERROR` (or default) message.
+
+     check_out_eq   [NAME] EXPRESSION VALUE [ERROR]
+     check_err_eq   [NAME] EXPRESSION VALUE [ERROR]
+
+Check that the `STDOUT`, or `STDERR` of the evaluated `EXPRESSION` matches
+`VALUE`, or show the `ERROR` (or a default error message).
+
+     check_out_ne [NAME] EXPRESSION VALUE [ERROR]
+     check_err_ne [NAME] EXPRESSION VALUE [ERROR]
+
+Check that the `STDOUT` or `STDERR` of the evaluated `EXPRESSION` does not
+contain `VALUE`, or show the `ERROR`.
+
+In all cases, the `ERROR` message is optional.
+EOF
+}
+
 
 TEST_usage() {
   cat 1>&2 <<EOF

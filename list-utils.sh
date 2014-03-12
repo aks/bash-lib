@@ -5,7 +5,7 @@
 
 LIST_UTILS_VERSION='list-utils.sh v2.0'
 [[ "$LIST_UTILS" = "$LIST_UTILS_VERSION" ]] && return
-export LIST_UTILS="$LIST_UTILS_VERSION"
+LIST_UTILS="$LIST_UTILS_VERSION"
 
 export CHAR_NL=$'\n'
 export CHAR_TAB=$'\t'

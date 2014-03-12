@@ -307,22 +307,24 @@ These are the hash utilities:
 
     hash_print HASHVAR [indent=INDENT] [width=WIDTH] [gutter=GUTTER] [cols=COLS] [sep=SEP]
 
-print the items in `HASHVAR` in vertically-sorted columns.  The number of
-columns is determined by `COLS`, if given, or by `WIDTH` (defaults to 80)
-divided by the maximum width of all items in `HASHVAR`.
+          print the items in `HASHVAR` in vertically-sorted columns.  The
+          number of columns is determined by `COLS`, if given, or by `WIDTH`
+          (defaults to 80) divided by the maximum width of all items in
+          `HASHVAR`.
 
-Use `GUTTER` blanks (default 2) to separate columns.
+          Use `GUTTER` blanks (default 2) to separate columns.
 
-If `SEP` is given, it is used to delimit columns intead of blanks.
+          If `SEP` is given, it is used to delimit columns intead of blanks.
 
-Each option may be abbreviated to its leading character (e.g., "g" for "gutter").
+          Each option may be abbreviated to its leading character (e.g., "g"
+          for "gutter").
 
     hash_help                             # describe the list functions
 
 
 real-utils.sh <a name="real_utils" id="real_utils">
 -------------
-real-utils.sh is a bash library that enables real number arithmetic in bash
+`real-utils.sh` is a bash library that enables real number arithmetic in bash
 scripts.  Real numbers are managed as floating point strings in the format
 "X.Y", where X is the integer portion, and "Y" is the fractional part.
 
@@ -331,8 +333,8 @@ Usage:
     source real-utils.sh
 
     real_eval "EXPRESSION" [SCALE]
-    real_cond EXPRESSION [SCALE]
-    real_int REAL
+    real_cond  EXPRESSION  [SCALE]
+    real_int  REAL
     real_frac REAL
 
 Function Descriptions:
@@ -399,49 +401,40 @@ handy functions for writing bash-based scripts
 
 Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
 
-    talk MSG ..
-    talkf FMT ARGS ..
+Shell utility functions:
 
-Print (or printf) all arguments on `STDERR`.
+       talk MSG ..              Print all arguments on `STDERR`.
+      vtalk MSG ..              If `$norun` or `$verbose` is set, print all args on `STDERR`.
+     nvtalk MSG                 Print all arguments on `STDERR` only if `$verbose` is not set.
+     nqtalk MSG                 Print all arguments on `STDERR` only if `$quiet` isn not set.
+     error [CODE] "MSG"         Print `MSG` on `STDERR`, then exit with code `CODE` (or 2)
+       die "MSG"                Print `MSG` on `STDERR`, then die (with `kill -ABRT`)
 
-    vtalk MSG ..
-    vtalkf FMT ARGS ..
+      talkf FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR`
+     vtalkf FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR` if `$norun` or `$verbose` set
+    nvtalkf FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR` unless `$verbose` set
+    nqtalkf FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR` unless `$quiet` set
+     errorf [CODE] FMT ARGS ..  Printf `FMT` `ARGS` on `STDERR`, then exit `$CODE` [2]
+       dief FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR`, then die (with `kill -ABRT`)
 
-If `$norun` or `$verbose` are set, print (or printf) all args on `STDERR`.
+    run COMMAND ARGS ..         Show `COMMAND` `ARGS` if `$norun` or `$verbase`;
+                                run `COMMAND` unless `$norun`.
 
-    nvtalk MSG 
-    nvtalkf FMT ARGS ..
+    rm_file_later FILE          Cause `FILE` to be removed upon program exit.
 
-Print (or printf) all arguments on `STDERR` unless `$verbose` is set.
+    add_trap "CMD" SIGNAL ..    Add `CMD` to the trap list for `SIGNAL`
 
-    nqtalk MSG
-    nqtalkf FMT ARGS ...
+    fn_exists FUNCTION          Return 0 (true) if `FUNCTION` exists; 1 (false) otherwise
 
-Unless `$quiet` is set, print (or printf) all args on `STDERR`.
+    numarg_or_input "$1"        Return a numeric argument or read it from `STDIN`
 
-    error [CODE] "MSG" 
-    errorf [CODE] FMT ARGS ..
+    args_or_input "$@"          Return arguments or read them from `STDIN`
 
-Print (or printf) `MSG` on `STDERR`, then exit with code CODE (or 2)
+    arg_or_input "$1"           Return the argument or read it from `STDIN`
 
-    run COMMAND ARGS ..
-    safe_run COMMAND ARGS ..
+    append_args "$@"            Append the arguments to the next line from `STDIN`
 
-If `$verbose` is set, show the command and args before running it.
-If `$norun` is not set, run the command with args and examine the resulting status.
-`safe_run` is run regardless of the `$norun` variable.
-
-    rm_file_later FILE
-
-Add `FILE` to a list of files that will be automatically removed upon program exit.
-
-    add_trap "CMD" SIGNAL ..
-
-Add `CMD` to the trap list for `SIGNAL`, while ensuring that it is not repeated.
-
-    fn_exists FUNCNAME
-
-Return 0 (true) if `FUNCNAME` is a valid function, otherwise return 1 (false).
+    append_arg "$1"             Append the argument to the next line from `STDIN`
 
 
 text-utils.sh <a name="text_utils" id="text_utils">

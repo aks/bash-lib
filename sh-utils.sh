@@ -13,34 +13,41 @@ SH_UTILS_VERSION="sh-utils.sh v1.5"
 export SH_UTILS="$SH_UTILS_VERSION"
 
 sh_utils_help() {
-    cat 1>&2 <<EOF
+    cat 1>&2 <<'EOF'
 Shell utility functions:
 
-  talk MSG ..       Print all arguments on STDERR.
- vtalk MSG ..       If \$norun or \$verbose is set, print all args on STDERR.
-nvtalk MSG          Print all arguments on STDERR only if \$verbose is not set.
-nqtalk MSG          Print all arguments on STDERR only if \$quiet isn not set.
- error [CODE] "MSG" Print MSG on STDERR, then exit with code CODE (or 2)
-   die "MSG"        Print MSG on STDERR, then die (with 'kill -ABRT')
+   talk MSG ..              Print all arguments on `STDERR`.
+  vtalk MSG ..              If `$norun` or `$verbose` is set, print all args on `STDERR`.
+ nvtalk MSG                 Print all arguments on `STDERR` only if `$verbose` is not set.
+ nqtalk MSG                 Print all arguments on `STDERR` only if `$quiet` isn not set.
+ error [CODE] "MSG"         Print `MSG` on `STDERR`, then exit with code `CODE` (or 2)
+   die "MSG"                Print `MSG` on `STDERR`, then die (with `kill -ABRT`)
 
-  talkf FMT ARGS ..         Printf FMT ARGS on STDERR
- vtalkf FMT ARGS ..         Printf FMT ARGS on STDERR if \$norun or \$verbose set
-nvtalkf FMT ARGS ..         Printf FMT ARGS on STDERR unless \$verbose set
-nqtalkf FMT ARGS ..         Printf FMT ARGS on STDERR unless \$quiet set
- errorf [CODE] FMT ARGS ..  Printf FMT ARGS on STDERR, then exit \$CODE [2]
-   dief FMT ARGS ..         Printf FMT ARGS on STDERR, then die (with 'kill -ABRT')
+  talkf FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR`
+ vtalkf FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR` if `$norun` or `$verbose` set
+nvtalkf FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR` unless `$verbose` set
+nqtalkf FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR` unless `$quiet` set
+ errorf [CODE] FMT ARGS ..  Printf `FMT` `ARGS` on `STDERR`, then exit `$CODE` [2]
+   dief FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR`, then die (with `kill -ABRT`)
 
-run COMMAND ARGS .. Show COMMAND ARGS if \$norun or \$verbase; run command unless \$norun.
+run COMMAND ARGS ..         Show `COMMAND` `ARGS` if `$norun` or `$verbase`; 
+                            run `COMMAND` unless `$norun`.
 
-rm_file_later FILE  Cause FILE to be removed upon program exit.
+rm_file_later FILE          Cause `FILE` to be removed upon program exit.
 
-add_trap "CMD" SIGNAL ..   Add CMD to the trap list for SIGNAL
+add_trap "CMD" SIGNAL ..    Add `CMD` to the trap list for `SIGNAL`
 
-fn_exists FUNCTION         return 0 (true) if FUNCTION exists; 1 (false) otherwise
+fn_exists FUNCTION          Return 0 (true) if `FUNCTION` exists; 1 (false) otherwise
 
-args=\`numarg_or_input "\$1"\`   Return a numeric argument or read it from STDIN
+numarg_or_input "$1"        Return a numeric argument or read it from `STDIN`
 
-args=( \'args_or_input "\$@"\` )  Return arguments or read them from STDIN
+args_or_input "$@"          Return arguments or read them from `STDIN`
+
+arg_or_input "$1"           Return the argument or read it from `STDIN`
+
+append_args "$@"            Append the arguments to the next line from `STDIN`
+
+append_arg "$1"             Append the argument to the next line from `STDIN`
 
 EOF
 }
@@ -253,6 +260,21 @@ args_or_input() {
   echo "${args[@]}"
 }
 _args_or_input() { args_or_input "$@" ; }
+
+# append_arg  ARG
+# append_args ARGS
+#
+# appends ARGS to the next line of input
+#
+#    echo SOMEDATA | input_with_arg SOMEARG ==> SOMEDATA SOMEARG
+
+append_arg() {
+  local -a data
+  read -a data
+  echo "${data[@]}" "$@"
+}
+append_args() { append_arg "$@" ; }
+
 
 # end of sh-utils.sh
 # vim: sw=2 ai

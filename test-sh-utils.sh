@@ -94,6 +94,17 @@ test_10_num_args_or_input() {
   end_test
 }
 
+test_11_append_args() {
+  start_test
+  local result=`echo 'foo' 'bar' | append_args 'bif' 'baf'`
+  check_equal "$result" "foo bar bif baf"
+  local result=`echo '' | append_arg 'bam'`
+  check_equal "$result" 'bam' "Should be 'bam'; got '$result'"
+  local result=`echo 'foo bar' | append_args ''`
+  check_equal "$result" 'foo bar ' "Should be 'foo bar'; got '$result'"
+  end_test
+}
+
 init_tests "$@"
 run_tests
 summarize_tests

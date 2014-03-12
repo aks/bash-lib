@@ -9,8 +9,8 @@ export PATH=.:$HOME/lib:$PATH
 
 source list-utils.sh
 
-test_utils_help() {
-  cat <<'EOF'
+test_help() {
+  cat 1>&2 <<'EOF'
 The `test-utils.sh` library provides an infrasructure for test-driven
 development (TDD) of `bash` scripts.
 
@@ -158,6 +158,7 @@ contain `VALUE`, or show the `ERROR`.
 In all cases, the `ERROR` message is optional.
 EOF
 }
+help_test() { test_help ; }
 
 
 TEST_usage() {
@@ -201,7 +202,7 @@ init_tests() {
         d) test_details=1 ;;
         e) verbose_errors=1 ;;
         k) test_keep_ref_output=1 ;;
-        h) TEST_usage;;
+        h) TEST_usage ;;
         n) norun=1 ;;
         r) test_randomize=1 ;;
         v) test_verbose=1 ;;
@@ -567,41 +568,48 @@ TEST_error_dump() {
 
 TESTS=()
 
-# Filter the TESTS array with the TEST_patterns array.  if names from the
+# Filter the TESTS array with the TEST_patterns array.  If names from the
 # former aren't matched by any patterns from the latter, remove it from the
 # TESTS array.
+#
+# Do NOT allow the `test_help` function to be included -- it is a help
+# function.
 
 filter_tests() {
-  if (( ${#TEST_patterns[@]} > 0 )); then
-    local nomatches=()
-    local name nx pat
-    for ((nx=0; nx<${#TESTS[@]}; nx++)) ; do
-      name="${TESTS[nx]}"
-      local nomatch=1
+  local deletes=()
+  local name nx
+  for ((nx=0; nx<${#TESTS[@]}; nx++)) ; do
+    name="${TESTS[nx]}"
+    local delete=    # assume the name will NOT be deleted
+    if [[ "$name" = 'test_help' ]]; then
+      delete=1
+    elif (( ${#TEST_patterns[@]} > 0 )); then
+      # we have patterns to match against.  Now assume we didn't match it
+      delete=1
+      local pat
       for pat in "${TEST_patterns[@]}" ; do
         if [[ "$name" =~ $pat ]]; then
-          nomatch= ; break
+          delete= ; break
         fi
       done
-      if (( nomatch )) ; then
-        nomatches=( "${nomatches[@]}" $nx )
-      fi
-    done
-    if (( ${#nomatches[@]} > 0 )) ; then
-      # deletions must be done in descending index order
-      local x
-      for ((x=${#nomatches[@]} - 1; x >= 0; x--)) ; do
-        nx=${nomatches[x]}
-        unset TESTS[$nx]
-      done
     fi
+    if (( delete )) ; then
+      deletes+=( $nx )
+    fi
+  done
+  if (( ${#deletes[@]} > 0 )) ; then
+    # deletions must be done in descending index order
+    local x
+    for ((x=${#deletes[@]} - 1; x >= 0; x--)) ; do
+      nx=${deletes[x]}
+      unset TESTS[$nx]
+    done
   fi
 }
 
 # gather_tests -- find all tests with the prefix "test_"
 # filter out those not matching TEST_patterns (if any)
 # in alphabetic order, or random order (if -r).
-
 
 gather_tests() {
   if [[ "${#TESTS[@]}" -eq 0 ]]; then

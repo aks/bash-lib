@@ -3,15 +3,14 @@
 #
 # Copyright 2014 Alan K. Stebbens <aks@stebbens.org>
 
-# Don't read ourselves multiple times
 
-REAL_UTILS_VERSION="real-utils.sh v1.2"
+REAL_UTILS_VERSION="real-utils.sh v1.4"
+[[ "$REAL_UTILS_SH" = "$REAL_UTILS_VERSION" ]] && return
+REAL_UTILS_SH="$REAL_UTILS_VERSION"
 
-[[ "$REAL_UTILS_VERSION" = "$REAL_UTILS" ]] && return 0
+source sh-utils.sh
 
-export REAL_UTILS="$REAL_UTILS_VERSION"
-
-real_help() {
+real_utils_help() {
   cat <<'EOF'
 real-utils.sh is a bash library that enables real number arithmetic in bash
 scripts.  Real numbers are managed as flaoting point strings in the format
@@ -19,23 +18,35 @@ scripts.  Real numbers are managed as flaoting point strings in the format
 
 Usage:
 
-   source real-utils.sh
+    source real-utils.sh
 
-   real_eval "EXPRESSION" [SCALE]
-   real_cond EXPRESSION [SCALE]
-   real_int REAL
-   real_frac REAL
+    real_compute "EXPRESSIN"  [SCALE]
 
-Function Descriptions:
+    real_eval    "EXPRESSION" [SCALE]
 
-real_eval "EXPRESSION" [SCALE]
+    real_cond     EXPRESSION  [SCALE]
 
-    The `real_eval` bash function evaluates EXPRESSION using syntax, operators and
-    functions as described is the "bc" manual.  All numbers and variables within
-    EXPRESSION are interpreted by `bc`.  If $? > 0, an error occured.
+    real_int   REAL
 
-    In addition to the operators and functions defined by `bc`, the following
-    additional functions are also made available:
+    real_frac  REAL
+
+    real_utils_help 
+
+Descriptions:
+
+    real_compute "EXPRESSION" [SCALE]
+
+The `real_compute` bash function evaluates `EXPRESSION` using syntax, operators
+and functions as described in the `bc` manual.  All numbers and variables
+within `EXPRESSION` are interpreted by `bc`.  The result of the computation is
+output to `STDOUT`.
+
+If an error occurs, there is no indication.  This function does not set a
+  return code, nor does it set the shell status variable `$?`.  Use `real_eval`
+  for those effects.
+
+In addition to the operators and functions defined by `bc`, the following
+additional functions are also made available within the `EXPRESSION`:
 
     abs(x)           deg(x)           log10(x)         rad(x)
     acos(x)          exp(x)           logn(x)          round(x,s)
@@ -43,35 +54,49 @@ real_eval "EXPRESSION" [SCALE]
     atan(x)          int(x)           pi()             tan(x)
     cos(x)           log(x)           pow(x,y)
 
-real_cond "EXPRESSION" [SCALE]
+To see the `bc` definitions of these functions, use the `real_functions`
+function.
 
-    EXPRESSION is a real number conditional which should evaluate to 1 or 0.  The
-    return status is 0 for true, 1 for false.
+    real_eval "EXPRESSION" [SCALE]
 
-real_scale=NUM
+The `real_eval` bash function invokes `real_compute` on the arguments, prints
+the result on `STDOUT`, and returns with the `bc` return code `$?` (0 or 1, for
+success or error, respectively).
 
-    Set the precision of subsequent real number arithmetic results.   The
-    default is 2.
+    real_cond "EXPRESSION" [SCALE]
 
-real_int  REAL          -- outputs the integer portion of a REAL number
-real_frac  REAL         -- outputs the fractional portion of a REAL number
+`EXPRESSION` is a real number conditional which should evaluate to 1 or 0.  The
+return status is 0 for true, 1 for false.  Example usage:
 
-sin R, cos R, tan R     -- trig functions on radians R
-asin X, acos X, atan X  -- inverse trig functions
-cotan X, sec X, cosec X -- cotangent, secant, cosecant
-arccot X                -- arc-cotangent
-hypot X Y               -- hypotenuse X, Y [sqrt(X^2 + Y^2)]
-sqrt X                  -- square-root of X
-logn X, log X           -- natural log, log base 10
-exp X                   -- exponent X of E (e.g., e^X)
-pow X Y                 -- power function [X^Y]
-rad D                   -- convert degrees D to radians
-deg R                   -- convert radians R to degrees
-ndeg R                  -- convert radians R to natural degrees (0..360)
-round X S               -- Round X to S decimals.  When S=0, rounds to the nearest integer.
-real_int X              -- outputs integer portion of X
-real_frac X             -- outputs fractional portion of X
-abs X                   -- Return the absolute value of X.
+     if real_cond "$num < $max" 2 ; then
+       ...
+     fi
+
+
+    real_scale=NUM
+
+Set the precision of subsequent real number arithmetic results.   The
+default is 2.
+
+    real_int  REAL          -- outputs the integer portion of a REAL number
+    real_frac  REAL         -- outputs the fractional portion of a REAL number
+
+    sin R, cos R, tan R     -- trig functions on radians R
+    asin X, acos X, atan X  -- inverse trig functions
+    cotan X, sec X, cosec X -- cotangent, secant, cosecant
+    arccot X                -- arc-cotangent
+    hypot X Y               -- hypotenuse X, Y [sqrt(X^2 + Y^2)]
+    sqrt X                  -- square-root of X
+    logn X, log X           -- natural log, log base 10
+    exp X                   -- exponent X of E (e.g., e^X)
+    pow X Y                 -- power function [X^Y]
+    rad D                   -- convert degrees D to radians
+    deg R                   -- convert radians R to degrees
+    ndeg R                  -- convert radians R to natural degrees (0..360)
+    round X S               -- Round X to S decimals.  When S=0, rounds to the nearest integer.
+    real_int X              -- outputs integer portion of X
+    real_frac X             -- outputs fractional portion of X
+    abs X                   -- Return the absolute value of X.
 
     PI   = 3.141592653589793
     TAU  = 6.283185307179586   # 2*PI
@@ -79,18 +104,15 @@ abs X                   -- Return the absolute value of X.
 
 EOF
 }
-help_real() { real_help ; }
+help_real_utils() { real_utils_help ; }
 
 # Default scale used by real functions.
 [[ -n "$real_scale" ]] || export real_scale=2
 
-# real_compute EXPR [SCALE]
-#
-# Basic computational engine, provides function definitions and evaluation, but
-# does not do shell status or return code management.
+# real_functions -- define our built-in functions (for bc)
 
-real_compute() {
-  ( cat <<EOF
+real_functions() {
+  cat <<'EOF'
   define pi()       { auto r,s ; s=scale; scale=10 ; r=4*a(1);         scale=s ; return(r) ; }
   define int(x)     { auto r,s ; s=scale; scale=0  ; r=((x - x%1)/1) ; scale=s ; return(r) ; }
   define frac(x)    { auto r,s ; s=scale; scale=0  ; r=(x%1) ;         scale=s ; return(r) ; }
@@ -112,24 +134,48 @@ real_compute() {
                       o=scale(x) ; scale=s+1
                       r = x + 5*10^(-(s+1))
                       scale=s
-                      return(r/1)
-                    }
-  define abs(x)     { if (x<0) return(-x) else return(x) ; }
-  scale=${2:-$real_scale}
-  $1
+                      return(r/1) ; }
+  define abs(x)     { if ( x<0 ) return(-x) else return(x) ; }
 EOF
+}
+
+# real_args_or_input "$@"
+#
+# Return the 2 arguments, with special quoting on arg1, or read from STDIN
+
+real_args_or_input() {
+  if (( $# == 0 )) ; then
+    local -a args
+    local func="${FUNCNAME[1]}"
+    while (( ${#args[*]} == 0 )); do
+      read -p "$func? " -a args
+    done
+    echo "set - '${args[0]}' ${args[1]}"
+  else
+    echo "set - '$1' $2"
+  fi
+}
+# real_compute EXPR [SCALE]
+#
+# Basic computational engine: performs bc-based evaluation, but does not do
+# shell status or return code management.
+
+real_compute() {
+  eval "`real_args_or_input \"$@\"`"
+  ( real_functions 
+    echo "scale=${2:-$real_scale} ; "
+    echo "$1"
   ) | bc -lq 2>/dev/null
 }
 
-
-# result=`real_eval 'EXPRESSION' [SCALE]`
+# real_eval 'EXPRESSION' [SCALE]
 #
 # Performs evaluation of an arithmentic expression, supporting real numbers.
 #
 # $? == 1 => bad calculation
 
-real_eval()
-{
+real_eval() {
+  eval "`real_args_or_input \"$@\"`"
   local stat=0 res=0 scale="${2:-$real_scale}"
   if (( $# > 0 )) ; then
     res=`real_compute "$1" $scale`
@@ -148,8 +194,8 @@ real_eval()
 #    ...
 #  fi
 
-function real_cond()
-{
+real_cond() {
+  eval "`real_args_or_input \"$@\"`"
   local cond=0 scale=${2:-$real_scale}
   if (( $# > 0 )); then
     cond=`real_compute "$1" $scale`
@@ -160,43 +206,28 @@ function real_cond()
   return $stat
 }
 
-# _args_or_input  [ARG]
+# real_int  [REAL]  # return the integer part of a REAL
+# real_frac [REAL]  # return the fractional part of a REAL
 #
-# Invoke FUNC with the ARGUMENTS or input from STDIN
+# Alternative usage:
 #
-# This is a utility function designed to allow functions to be called with
-# arguments given on the command line, but if omitted, to be read from STDIN.
+# echo REAL | real_int
+# echo REAL | real_frac
+#
+# Note: these are simple text functions on the string representation of real
+# numbers.
 
-_args_or_input() {
-  local func="${FUNCNAME[1]}"
-  if (( $# > 0 )); then
-    echo "$@"
-  else
-    local -a args
-    while (( ${#args[*]} == 0 )) ; do
-      read -p "$func? " -a args
-    done
-    echo "${args[@]}"
+real_int()  { 
+  eval "`real_args_or_input \"$@\"`"
+  echo "${1%.*}"
+}
+
+real_frac() {
+  eval "`real_args_or_input \"$@\"`"
+  if [[ "$1" =~ \. ]]; then
+    echo ".${1#*.}"
   fi
 }
-
-# _with_arg ARGS
-#
-# Take input and append ARGS to it and emit on stdout.
-
-_with_arg() {
-  local -a data
-  read -a data
-  echo "${data[@]}" "$@"
-}
-
-# real_int REAL   # return the integer part of a REAL
-# real_frac REAL  # return the fractional part of a REAL
-#
-# These are simple text functions on the string representation of real numbers.
-
-real_int()  { echo "${1%.*}"  ; }
-real_frac() { echo ".${1#*.}" ; }
 
 
 # Math functions
@@ -204,6 +235,7 @@ real_frac() { echo ".${1#*.}" ; }
 # All math functions operate with scale=8 unless overriden
 #
 # Some handy trig constants
+
 PI='3.141592653589793'
 TAU='6.283185307179586'   # 2*PI
 E='2.718281828459045'
@@ -225,36 +257,36 @@ E='2.718281828459045'
 # pi = 3.141592654
 # tau = 2*pi
 
-sin()    { set - `_args_or_input "$@"` ; real_eval "s($1)"         ${2:-8} ; }
-cos()    { set - `_args_or_input "$@"` ; real_eval "c($1)"         ${2:-8} ; }
-tan()    { set - `_args_or_input "$@"` ; real_eval "(s($1)/c($1))" ${2:-8} ; }
+sin()    { eval `real_args_or_input "$@"` ; real_eval "s($1)"         ${2:-8} ; }
+cos()    { eval `real_args_or_input "$@"` ; real_eval "c($1)"         ${2:-8} ; }
+tan()    { eval `real_args_or_input "$@"` ; real_eval "(s($1)/c($1))" ${2:-8} ; }
 
-cotan()  { set - `_args_or_input "$@"` ; real_eval "(c($1)/s($1))" ${2:-8} ; }
-sec()    { set - `_args_or_input "$@"` ; real_eval "(1/c($1))"     ${2:-8} ; }
-cosec()  { set - `_args_or_input "$@"` ; real_eval "(1/s($1))"     ${2:-8} ; }
-csc()    { set - `_args_or_input "$@"` ; cosec "$@" ; }
+cotan()  { eval `real_args_or_input "$@"` ; real_eval "(c($1)/s($1))" ${2:-8} ; }
+sec()    { eval `real_args_or_input "$@"` ; real_eval "(1/c($1))"     ${2:-8} ; }
+cosec()  { eval `real_args_or_input "$@"` ; real_eval "(1/s($1))"     ${2:-8} ; }
+csc()    { eval `real_args_or_input "$@"` ; cosec "$@" ; }
 
 # hypot X Y [SCALE]
-hypot()  { set - `_args_or_input "$@"` ; real_eval "sqrt(($1)^2 + ($2)^2)"  ${3:-8} ; }
+hypot()  { eval `real_args_or_input "$@"` ; real_eval "sqrt(($1)^2 + ($2)^2)"  ${3:-8} ; }
 
 # Inverse trig funcs
-asin()   { set - `_args_or_input "$@"` ; real_eval "asin($1)"        ${2:-8} ; }
-acos()   { set - `_args_or_input "$@"` ; real_eval "acos($1)"        ${2:-8} ; }
-atan()   { set - `_args_or_input "$@"` ; real_eval "atan($1)"        ${2:-8} ; }
+asin()   { eval `real_args_or_input "$@"` ; real_eval "asin($1)"        ${2:-8} ; }
+acos()   { eval `real_args_or_input "$@"` ; real_eval "acos($1)"        ${2:-8} ; }
+atan()   { eval `real_args_or_input "$@"` ; real_eval "atan($1)"        ${2:-8} ; }
 
-arccot() { set - `_args_or_input "$@"` ; real_eval "(($PI/2)-a($1))" ${2:-8} ; }
-arcsin() { set - `_args_or_input "$@"` ; asin "$@" ; }
-arccos() { set - `_args_or_input "$@"` ; acos "$@" ; }
-arctan() { set - `_args_or_input "$@"` ; atag "$@" ; }
+arccot() { eval `real_args_or_input "$@"` ; real_eval "(($PI/2)-a($1))" ${2:-8} ; }
+arcsin() { eval `real_args_or_input "$@"` ; asin "$@" ; }
+arccos() { eval `real_args_or_input "$@"` ; acos "$@" ; }
+arctan() { eval `real_args_or_input "$@"` ; atag "$@" ; }
 
 # Log functions
-logn()   { set - `_args_or_input "$@"` ; real_eval "l($1)"          ${2:-8} ; }
-log10()  { set - `_args_or_input "$@"` ; real_eval "l($1)/l(10.0)"  ${2:-8} ; }
-log()    { set - `_args_or_input "$@"` ; log10 "$@" ; }
-exp()    { set - `_args_or_input "$@"` ; real_eval "e($1)"          ${2:-8} ; }
+logn()   { eval `real_args_or_input "$@"` ; real_eval "l($1)"          ${2:-8} ; }
+log10()  { eval `real_args_or_input "$@"` ; real_eval "l($1)/l(10.0)"  ${2:-8} ; }
+log()    { eval `real_args_or_input "$@"` ; log10 "$@" ; }
+exp()    { eval `real_args_or_input "$@"` ; real_eval "e($1)"          ${2:-8} ; }
 
 # Power function
-pow()    { set - `_args_or_input "$@"` ; real_eval "$1^$2"          ${2:-8} ; }
+pow()    { eval `real_args_or_input "$@"` ; real_eval "$1^$2"          ${2:-8} ; }
 
 # rad x -- convert degrees to radians
 # deg x -- convert radians to degrees
@@ -263,16 +295,16 @@ pow()    { set - `_args_or_input "$@"` ; real_eval "$1^$2"          ${2:-8} ; }
 # 1 rad == 180 deg / PI
 # 1 deg == PI rad / 180
 
-deg()    { set - `_args_or_input "$@"` ; real_eval "deg($1)"   ${2:-8} ; }
-ndeg()   { set - `_args_or_input "$@"` ; real_eval "ndeg($1)"  ${2:-8} ; }
-rad()    { set - `_args_or_input "$@"` ; real_eval "rad($1)"   ${2:-8} ; }
+deg()    { eval `real_args_or_input "$@"` ; real_eval "deg($1)"   ${2:-8} ; }
+ndeg()   { eval `real_args_or_input "$@"` ; real_eval "ndeg($1)"  ${2:-8} ; }
+rad()    { eval `real_args_or_input "$@"` ; real_eval "rad($1)"   ${2:-8} ; }
 
 # absolute X
-abs()    { set - `_args_or_input "$@"` ; real_eval "abs($1)"           ; }
+abs()    { eval `real_args_or_input "$@"` ; real_eval "abs($1)"           ; }
 
 # Round NUM [SCALE] -- round NUM at the SCALE
 
-round()  { set - `_args_or_input "$@"` ; real_eval "round($1, ${2:-(scale($1)-1)})" ${2:-8} ; }
+round()  { eval `real_args_or_input "$@"` ; real_eval "round($1, ${2:-(scale($1)-1)})" ${2:-8} ; }
 
 
 # vim: sw=2: ai:

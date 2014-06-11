@@ -112,9 +112,11 @@ getzip:
 	scp $(disthost):$(distpath)/$(zipfile) .
 
 status:
-	@if [[ -d .git ]]; then git status ; \
-	elif [[ -d .svn ]]; then svn status ; \
-	elif [[ -d RCS ]]; then rlog -R -L RCS/* ; fi
+	@for pth in . .. ../.. ../../.. ../../../.. ; do \
+          if   [[ -d $$pth/.git ]] ; then git status ; \
+          elif [[ -d $$pth/.svn ]] ; then svn status ; \
+          elif [[ -d $$pth/RCS  ]] ; then rlog -R -L $$pth/RCS/* ; fi ; \
+        done
 
 subdirs:	$(subdirs)
 $(subdirs): ; $(MAKE) -C $@ $(MAKECMDGOALS)

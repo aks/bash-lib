@@ -19,116 +19,89 @@ source text-utils.sh
 # split_str STRING SEP          # split STRING using SEP
 # html_encode STRING            # encode STRING for HTML
 
+# run_filter_tests FUNC INPUT OUTPUT ERROR
+
+do_test() {
+  local func="$1"
+  local input="$2"
+  local output="$3"
+  local error="$4"
+
+  if [[ -n "$error" ]]; then
+    error="Failed $func test with $error"
+  else
+    error="Failed $func test with '$input'"
+  fi
+  # test function arg call first
+  local out="`$func \"$input\"`"
+  check_equal "$out" "$output" "$error"
+
+  # test pipe with no arg call next
+  out="`echo \"$input\" | $func`"
+  check_equal "$out" "$output" "$error in pipe"
+}
+
 test_01_lowercase() {
   start_test
-
-  out=`lowercase ABC`
-  check_equal "$out" 'abc'      "Failed ABC test"
-
-  out=`lowercase AbC`
-  check_equal "$out" 'abc'      "Failed AbC test"
-
-  out=`lowercase Now Is The Time For All Good Men`
-  check_equal "$out" 'now is the time for all good men' "Failed long sentence test"
-
+  do_test lowercase 'ABC' 'abc'
+  do_test lowercase 'AbC' 'abc'
+  do_test lowercase 'Now Is The Time For All Good Men' \
+                     'now is the time for all good men' \
+                     "long sentence"
   end_test
 }
 
 test_02_uppercase() {
-   start_test
-
-  out=`uppercase ABC`
-  check_equal "$out" 'ABC'      "Failed ABC test"
-
-  out=`uppercase AbC`
-  check_equal "$out" 'ABC'      "Failed AbC test"
-
-  out=`uppercase Now Is The Time For All Good Men`
-  check_equal "$out" 'NOW IS THE TIME FOR ALL GOOD MEN' "Failed long sentence test"
-
+  start_test
+  do_test uppercase 'abc' 'ABC'
+  do_test uppercase 'AbC' 'ABC'
+  do_test uppercase 'Now Is The Time For All Good Men' \
+                     'NOW IS THE TIME FOR ALL GOOD MEN' \
+                     "long sentence"
   end_test
 }
 
 # trim STRING                   # trim blanks surrounding string
 test_03_trim() {
   start_test
-
-  out=`trim "no blanks to trim"`
-  check_equal "$out" "no blanks to trim"
-
-  out=`trim " one blank in front test"`
-  check_equal "$out" "one blank in front test"
-
-  out=`trim "one blank at end test "`
-  check_equal "$out" "one blank at end test"
-
-  out=`trim " blanks at either end test "`
-  check_equal "$out" "blanks at either end test"
-
+  do_test trim "no blanks to trim"       "no blanks to trim"
+  do_test trim " one blank in front"     "one blank in front"
+  do_test trim "one blank at end "       "one blank at end"
+  do_test trim " blanks at either end "  "blanks at either end"
   end_test
 }
 
 # ltrim STRING                  # trim left-side blanks from STRING
 test_04_ltrim() {
   start_test
-  out=`ltrim "no blanks to trim"`
-  check_equal "$out" "no blanks to trim"
-
-  out=`ltrim " one blank in front test"`
-  check_equal "$out" "one blank in front test"
-
-  out=`ltrim "one blank at end test "`
-  check_equal "$out" "one blank at end test "
-
-  out=`ltrim " blanks at either end test "`
-  check_equal "$out" "blanks at either end test "
-
-  out=`ltrim "        blanks  all  over       "`
-  check_equal "$out" "blanks  all  over       "
-
+  do_test ltrim "no blanks to trim"        "no blanks to trim"
+  do_test ltrim " one blank in front"      "one blank in front"
+  do_test ltrim "  two blanks in front"    "two blanks in front"
+  do_test ltrim "one blank at end "        "one blank at end "
+  do_test ltrim " blanks at either end "   "blanks at either end "
+  do_test ltrim "    blanks   all  over  " "blanks   all  over  "
   end_test
 }
 
 # rtrim STRING                  # trim right-side blanks from STRING
 test_05_rtrim() {
   start_test
-
-  out=`rtrim "no blanks to trim"`
-  check_equal "$out" "no blanks to trim"            "Failed rtrim no blanks to trim"
-
-  out=`rtrim " one blank in front test"`
-  check_equal "$out" " one blank in front test"     "Failed rtrim one blank in front test"
-
-  out=`rtrim " one blank at end test "`
-  check_equal "$out" " one blank at end test"       "Failed rtrim one blank at end test"
-
-  out=`rtrim " blanks at either end test "`
-  check_equal "$out" " blanks at either end test"   "Failed rtrim blanks at either end test"
-
-  out=`rtrim "        blanks  all  over       "`
-  check_equal "$out" "        blanks  all  over"    "Failed rtrim blanks all over test"
-
+  do_test rtrim   "no blanks to trim"           "no blanks to trim"
+  do_test rtrim   " one blank in front test"    " one blank in front test"
+  do_test rtrim   " one blank at end test "     " one blank at end test"
+  do_test rtrim   " blanks at either end test " " blanks at either end test"
+  do_test rtrim   "        blanks  all  over  " "        blanks  all  over"
   end_test
 }
 
 # squeeze STRING                # squeeze multiple blanks in string
 test_06_squeeze() {
   start_test
-  out=`squeeze "no extra blanks to squeeze"`
-  check_equal "$out" "no extra blanks to squeeze"  "Failed squeeze no extra blanks test"
-
-  out=`squeeze "  blank  in  front  test"`
-  check_equal "$out" " blank in front test"   "Failed squeeze blank in front test"
-
-  out=`squeeze "blank  at  end  test  "` 
-  check_equal "$out" "blank at end test "     "Failed squeeze blank at end test"
-
-  out=`squeeze " blanks  at  either  end  test "`
-  check_equal "$out" " blanks at either end test "    "Failed squeeze blanks at both ends test"
-
-  out=`squeeze "        blanks     all     over       "`
-  check_equal "$out" " blanks all over "              "Failed squeeze blanks all over test"
-
+  do_test squeeze "no extra blanks to squeeze"      "no extra blanks to squeeze"
+  do_test squeeze "  blank  in  front  test"        " blank in front test"
+  do_test squeeze "blank  at  end  test  "          "blank at end test "
+  do_test squeeze " blanks  at  either  end  test " " blanks at either end test "
+  do_test squeeze "     blanks     all     over   " " blanks all over "
   end_test
 }
 
@@ -164,16 +137,9 @@ test_07_split_str() {
 
 test_08_url_encode() {
   start_test
-
-  out=`url_encode "this_is_a_plain_string"`
-  check_equal "$out" "this_is_a_plain_string"           "Failed on text with underscores"
-
-  out=`url_encode "this is a plain string"`
-  check_equal "$out" "this%20is%20a%20plain%20string"   "Failed test on this is a plain string"
-
-  out=`url_encode "this(is)[a]{plain}'string'"`
-  check_equal "$out" "this%28is%29%5Ba%5D%7Bplain%7D%27string%27"   "Failed test (is)[a]{plain}'string'"
-
+  do_test url_encode "this_is_a_plain_string"     "this_is_a_plain_string"
+  do_test url_encode "this is a plain string"     "this%20is%20a%20plain%20string"
+  do_test url_encode "this(is)[a]{plain}'string'" "this%28is%29%5Ba%5D%7Bplain%7D%27string%27"
   end_test
 }
 
@@ -194,16 +160,9 @@ test_09_url_decode() {
 
 test_10_html_encode() {
   start_test
-
-  out=`html_encode "this_is_a_plain_string"`
-  check_equal "$out" "this_is_a_plain_string"           "Failed test with underscores"
-
-  out=`html_encode "<this is a token>"`
-  check_equal "$out" "&lt;this is a token&gt;"           "Failed test with <this is a token>"
-
-  out=`html_encode "<token1><token2>"`
-  check_equal "$out" "&lt;token1&gt;&lt;token2&gt;"       "Failed test with '<token1><token2>'"
-
+  do_test html_encode "this_is_a_plain_string" "this_is_a_plain_string"
+  do_test html_encode "<this is a token>"      "&lt;this is a token&gt;"
+  do_test html_encode "<token1><token2>"       "&lt;token1&gt;&lt;token2&gt;"
   end_test
 }
 

@@ -15,22 +15,35 @@ trim STRING                   # trim blanks surrounding string
 ltrim STRING                  # trim left-side blanks from STRING
 rtrim STRING                  # trim right-side blanks from STRING
 squeeze STRING                # squeeze multiple blanks in string
-split_str STRING SEP          # split STRING using SEP [default: \t]
+split_str STRING [SEP]        # split STRING using SEP [default: ' \t']
+ ... | split_input [SEP]      # split STDIN using SEP [default: ' \t']
 html_encode [STRING]          # encode STRING (or STDIN) for html
 url_encode  [STRING]          # encode STRING (or STDIN) for url
 html_decode [STRING]          # decode STRING (or STDIN) from HTML encoding
 url_decode  [STRING]          # decode STRING (or STDIN) from URL encoding
+
+All functions, except `split_str`, can be used in a pipe without an argument.
+For example:
+
+    echo "This is a string" | uppercase   => "THIS IS A STRING"
+    html_encode <input-file >html-file
 EOF
   exit
 }
 
-lowercase() { echo "$*" | tr 'A-Z' 'a-z' ; }
-uppercase() { echo "$*" | tr 'a-z' 'A-Z' ; }
+# args_or_stdin "$@" | a-pipe
 
-ltrim()     { echo "$*" | sed -Ee 's/^[[:space:]]*//' ; }
-rtrim()     { echo "$*" | sed -Ee 's/[[:space:]]*$//' ; }
-trim()      { echo "$*" | sed -Ee 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' ; }
-squeeze()   { echo "$*" | tr '\t' ' ' | tr -s ' ' ; }
+args_or_stdin() {
+  [[ $# -gt 0 ]] && echo -n "$@" || cat
+}
+
+lowercase() { args_or_stdin "$@" | tr 'A-Z' 'a-z' ; }
+uppercase() { args_or_stdin "$@" | tr 'a-z' 'A-Z' ; }
+
+ltrim()     { args_or_stdin "$@" | sed -Ee 's/^[[:space:]]*//' ; }
+rtrim()     { args_or_stdin "$@" | sed -Ee 's/[[:space:]]*$//' ; }
+trim()      { args_or_stdin "$@" | sed -Ee 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' ; }
+squeeze()   { args_or_stdin "$@" | tr '\t' ' ' | tr -s ' ' ; }
 
 # split_str   "STRING" [SEP]
 #
@@ -44,12 +57,16 @@ squeeze()   { echo "$*" | tr '\t' ' ' | tr -s ' ' ; }
 # and comma.  By default, splitting is done by tabs.
 
 split_str() {
-  local sep="${2:-$'\t'}"
-  echo "$1"                         |
+  echo "$1" | split_input "$2"
+}
+
+split_input() {
+  local sep="${1:-$'\t'}"
   tr "$sep" '\n'                    |
   sed -Ee 's/^(.*[ ,?*].*)$/"\1"/'  |
   tr '\n' ' '
 }
+
 
 # url_encode [STRING] -- encode STRING for URLs
 # url_encode          -- encode STDIN for URLs
@@ -58,7 +75,7 @@ split_str() {
 # get double-converted.
 
 url_encode() {
-  ( [[ $# -gt 0 ]] && echo -n "$*" || cat ) |
+  args_or_stdin "$@" |
   sed -Ee "\
            s/\%/%25/g  ;
            s/ /%20/g   ; s/\\\$/%24/g ;	s/\>/%3E/g  ;\
@@ -76,7 +93,7 @@ url_encode() {
 # url_decode        -- decode STDIN for urls
 
 url_decode() {
-  ( [[ $# -gt 0 ]] && echo -n "$*" || cat ) |
+  args_or_stdin "$@" |
   sed -e "\
            s/%20/ /g  ;  s/%29/)/g   ;   s/%5B/[/g    ;\
            s/%21/\!/g ;  s/%2A/*/g   ;   s/%5C/\\\\/g ;\
@@ -95,7 +112,7 @@ url_decode() {
 # converts '&' => &amp;  '>' => &gt;  '<' => &lt;
 
 html_encode() {
-  ( [[ $# -gt 0 ]] && echo -n "$*" || cat ) |
+  args_or_stdin "$@" |
   sed -e "s/\&/\&amp;/g ; s/[<]/\&lt;/g  ; s/[>]/\&gt;/g"
 }
 
@@ -103,7 +120,7 @@ html_encode() {
 # html_decode         -- decode STDIN from HTML presentation
 
 html_decode() {
-  ( [[ $# -gt 0 ]] && echo -n "$*" || cat ) |
+  args_or_stdin "$@" |
   sed -Ee "s/\&lt;/</g ; s/\&gt;/>/g ; s/\&amp;/\&/g"
 }
 

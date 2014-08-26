@@ -40,6 +40,8 @@ numarg_or_input "$1"        Return a numeric argument or read it from `STDIN`
 
 args_or_input "$@"          Return arguments or read them from `STDIN`
 
+args_or_stdin "$@"          Return the arguments or read all of `STDIN`
+
 arg_or_input "$1"           Return the argument or read it from `STDIN`
 
 append_args "$@"            Append the arguments to the next line from `STDIN`
@@ -257,6 +259,14 @@ args_or_input() {
   fi
 }
 _args_or_input() { args_or_input "$@" ; }
+
+# args_or_stdin "$@" | some-pipe
+
+args_or_stdin() {
+  [[ $# -gt 0 ]] && echo "$*" || cat
+}
+_args_or_stdin() { args_or_stdin "$@" ; }
+
 
 # append_arg  ARG
 # append_args ARGS

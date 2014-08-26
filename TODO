@@ -3,9 +3,6 @@ Things to do
 
 * Create the check_out, check_err, etc. functions.
 
-* Fix the tests broken in test-date-utils since "arg_or_input" functions were
-  added.
-
 * create a test suite for test-utils.sh: test-test-utils.sh :-)
 
 * check for co-dependencies in all the -util.sh libraries.  Eg: mutually sourcing each other.

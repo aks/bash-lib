@@ -64,7 +64,7 @@ variables that prevent redundant sourcings.  Alternatively, you can increment
 the version number in the utility libraries that you are modifying.
 
 
-Follow the links below for detailed descriptiops of each module.
+Follow the links below for detailed descriptions of each module.
 
 * [date-util.sh](#date_utils)
 * [list-utils.sh](#list_utils)
@@ -93,6 +93,12 @@ parsed, the variables `year`, `month`, and `day` are set to their respective
 numbers.  `date_arg` is another name for the same function.
 
 If `DATESTRING` is empty, a line of input from STDIN is read and used instead.
+This makes the script handy in a pipe.  Example:
+
+    extract_first_date_from_log /var/log/messages | date_parse
+
+will set `year`, `month`, and `day` from the date extracted.
+
 
     month_number MONTHNAME
     month_num    MONTHNAME
@@ -279,7 +285,7 @@ Splitting
     split_into  VAR "STRING" SEP
 
 splits a `STRING` into parts using separator (`SEP`) (default is ',')
-and assigns the resulting separated, and quoted strings to the `VAR`.
+and assigns the resulting separated, quoted strings to the `VAR`.
 
     split_str   "STRING" [SEP]
 
@@ -288,8 +294,8 @@ outputs the split of `STRING` into parts using a separator `SEP`
 
 For the split functions:
 
-If `SEP` is anything but " " (a space), care is taken to avoid
-removing whitespace from the split values.
+If `SEP` does not include a space (" "), care is taken to avoid removing
+whitespace from the split values.
 
 `SEP` can be multiple characters; for example ' ,' (a space, comma)
 will split using both space and comma.  By default, splitting is
@@ -385,8 +391,8 @@ These are the hash utilities:
 
 real-utils.sh <a name="real_utils" id="real_utils">
 -------------
-l-utils.sh is a bash library that enables real number arithmetic in bash
-scripts.  Real numbers are managed as flaoting point strings in the format
+real-utils.sh is a bash library that enables real number arithmetic in bash
+scripts.  Real numbers are managed as floating point strings in the format
 "X.Y", where X is the integer portion, and "Y" is the fractional part.
 
 Usage:

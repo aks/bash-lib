@@ -79,7 +79,8 @@ hash_init() {
   hash_help_func $# || return
   local var="$1"
   eval "unset $var"
-  eval "declare -gA $var"                 # declare the global associative array
+  eval "declare -gA $var"            # declare the global associative array
+  eval "${var}=()"
   (( $# > 1 )) && { hash_set_default $var "$2" ; }
 }
 

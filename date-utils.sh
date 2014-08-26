@@ -455,6 +455,7 @@ week_number() {
   local week_no=$(( ( d1 / 7 ) + 1 ))
   echo $week_no
 }
+weeknumber() { week_number "$@" ; }
 
 # ISO dates
 # TBD

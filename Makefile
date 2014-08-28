@@ -15,6 +15,7 @@ libs = 	\
         date-utils.sh           \
 	hash-utils.sh		\
 	list-utils.sh		\
+	prompt-colors.sh	\
 	real-utils.sh		\
         sh-utils.sh             \
 	sync-files.sh		\

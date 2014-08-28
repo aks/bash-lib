@@ -69,6 +69,7 @@ Follow the links below for detailed descriptions of each module.
 * [date-util.sh](#date_utils)
 * [list-utils.sh](#list_utils)
 * [hash-utils.sh](#hash_utils)
+* [prompt-colors.sh](#prompt_colors)
 * [real-utils.sh](#real_utils)
 * [text-utils.sh](#text_utils)
 * [test-utils.sh](#test_utils)
@@ -391,6 +392,22 @@ These are the hash utilities:
           for "gutter").
 
     hash_help                             # describe the list functions
+
+
+prompt-colors.sh <a name="prompt_colors" id="prompt_colors">
+----------------
+`prompt-colors.sh` is a bash script that sets a bunch of color variable names
+to the corresponding `bash` prompt escape sequences.  This allows the `bash`
+`PS1` and related prompts to be easily colored using color names, like `${Red}`
+and `${BoldCyan}`.
+
+Usage:
+    
+    source prompt-colors.sh
+
+If the `$debug` or `$verbose` variables are defined when the file is sourced,
+the color name definition strings will also be printed on `STDERR` as they are
+being evaluated.
 
 
 real-utils.sh <a name="real_utils" id="real_utils">

@@ -152,7 +152,7 @@ Converts `ABSDAYS` into a date formatted by `print_date`.
 
 These functions convert from absolute days to Julian day number, and vice-versa.
 
-    weeknumber [DATESTRING | YYYY MM DD]
+    week_number [DATESTRING | YYYY MM DD]
 
 Returns the week number for the given `DATESTRING` or date components.
 
@@ -291,6 +291,10 @@ and assigns the resulting separated, quoted strings to the `VAR`.
 
 outputs the split of `STRING` into parts using a separator `SEP`
 (defaulting to space/tab).
+
+    split_input [SEP]
+
+splits the input text into parts using separator (`SEP`) (default is tab).
 
 For the split functions:
 

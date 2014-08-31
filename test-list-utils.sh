@@ -2,7 +2,7 @@
 # test-list-utils.sh
 #
 # Copyright 2006-2014, Alan K. Stebbens <aks@stebbens.org>
-# 
+#
 # Test module for list-utils.sh
 #
 
@@ -140,7 +140,7 @@ test_07_lookup_list() {
 
   item=`lookup_list tlist1 the`
   code=$?
-  check_eq $code 2 
+  check_eq $code 2
   check_equal "$item" ''
 
   item=`lookup_list tlist1 to`
@@ -189,7 +189,7 @@ test_08_grep_list() {
 
   items=( `grep_list tlist1 the` )      # 4
   code=$?
-  check_eq $code 0 
+  check_eq $code 0
   check_size items 3
   check_item_equal items 0 'the'
   check_item_equal items 1 'the'
@@ -284,6 +284,18 @@ test_10_print_list() {
   check_output plout5 "print_list words i=1 c=2"
   end_test
 }
+test_10a_print_list() {
+  start_test
+    workfiles=( '.environment*' '.cshrc*' '.aliases*' '.prompts*' '.bashrc*' '.inputrc'
+                '.profile' '.vim*' '.git-bash-prompt' 'src/github/aks/maximum-awesome' )
+    check_output plouta1 "print_list workfiles"
+    check_output plouta2 "print_list workfiles i=1"
+    check_output plouta3 "print_list workfiles i=1 c=2"
+    check_output plouta4 "print_list workfiles i=1 c=3"
+    check_output plouta5 "print_list workfiles i=2 c=1"
+    check_output plouta6 "print_list workfiles i=4 c=1"
+  end_test
+}
 test_11_join_list() {
   start_test
   list_init tlist
@@ -322,6 +334,44 @@ test_12_map_list() {
   end_test
 }
 
+test_12a_map_list_func_expr() {
+  start_test
+  #        0  1  2    3      4    5   6    7   8   9   10 11  12  13  14   15
+  words=( now is the 'time' 'for' all good men to come to the aid of their country )
+  num_words=`list_size words`
+
+  function count_vowels() {
+    local word="$1"
+    echo "$word" | sed -Ee $'s/(.)/\\1\\\n/g' | egrep -c '[aeiouy]'
+  }
+
+  items=( `map_list words count_vowels` )
+  check_size items $num_words
+  check_item_equal items 0 1
+  check_item_equal items 1 1
+  check_item_equal items 2 1
+  check_item_equal items 3 2
+  check_item_equal items 4 1
+  check_item_equal items 5 1
+  check_item_equal items 6 2
+  check_item_equal items 7 1
+  check_item_equal items 8 1
+  check_item_equal items 9 2
+  check_item_equal items 10 1
+  check_item_equal items 12 2
+  check_item_equal items 14 2
+  check_item_equal items 15 3
+  end_test
+
+}
+
+test_12b_map_list_joinstr() {
+  start_test
+  words=( now is the "time" "for" all good men to come to the aid of their country )
+  check_output map_list_joinstr "map_list words \"echo \\\"unset \\\$item\"\\\" \"\$CHAR_NL\" "
+  end_test
+}
+
 test_14_reductions() {
   start_test
   words=( now is the 'time' 'for' all good men to come to the aid of their country )
@@ -355,6 +405,7 @@ test_19_list_help_func() {
   check_output list_push2_help    "list_push nolist"
   end_test
 }
+
 
 init_tests "$@"
 run_tests

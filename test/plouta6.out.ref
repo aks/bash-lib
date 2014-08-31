@@ -1,0 +1,10 @@
+    .aliases*
+    .bashrc*
+    .cshrc*
+    .environment*
+    .git-bash-prompt
+    .inputrc
+    .profile
+    .prompts*
+    .vim*
+    src/github/aks/maximum-awesome

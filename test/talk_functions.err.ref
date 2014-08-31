@@ -1,0 +1,40 @@
+norun= verbose= quiet= : vtalk says: 
+norun= verbose= quiet= : votalk says: 
+norun= verbose= quiet= : nrtalk says: 
+norun= verbose= quiet= : nqtalk says: There is output
+
+norun= verbose= quiet=1 : vtalk says: 
+norun= verbose= quiet=1 : votalk says: 
+norun= verbose= quiet=1 : nrtalk says: 
+norun= verbose= quiet=1 : nqtalk says: 
+
+norun= verbose=1 quiet= : vtalk says: There is output
+norun= verbose=1 quiet= : votalk says: There is output
+norun= verbose=1 quiet= : nrtalk says: 
+norun= verbose=1 quiet= : nqtalk says: There is output
+
+norun= verbose=1 quiet=1 : vtalk says: There is output
+norun= verbose=1 quiet=1 : votalk says: There is output
+norun= verbose=1 quiet=1 : nrtalk says: 
+norun= verbose=1 quiet=1 : nqtalk says: 
+
+norun=1 verbose= quiet= : vtalk says: There is output
+norun=1 verbose= quiet= : votalk says: 
+norun=1 verbose= quiet= : nrtalk says: There is output
+norun=1 verbose= quiet= : nqtalk says: There is output
+
+norun=1 verbose= quiet=1 : vtalk says: There is output
+norun=1 verbose= quiet=1 : votalk says: 
+norun=1 verbose= quiet=1 : nrtalk says: There is output
+norun=1 verbose= quiet=1 : nqtalk says: 
+
+norun=1 verbose=1 quiet= : vtalk says: There is output
+norun=1 verbose=1 quiet= : votalk says: 
+norun=1 verbose=1 quiet= : nrtalk says: There is output
+norun=1 verbose=1 quiet= : nqtalk says: There is output
+
+norun=1 verbose=1 quiet=1 : vtalk says: There is output
+norun=1 verbose=1 quiet=1 : votalk says: 
+norun=1 verbose=1 quiet=1 : nrtalk says: There is output
+norun=1 verbose=1 quiet=1 : nqtalk says: 
+

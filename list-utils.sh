@@ -3,7 +3,7 @@
 #
 # sh script utilities for managing lists of things
 
-LIST_UTILS_VERSION='list-utils.sh v2.1'
+LIST_UTILS_VERSION='list-utils.sh v2.2'
 
 source bash-check.sh                # make sure we're running bash >= 3.3
 
@@ -90,7 +90,7 @@ lookup_list LISTVAR KEY              # lookup KEY in LISTVAR
 
 grep_list   LISTVAR PAT              # grep PAT across LISTVAR
 
-map_list    LISTVAR EXPR             # create a list of EXPR applied to each item in LISTVAR
+map_list    LISTVAR EXPR [JOINSTR]   # create a list of EXPR applied to each item in LISTVAR
 
 reduce_list LISTVAR EXPR [INIT]      # reduce LISTVAR using EXPR, with initial value INIT
 

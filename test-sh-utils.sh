@@ -25,17 +25,21 @@ test_02_talk_advanced() {
   end_test
 }
 
-test_03_talk_varying_norun_verbose() {
-  check_output talk_with_varying_norun_verbose
+test_03_talk_varying_norun_verbose_quiet() {
+  check_output talk_functions talk_with_varying_norun_verbose_quiet
 }
 
-talk_with_varying_norun_verbose() {
-  local norun verbose
+talk_with_varying_norun_verbose_quiet() {
+  local norun verbose quiet func
   for norun in '' 1 ; do
     for verbose in '' 1 ; do
-      echo -n 1>&2 "norun=$norun verbose=$verbose : vtalk says: "
-      vtalk "this is a test"
-      echo 1>&2
+      for quiet in '' 1 ; do
+        for func in vtalk votalk nrtalk nqtalk ; do
+          echo -n 1>&2 "norun=$norun verbose=$verbose quiet=$quiet : $func says: "
+          $func "There is output" || echo 1>&2 ""
+        done
+        echo 1>&2 ""  # separate function test groups
+      done
     done
   done
 }

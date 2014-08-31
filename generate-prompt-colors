@@ -156,9 +156,9 @@ create_prompt_color_file() {
 
   local outfile="$outdir/$PROMPT_COLOR_FILENAME"
 
-  if [[ -d "$outfile" ]]; then
+  if [[ -f "$outfile" ]]; then
     oldfile="$outfile.old"
-    vtalk "Renaming previous file to $oldfile"
+    nqtalk "Renaming previous file to $oldfile"
     run "mv \"$outfile\" \"$oldfile\""
   fi
 
@@ -181,7 +181,7 @@ HEAD
   generate_prompt_color_names
   cat <<TAIL
 
-if [[ -z "$IntenseBlack" || -z "$ResetColor" || -z "$Blue" ]]; then
+if [[ -z "\$IntenseBlack" || -z "\$ResetColor" || -z "\$Blue" ]]; then
   define_color_names
 fi
 
@@ -191,7 +191,7 @@ TAIL
   exec 1>&3       # recover original STDOUT
   if (( ! norun )) ; then
     lines=`wc -l <"$outfile"`
-    talkf "%d lines written to %s" $lines "$outfile"
+    talkf "%d lines written to %s\n" $lines "$outfile"
   else
     talk "Nothing written"
   fi

@@ -1,10 +1,10 @@
-# Makefile for libraries 
-# $Id$
+# Makefile for bash-lib
 #
+# Copyright Alan K. Stebbens <aks@stebbens.org>
 
 SHELL = /usr/local/bin/bash
-bindirs = 
-bins =	
+bindirs =
+bins =
 
 libdirs = $(HOME)/lib
 
@@ -23,6 +23,9 @@ libs = 	\
         test-template.sh        \
 	text-utils.sh		\
     	# end of list
+
+prompt-colors.sh: generate-prompt-colors
+	generate-prompt-colors
 
 subdirs=
 

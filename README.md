@@ -48,6 +48,11 @@ Install the bash library into `$HOME/lib` (the default).
 
 Install into `/usr/local/lib`.
 
+    make clean
+
+This will remove any temporary output files (from testing).  It will also
+remove `prompt-colors.sh` because it is a _generated_ file.
+
 If this bash library is installed into an alternative path, e.g., `/opt/lib`,
 then any scripts that wish to make use of them will need to modify the `PATH`
 environment variable, in order to source the library files without explicit
@@ -258,7 +263,7 @@ These are the list utilities:
 
     grep_list   LISTVAR PAT              # grep PAT across LISTVAR
 
-    map_list    LISTVAR EXPR             # create a list of EXPR applied to each item in LISTVAR
+    map_list    LISTVAR EXPR [JOINSTR]   # create a list of EXPR applied to each item in LISTVAR
 
     reduce_list LISTVAR EXPR [INIT]      # reduce LISTVAR using EXPR, with initial value INIT
 
@@ -396,18 +401,22 @@ These are the hash utilities:
 
 prompt-colors.sh <a name="prompt_colors" id="prompt_colors">
 ----------------
-`prompt-colors.sh` is a bash script that sets a bunch of color variable names
-to the corresponding `bash` prompt escape sequences.  This allows the `bash`
-`PS1` and related prompts to be easily colored using color names, like `${Red}`
-and `${BoldCyan}`.
+`prompt-colors.sh` is a bash script that creates two functions:
+`define_color_names` and `reset_color_names`, and then invokes the former.  The
+`define_color_names` function creates a bunch of color variable names, setting
+them to the corresponding `bash` prompt escape sequences.  This allows the
+`bash` `PS1` and related prompts to be easily colored using color names, like
+`${Red}` and `${BoldCyan}`.  The function `reset_color_names` removes all the
+color names from the current bash session.
 
 Usage:
     
     source prompt-colors.sh
 
-If the `$debug` or `$verbose` variables are defined when the file is sourced,
-the color name definition strings will also be printed on `STDERR` as they are
-being evaluated.
+
+The file `prompt-colors.sh` is actually dynamically generated from the script
+`generate-color-names`, and is not even part of this repo.  To create it, you
+must run `make`, or invoke `generate-prompt-colors` manually.
 
 
 real-utils.sh <a name="real_utils" id="real_utils">
@@ -507,19 +516,30 @@ handy functions for writing bash-based scripts
 
 Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
 
-Shell utility functions:
+Shell command utility functions:
 
-       talk MSG ..              Print all arguments on `STDERR`.
-      vtalk MSG ..              If `$norun` or `$verbose` is set, print all args on `STDERR`.
-     nvtalk MSG                 Print all arguments on `STDERR` only if `$verbose` is not set.
-     nqtalk MSG                 Print all arguments on `STDERR` only if `$quiet` isn not set.
-     error [CODE] "MSG"         Print `MSG` on `STDERR`, then exit with code `CODE` (or 2)
-       die "MSG"                Print `MSG` on `STDERR`, then die (with `kill -ABRT`)
+All of these `talk`, `error`, and `die` functions conditionally print the
+arguments on `STDERR`.
 
-      talkf FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR`
-     vtalkf FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR` if `$norun` or `$verbose` set
-    nvtalkf FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR` unless `$verbose` set
-    nqtalkf FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR` unless `$quiet` set
+       talk MSG ..              Print all args on `STDERR`
+      vtalk MSG ..              If `$norun` or `$verbose` is set, print all args.
+     votalk MSG ..              If `$verbose` only (no `$norun`) is set, print all args.
+     nrtalk MSG ..              if `$norun` set, print all args
+     nvtalk MSG                 Unless `$verbose` is set, print all args
+     nqtalk MSG                 Unless `$quiet` is set, print all args
+
+      talkf FMT ARGS ..         Printf `FMT` `ARGS`
+     vtalkf FMT ARGS ..         If `$norun` or `$verbose` set, printf `FMT, `ARGS`
+    votalkf FMT ARGS ..         If `$verbose` only (no `$norun`) is set, printf `FMT`, `ARGS`
+    nrtalkf FMT ARGS ..         If `$norun` set, printf `FMT`, `ARGS`
+    nvtalkf FMT ARGS ..         Unless `$verbose` is set, printf `FMT` `ARGS`
+    nqtalkf FMT ARGS ..         Unless `$quiet` is set, printf `FMT` `ARGS`
+
+       warn MSG                 Print all args on `STDERR`
+      error [CODE] "MSG"        Print `MSG` on `STDERR`, then exit with code `CODE` (or 2)
+        die "MSG"               Print `MSG` on `STDERR`, then die (with `kill -ABRT`)
+
+      warnf FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR`
      errorf [CODE] FMT ARGS ..  Printf `FMT` `ARGS` on `STDERR`, then exit `$CODE` [2]
        dief FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR`, then die (with `kill -ABRT`)
 
@@ -535,6 +555,8 @@ Shell utility functions:
     numarg_or_input "$1"        Return a numeric argument or read it from `STDIN`
 
     args_or_input "$@"          Return arguments or read them from `STDIN`
+
+    args_or_stdin "$@"          Return the arguments or read all of `STDIN`
 
     arg_or_input "$1"           Return the argument or read it from `STDIN`
 
@@ -597,8 +619,10 @@ Usage:
     summarize_tests
 
 Description:
+------------
 
-A *run* is a collection of *tests* (within a single file); each test has a name.
+A *run* is a collection of *tests* (within a single file); each test has
+a name.
 
 A *test* is a set of related operations with *checks* on the results.
 
@@ -624,16 +648,16 @@ option when invoking the test script.
 In details mode, the tests and checks are run in verbose mode, showing both
 successful checks and errors.  Details mode is indicated by the `-d` option.
 
-When invoking the test script, the command line argument can be used to pass a
-`PATTERN` that is used to match a subset of the test names.  By default, all
-tests with the pattern "test_" are run.  For example, if the pattern "basic"
-is used, all tests with the string "basic"` will be run, and no others.
+When invoking the test script, the command line argument can be used to pass
+a `PATTERN` that is used to match a subset of the test names.  By default, all
+tests with the pattern "test_" are run.  For example, if the pattern "basic" is
+used, all tests with the string "basic"` will be run, and no others.
 
 In order to be discovered for automatic test runs, the tests functions must
 have the function name begin with `test_`.
 
 A common technique for test naming is: `test_NN_some_descriptive_name`, where
-`NN` is a number.  This allows easy referency by the `NN` to selectively run a
+`NN` is a number.  This allows easy reference by the `NN` to selectively run a
 test or tests.
 
 Below are the tests that are currently supported:
@@ -655,7 +679,7 @@ Array item tests
       check_item_equal   LIST INDEX VAL    ERROR
       check_item_unequal LIST INDEX NONVAL ERROR
 
-Hash tets
+Hash tests
 
       check_key          HASH KEY          ERROR
       check_no_key       HASH KEY          ERROR
@@ -694,6 +718,20 @@ run.
 
 The first time a new `check_output` test is evaluated, there will not be a
 collected reference output to compare against, and the test will fail.
+
+Examples of Tests:
+------------------
+
+Please carefully review the various test files in this repo:
+
+    test-date-utils.sh    -- test the functions in date-utils.sh
+    test-hash-utils.sh    -- test the functions in hash-utils.sh
+    test-list-utils.sh    -- test the functions in list-utils.sh
+    test-real-utils.sh    -- test the functions in real-utils.sh
+    test-sh-utils.sh      -- test the functions in sh-utils.sh
+    test-text-utils.sh    -- test the functions in text-utils.sh
+    test-template.sh      -- a template for future tests
+    test-utils.sh         -- the functions described here
 
 NOTE: The following functions are not yet implemented.
 

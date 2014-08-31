@@ -27,6 +27,10 @@ libs = 	\
 prompt-colors.sh: generate-prompt-colors
 	generate-prompt-colors
 
+clean::
+	rm -f prompt-colors.sh*
+	rm -f test/*.{out,err}
+
 subdirs=
 
 tests= \

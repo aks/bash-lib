@@ -1,0 +1,3 @@
+prompt-colors.sh*
+test/*.out
+test/*.err

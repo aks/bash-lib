@@ -5,29 +5,41 @@
 # Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
 #
 
-SH_UTILS_VERSION="sh-utils.sh v1.5"
+SH_UTILS_VERSION="sh-utils.sh v1.6"
+
 [[ "$SH_UTILS_SH" = "$SH_UTILS_VERSION" ]] && return
 SH_UTILS_SH="$SH_UTILS_VERSION"
 
 sh_utils_help() {
     cat 1>&2 <<'EOF'
-Shell utility functions:
+Shell command utility functions:
 
-   talk MSG ..              Print all arguments on `STDERR`.
-  vtalk MSG ..              If `$norun` or `$verbose` is set, print all args on `STDERR`.
- nvtalk MSG                 Print all arguments on `STDERR` only if `$verbose` is not set.
- nqtalk MSG                 Print all arguments on `STDERR` only if `$quiet` isn not set.
- error [CODE] "MSG"         Print `MSG` on `STDERR`, then exit with code `CODE` (or 2)
-   die "MSG"                Print `MSG` on `STDERR`, then die (with `kill -ABRT`)
+All of these `talk`, `error`, and `die` functions conditionally print the
+arguments on STDERR.
 
-  talkf FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR`
- vtalkf FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR` if `$norun` or `$verbose` set
-nvtalkf FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR` unless `$verbose` set
-nqtalkf FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR` unless `$quiet` set
+   talk MSG ..              Print all args on `STDERR`
+  vtalk MSG ..              If `$norun` or `$verbose` is set, print all args.
+ votalk MSG ..              If `$verbose` only (no `$norun`) is set, print all args.
+ nrtalk MSG ..              if `$norun` set, print all args
+ nvtalk MSG                 Unless `$verbose` is set, print all args
+ nqtalk MSG                 Unless `$quiet` is set, print all args
+
+  talkf FMT ARGS ..         Printf `FMT` `ARGS`
+ vtalkf FMT ARGS ..         If `$norun` or `$verbose` set, printf `FMT, `ARGS`
+votalkf FMT ARGS ..         If `$verbose` only (no `$norun`) is set, printf `FMT`, `ARGS`
+nrtalkf FMT ARGS ..         If `$norun` set, printf `FMT`, `ARGS`
+nvtalkf FMT ARGS ..         Unless `$verbose` is set, printf `FMT` `ARGS`
+nqtalkf FMT ARGS ..         Unless `$quiet` is set, printf `FMT` `ARGS`
+
+   warn MSG                 Print all args on `STDERR`
+  error [CODE] "MSG"        Print `MSG` on `STDERR`, then exit with code `CODE` (or 2)
+    die "MSG"               Print `MSG` on `STDERR`, then die (with `kill -ABRT`)
+
+  warnf FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR`
  errorf [CODE] FMT ARGS ..  Printf `FMT` `ARGS` on `STDERR`, then exit `$CODE` [2]
    dief FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR`, then die (with `kill -ABRT`)
 
-run COMMAND ARGS ..         Show `COMMAND` `ARGS` if `$norun` or `$verbase`; 
+run COMMAND ARGS ..         Show `COMMAND` `ARGS` if `$norun` or `$verbase`;
                             run `COMMAND` unless `$norun`.
 
 rm_file_later FILE          Cause `FILE` to be removed upon program exit.
@@ -52,40 +64,52 @@ EOF
 }
 help_sh_utils() { sh_utils_help ; }
 
-#   talk MSG      - show MSG on STDERR
-#  vtalk MSG      - show MSG on STDERR if $norun or $verbose
-# nvtalk MSG      - show MSG on STDERR unless $verbose is set
-# nqtalk MSG      - show MSG on STDERR unless $quiet is set
+# All output goes to STDERR
+#
+#   talk MSG                                   show MSG
+#   warn MSG      alias for talk
+#  vtalk MSG      if $verbose or $norun,       show MSG
+# votalk MSG      if $verbose only (no $norun) show MSG
+# nrtalk MSG      if $norun,                   show MSG
+# nvtalk MSG      unless $verbose              show MSG
+# nqtalk MSG      unless $quiet                show MSG
 
-talk()        { echo 1>&2 "$@" ; }
+talk()        { echo 1>&2 "$@" ; return 0 ;}
 warn()        { talk "$@" ; }
-vtalk()	      { [[ -n "$norun$verbose" ]] && talk "$@" ; }
-nvtalk()      { [[ -z "$verbose" ]]       && talk "$@" ; }
-nqtalk()      { [[ -z "$quiet" ]]         && talk "$@" ; }
+vtalk()	      { [[ -n "$norun$verbose" ]]          && talk "$@" || return 1 ; }
+votalk()      { [[ -n "$verbose" && -z "$norun" ]] && talk "$@" || return 1 ; }
+nrtalk()      { [[ -n "$norun" ]]                  && talk "$@" || return 1 ; }
+nvtalk()      { [[ -z "$verbose" ]]                && talk "$@" || return 1 ; }
+nqtalk()      { [[ -z "$quiet" ]]                  && talk "$@" || return 1 ; }
 
 # error [CODE] MSG - show MSG on STDERR then exit with error CODE [default 2]
 
-error()       { 
+error()       {
   local code=2
   case "$1" in [0-9]*) code=$1 ; shift ;; esac
   talk "$@"
   exit $code
 }
 
-#   talkf FMT ARGS...   printf FMT ARGS on STDERR
-#   warnf FMT ARGS...   alias for talkf
-#  vtalkf FMT ARGS..    printf FMT ARGS on STDERR if $norun or $verbose are set
-# nvtalkf FMT ARGS..    printf FMT ARGS on STDERR unless $verbose set
+#   talkf FMT ARGS..                                 printf FMT ARGS
+#   warnf FMT ARGS..    alias for talkf
+#  vtalkf FMT ARGS..    if $norun or $verbose set,   printf FMT ARGS
+# votalkf FMT ARGS..    if $verbose & unless $norun, printf FMT ARGS
+# nrtalkf FMT ARGS..    if $norun,                   printf FMT ARGS
+# nvtalkf FMT ARGS..    unless $verbose is set,      printf FMT ARGS
+# nqtalkf FMT ARGS..    unless $quiet is set,        printf FMT ARGS
 
-talkf()       { printf 1>&2 "$@" ; }
+talkf()       { printf 1>&2 "$@" ; return 0 ;}
 warnf()       { talkf "$@" ; }
-vtalkf()      { [[ -n "$norun$verbose" ]] && talkf "$@" ; }
-nvtalkf()     { [[ -z "$verbose" ]]       && talkf "$@" ; }
-nqtalkf()     { [[ -z "$quiet" ]]         && talkf "$@" ; }
+vtalkf()      { [[ -n "$norun$verbose" ]]          && talkf "$@" || return 1 ; }
+votalkf()     { [[ -n "$verbose" && -z "$norun" ]] && talkf "$@" || return 1 ; }
+nrtalkf()     { [[ -n "$norun" ]]                  && talkf "$@" || return 1 ; }
+nvtalkf()     { [[ -z "$verbose" ]]                && talkf "$@" || return 1 ; }
+nqtalkf()     { [[ -z "$quiet" ]]                  && talkf "$@" || return 1 ; }
 
 # errorf [CODE] FMT ARGS .. print FMT ARGS on STDERR, then exit with CODE[2]
 
-errorf()      { 
+errorf()      {
   local code=2
   case "$1" in [0-9]*) code=$1 ; shift ;; esac
   talkf "$@"
@@ -93,7 +117,7 @@ errorf()      {
 }
 
 # die "Error message"
-# dief FMT ARGS .. 
+# dief FMT ARGS ..
 #
 # These functions are designed to be used within other bash scripts.  Simply
 # exiting with an error code is not sufficient because many bash scripts don't
@@ -109,7 +133,7 @@ dief() {
     case "${FUNCNAME[$i]}" in die|dief) continue ;; esac
     talkf "%s <%s:%s>\n" "${FUNCNAME[$i]}" "${BASH_SOURCE[$i]}"  "${BASH_LINENO[$i-1]}"
   done
-  kill -ABRT $$ 
+  kill -ABRT $$
   exit 2
 }
 
@@ -173,7 +197,7 @@ fn_exists() { declare -f "$1" >/dev/null ; }
 
 # The following functions, "numarg_or_input", "arg_for_input", and
 # "args_or_input" enable bash functions using them to flexibly accept an
-# argument, or arguments, on their call, or on STDIN.  
+# argument, or arguments, on their call, or on STDIN.
 #
 # For example, let's say we have two bash functions to convert Celsius to
 # Fareigheit and vice-versa.  Let's call them "c2f" and "f2c".  With these
@@ -225,6 +249,10 @@ numarg_or_input() {
 }
 _numarg_or_input() { numarg_or_input "$1" ; }
 
+# local arg=`arg_or_input "$1"`
+#
+# Return the argument given, or the first non-empty line from STDIN
+
 arg_or_input() {
   local arg
   if [[ $# -eq 0 || -z "$1" ]]; then
@@ -244,7 +272,7 @@ _arg_or_input() { arg_or_input "$1" ; }
 
 # local args=( `args_or_input "$@"` )
 #
-# Return the arguments or read input
+# Return the arguments or read a line of non-empty input
 
 args_or_input() {
   if (( $# == 0 )) ; then
@@ -261,6 +289,8 @@ args_or_input() {
 _args_or_input() { args_or_input "$@" ; }
 
 # args_or_stdin "$@" | some-pipe
+#
+# return the given arguments, or read & return STDIN until EOF
 
 args_or_stdin() {
   [[ $# -gt 0 ]] && echo "$*" || cat
@@ -271,7 +301,7 @@ _args_or_stdin() { args_or_stdin "$@" ; }
 # append_arg  ARG
 # append_args ARGS
 #
-# appends ARGS to the next line of input
+# appends ARGS to the next line of input, and return the entire string
 #
 #    echo SOMEDATA | input_with_arg SOMEARG ==> SOMEDATA SOMEARG
 

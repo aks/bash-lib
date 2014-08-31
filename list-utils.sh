@@ -3,7 +3,11 @@
 #
 # sh script utilities for managing lists of things
 
-LIST_UTILS_VERSION='list-utils.sh v2.0'
+LIST_UTILS_VERSION='list-utils.sh v2.1'
+
+source bash-check.sh                # make sure we're running bash >= 3.3
+
+# Don't source this list more than once per session (per version)
 [[ "$LIST_UTILS_SH" = "$LIST_UTILS_VERSION" ]] && return
 LIST_UTILS_SH="$LIST_UTILS_VERSION"
 
@@ -31,7 +35,7 @@ push_list VAR VAL ...                # alias to list_add
 
 list_insert      VAR VAL ...         # insert VAL.. at the front of VAR
 
-list_insert_once VAR VAL ...         # insert VAL.. at the front of VAR; 
+list_insert_once VAR VAL ...         # insert VAL.. at the front of VAR;
 
 insert_list      VAR VAL ...         # alias to list_insert
 
@@ -39,7 +43,7 @@ insert_list_once VAR VAL ...         # alias to list_insert_once
 
 list_pop VAR                         # removes top VAL on VAR and returns in variable "item"
 
-pop_list VAR                         # an alias to list_pop 
+pop_list VAR                         # an alias to list_pop
 
 list_get  VAR N                      # get the Nth item of VAR to stdout
 
@@ -70,7 +74,7 @@ split_into  VAR "STRING" SEP         # split "STRING" by SEP into VAR
 split_str   "STRING" [SEP]           # split "STRING" by SEP
 
 join_list VAR [SEP] ..               # join the items in VAR into a list, separated by SEP,
-  SEP can be 
+  SEP can be
     AND    -- separate with " and "
     OR     -- separate with " or "
     KEYS   -- enclose each item with X' and ', follwed by ','
@@ -127,7 +131,7 @@ list_init() {
 # list_add VAR VALUE ...
 #  Supports insertion of multiple values into the list
 
-list_add() { 
+list_add() {
   list_help_func $# 2 || return
   local var="$1"
   shift
@@ -322,12 +326,12 @@ in_list () {
 
 
 # list_size NAME -- return list size
-list_size() { 
+list_size() {
   list_help_func $# 1 || return
-  eval "echo \"\${#$1[@]}\"" 
+  eval "echo \"\${#$1[@]}\""
 }
 
-# args2lines ARG .. 
+# args2lines ARG ..
 #
 # echo each ARG on a separate line
 
@@ -346,7 +350,7 @@ args2lines() { local w ; for w in "$@" ; do echo "$w" ; done ; }
 #
 # sort_list2lines LISTVAR -- output the items of LISTVAR, sorted, one per line
 
-sort_str2lines()  { 
+sort_str2lines()  {
   list_help_func $# 1 || return
   args2lines "$@"                 | sort -f
 }
@@ -360,11 +364,11 @@ join_lines()      { tr '\n' ' ' | sed -e 's/ $//' ; }
 
 sort_str() {
   list_help_func $# 1 || return
-  sort_str2lines "$@" | join_lines 
+  sort_str2lines "$@" | join_lines
 }
 sorted_list() {
   list_help_func $# 1 || return
-  sort_list2lines $1  | join_lines 
+  sort_list2lines $1  | join_lines
 }
 
 sort_list() {
@@ -403,7 +407,7 @@ str_split() { split_str "$@" ; }
 #
 #   splits a STRING into parts using separator (SEP) (default is ',')
 #   and assigns the resulting separated, and quoted strings to the VAR.
-#   
+#
 #   See split_str for details on SEP
 
 split_into() {
@@ -415,7 +419,7 @@ split_into() {
 
 
 # join_list ARRAYNAME[, [AND|OR|KEYS|STR|TAB|NL|,|<sep>|NOWRAP]]
-# 
+#
 # make a list of ARRAYNAME.  If KEYS given, normalize the keys
 #
 # Args
@@ -468,9 +472,7 @@ join_list() {
       fi
       if [[ ${#list[@]} -gt 0 ]] ; then	        # list not empty?
         list+=( "$sep" "$val" )
-        #list=( "${list[@]}" "$sep" "$val" )    # append new items
         if (( $nowrap == 0 && ( ( $index % 10 ) == 0 ) )) ; then    # every 10 items, cause a newline
-          #list=( "${list[@]}" "$CHAR_NL" )	# append a new line
           list+=( "$CHAR_NL" )	                # append a new line
         fi
       else
@@ -521,9 +523,9 @@ lookup_list() {
 
 # lookup_error $CODE WORD ["NOT-FOUND-MSG" ["AMBIGUOUS-MSG"]]
 #
-# Usage: 
+# Usage:
 #  foundword=`lookup_list list $someword`
-#  [[ $? != 0 ]] && lookup_error $? $someword    
+#  [[ $? != 0 ]] && lookup_error $? $someword
 #
 # or:
 #  foundword=`lookup_list list $someword` || lookup_error $? $someword`
@@ -577,7 +579,7 @@ grep_list() {
 #     function call notation, with the previous value (starting with INIT)
 #     preceding the next item value
 #
-#     Examples:  
+#     Examples:
 #       sum=`reduce_list list_of_nums 'a + b' 0`
 #       prod=`reduce_list list_of_nums 'a * b' 1`
 
@@ -610,26 +612,35 @@ reduce_list() {
   echo "$val"
 }
 
-# newlist=( `map_list LISTVAR EXPR` )
+# newlist=( `map_list LISTVAR EXPR [JOINSTR]` )
 #
 #     Invoke EXPR on each item in LISTVAR, collecting the results into a list,
-#     returned as the result.  If EXPR is a bash expression, the current item
-#     is referenced as "$item".  Otherwise, "EXPR $item"
+#     returned as the result.  If EXPR contains a reference to "\$item" or
+#     ${#item} (for length), then it is evaluated as is, otherwise, "EXPR
+#     $item" is evaluated.  The results are joined (with `join_list`) using
+#     JOINSTR which defaults to ' '.
 
 map_list() {
   list_help_func $# 2 || return
   local listvar="$1"
   local expr="$2"
+  local joinstr="${3:- }"               # join string (or a blank)
   local newlist=()
   local x item
   local item_count=`list_size $listvar`
   for ((x=0; x<item_count; x++)) ; do
     item="`list_get $listvar $x`"
-    item="`eval \"$expr\"`"
+    [[ -z "$item" ]] && continue        # ignore empty items
+    if [[ "$expr" =~ \$(\{\#?)?item ]]; then    # if $item referenced, then eval expr as is
+      item="`eval \"$expr\"`"
+    else                                # otherwise,
+      item="`eval \"$expr $item\"`"     # treat expr as a function with $item argument
+    fi
     add_list newlist "$item"
   done
-  join_list newlist ' '
+  join_list newlist NOWRAP "$joinstr"
 }
+list_map() { map_list "$@" ; }
 
 # max_list listname
 
@@ -671,7 +682,7 @@ print_list() {
   _set_args "indent width sep cols" "$@"
   # set defaults
   sep="${sep:-2}"
-  widtharg= 
+  widtharg=
   if [[ -n "$width" ]]; then
     widtharg="-w$width "
   fi
@@ -684,7 +695,7 @@ print_list() {
   else
     prefix=`printf "%*s" $indent ' '`
     sort_list2lines $listvar | rs -t $widtharg $separg 0 $cols | (
-      while read line ; do 
+      while read line ; do
         echo -n "$prefix"
         echo "$line"
       done
@@ -720,7 +731,7 @@ print_list() {
 
   #  R C| 0   1   2
 # # ----+-------------
-# #  0  | 0   3   6  
+# #  0  | 0   3   6
 # #  1  | 1   4   7
 # #  2  | 2   5
 

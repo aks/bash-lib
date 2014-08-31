@@ -1,14 +1,59 @@
-# prompt-colors.sh
+# generate-prompt-colors-file
 #
-# source this file to get color definitions
-# if $debug or $verbose is set, the definitions
-# are also printed to STDERR.
+#  generate-prompt-colors-files -hnv [OUTPUTFILE]
+#
+# run this script to create "prompt-colors.sh", which contains
+# standard prompt color definitions, and a "reset_prompt_colors"
+# function to unset them all.
 
-define_color_names() {
+PROG="${0##*/}"
+THIS_DIR="${0%/*}"
+
+# this is the filename we create
+PROMPT_COLOR_FILENAME='prompt-colors.sh'
+
+export PATH=$PATH:$HOME/lib
+source sh-utils.sh
+source list-utils.sh
+
+usage() {
+  cat 1>&2 <<EOF
+usage: $PROG [options] [OUTDIR]
+
+Create a file that contains a standard set of colornames suitable
+for the bash prompt.  along with a function called
+'reset_color_names' that unsets all the color names.
+
+The output file, always named '$PROMPT_COLOR_FILNAME', will be
+written to $OUTDIR, which defaults to '.'
+
+If the output file already exists, it will be renamed with ".old"
+as the suffix.
+
+Use the '-n' option to see how the file would be created, but
+not actually created.
+
+Options:
+   -h       show this help
+   -n       don't make any changes; just show the commands
+   -v       be verbose
+EOF
+  exit
+}
+
+# generate_prompt_color_names
+#
+# Write a set of color name assignments to STDOUT.
+#
+# Creates two functions: define_color_names, and reset_color_names.
+
+generate_prompt_color_names() {
 
   ColorNames=( Black Red Green Yellow Blue Magenta Cyan White )
   FgColors=(    30   31   32    33     34   35      36   37  )
   BgColors=(    40   41   42    43     44   45      46   47  )
+
+  local color_name_list=()
 
   local AttrNorm=0
   local AttrBright=1
@@ -20,7 +65,7 @@ define_color_names() {
 
   # define "BoldCOLOR", "BrightCOLOR", and "DimCOLOR" names
 
-  # _map_colors ATTRNAME ATTRVALUE
+  # map_color_names ATTRNAME ATTRVALUE
   #
   # Defines three names for every color, attribute combintaion:
   #    {ATTRNAME}{COLORNAME}
@@ -29,7 +74,7 @@ define_color_names() {
   #
   # Example: BoldRed, BoldRedFg, BoldRedBg
 
-  _map_colors() {
+  map_color_names() {
     local x=0
     local attrname="$1"
     local attrcode=$2
@@ -38,15 +83,15 @@ define_color_names() {
       local fgcolorcode=${FgColors[x]}
       local bgcolorcode=${BgColors[x]}
       longcolorname="${attrname}${colorname}"
-      _def_color $longcolorname     $attrcode $fgcolorcode
-      _def_color ${longcolorname}Fg $attrcode $fgcolorcode
-      _def_color ${longcolorname}Bg $attrcode $bgcolorcode
+      assign_color_name $longcolorname     $attrcode $fgcolorcode
+      assign_color_name ${longcolorname}Fg $attrcode $fgcolorcode
+      assign_color_name ${longcolorname}Bg $attrcode $bgcolorcode
       (( x++ ))
     done
   }
 
-  # _term_color [ N | N M ]
-  _term_color() {
+  # prompt_color_string [ N | N M ]
+  prompt_color_string() {
     local cv
     if (( $# > 1 )); then
       cv="${1};${2}"
@@ -57,30 +102,119 @@ define_color_names() {
   }
 
   # def_color NAME ATTRCODE COLORCODE
-  _def_color() {
-    local def="$1=\"\`_term_color $2 $3\`\""
-    if [[ -n "$debug$verbose" ]]; then
-      echo 1>&2 "+ $def"
-    fi
-    eval "$def"
+  assign_color_name() {
+    local color_name="$1"
+    local code="`prompt_color_string $2 $3`"
+    local def="$color_name=\"$code\""
+    votalk "+ $def"
+    echo "  $def"
+    add_list color_name_list $color_name
   }
 
-  #ResetColor="`_term_color 0`"         # Text reset
+  echo "#"
+  echo "# define_color_names -- invoke to define all of the prompt color names"
+  echo "#"
+  echo 'define_color_names() {'
 
-  _map_colors Bold   $AttrBright
-  _map_colors Bright $AttrBright
-  _map_colors Dim    $AttrDim
-  _map_colors ''     $AttrNorm
+  #ResetColor="`prompt_color_string 0`"         # Text reset
 
-  _def_color IntenseBlack 0 90
-  _def_color ResetColor   0 0
+  map_color_names Bold   $AttrBright
+  map_color_names Bright $AttrBright
+  map_color_names Dim    $AttrDim
+  map_color_names ''     $AttrNorm
 
+  assign_color_name IntenseBlack 0 90
+  assign_color_name ResetColor   0 0
+
+  echo "}"
+
+  # now create the reset function
+
+  echo ""
+  echo "# reset_color_names -- invoke to unset all the color names"
+  echo ""
+  echo "reset_color_names() {"
+  map_list color_name_list "echo \"  unset \$item\"" "$CHAR_NL"
+  echo "}"
 }
 
-# do the color definitions only once
-if [[ ${#ColorNames[*]} = 0 || -z "$IntenseBlack" || -z "$ResetColor" ]]; then
+# create_prompt_color_file OUTDIR
+#
+# if OUTDIR is missing, use '.' (current directory) by default
+# the output filename is always 'prompt-colors.sh'
+#
+# The following variables should be defined before invoking this function:
+#
+# $PROMPT_COLOR_FILENAME, $PROG, $USER, $ARGSTR
+
+create_prompt_color_file() {
+  local outdir="${1:-.}"
+
+  if [[ ! -d "$outdir" ]]; then
+    error "The directory '$outdir' doesn't exist!"
+  fi
+
+  local outfile="$outdir/$PROMPT_COLOR_FILENAME"
+
+  if [[ -d "$outfile" ]]; then
+    oldfile="$outfile.old"
+    vtalk "Renaming previous file to $oldfile"
+    run "mv \"$outfile\" \"$oldfile\""
+  fi
+
+  # redirect STDOUT to the output file
+  exec 3>&1       # save a copy of current STDOUT
+  if (( ! norun )) ; then
+    exec 1>"$outfile"
+  else
+    exec 1>&2
+  fi
+  cat <<HEAD
+# $PROMPT_COLOR_FILENAME
+#
+# Please do not modify this file directly.
+#
+# This file was automatically generated by $USER at `date`
+# using $PROG $ARGSTR
+
+HEAD
+  generate_prompt_color_names
+  cat <<TAIL
+
+if [[ -z "$IntenseBlack" || -z "$ResetColor" || -z "$Blue" ]]; then
   define_color_names
 fi
+
+# end of $PROMPT_COLOR_FILENAME
+TAIL
+  exec 1>&-       # close STDOUT
+  exec 1>&3       # recover original STDOUT
+  if (( ! norun )) ; then
+    lines=`wc -l <"$outfile"`
+    talkf "%d lines written to %s" $lines "$outfile"
+  else
+    talk "Nothing written"
+  fi
+}
+
+# the main app processing
+
+ARGSTR="${ARGV[@]}"
+
+while getopts 'hnv' opt ; do
+  case "$opt" in
+    h) usage ;;
+    n) norun=1 ;;
+    v) verbose=1 ;;
+  esac
+done
+shift $(( OPTIND - 1 ))
+
+outdir="$1{:-.}"      # output directory or '.' by default
+
+create_prompt_color_file $1
+
+exit
 
 # end of prompt-colors.sh
 # vim: set ai sw=2

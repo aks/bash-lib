@@ -11,6 +11,7 @@ libdirs = $(HOME)/lib
 libs = 	\
 	Makefile.inc 		\
 	Makefile-template	\
+	bash-check.sh		\
 	bash-lib.sh		\
         date-utils.sh           \
 	hash-utils.sh		\

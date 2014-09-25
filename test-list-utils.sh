@@ -406,6 +406,20 @@ test_19_list_help_func() {
   end_test
 }
 
+# test to make sure IFS is not changed by list_items and list_join, which alters it
+test_20_list_IFS_check() {
+  start_test
+  saveIFS="$IFS"
+  list_init foo
+  list_add foo now is the 'time' 'for' all good men to come to the aid
+  tmpfile="/tmp/foo.$$"
+  list_items foo >$tmpfile
+  check_equal "$IFS" "$saveIFS"
+  join_list foo >$tmpfile
+  check_equal "$IFS" "$saveIFS"
+  end_test
+}
+
 
 init_tests "$@"
 run_tests

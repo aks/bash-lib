@@ -257,7 +257,7 @@ list_items() {
   list_help_func $# 1 || return
   local var=${1:?'Missing list name'}
   if (( $# == 1 || -z "$2$3")); then
-    eval "IFS=' ' ; echo \"\${$var[@]}\""
+    eval "local IFS=' ' ; echo \"\${$var[@]}\""
   else
     local size=`list_size $var`
     local start=${2:-0}
@@ -480,7 +480,7 @@ join_list() {
       fi
     fi
   done
-  (IFS= ; echo "${list[*]}")
+  (local IFS= ; echo "${list[*]}")
 }
 list_join() { join_list "$@" ; }
 

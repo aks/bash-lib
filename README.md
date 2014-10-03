@@ -60,6 +60,11 @@ paths.
 
 This library is available at [https://github.com/aks/bash-lib.git].
 
+There is a script called `maybe-install-bash-lib` that can be incorporated into
+the installation process of other bash libraries that depend on `bash-lib`.  It
+will check to see if the named utilities are installed, and if not, perform an
+installation from the repository.
+
 If you wish to make improvements, feel free to fork this repo, make and test
 your changes, and the issue a pull request.
 

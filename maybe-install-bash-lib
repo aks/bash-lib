@@ -1,0 +1,70 @@
+#!/bin/bash
+# maybe-install-bash-lib LIBS ..
+#
+# This utility can be used with other bash libraries that depend on bash-lib,
+# as part of their own installation procuedure, to ensure that the bash-lib is
+# installed.
+#
+# LIBS can be any of the files intalled as part of the bash-lib set.
+#
+# The file name can be given with, or without the ".sh" suffix, and with, or
+# withou the leading directory.  For example, as "sh-utils", "sh-utils.sh", or
+# "$HOME/lib/sh-utils.sh"
+
+talk(){ echo 1>&2 "$*" ; }
+
+install_bash_lib() {
+  tmpdir=/tmp/bash-lib.$$
+  logdir=$tmpdir.log
+  local status
+  talk "Installing github.com/aks/bash-lib .."
+  if ( set -x 
+         mkdir $tmpdir
+         cd $tmpdir
+         git clone https://github.com/aks/bash-lib.git
+         cd ./bash-lib
+         make install
+     ) &> $logdir ; then
+    talk "github.com/aks/bash-lib installed"
+    status=0
+  else
+    status=$?
+    talk "An error occurred installing bash-lib."
+  fi
+  talk "See $logdir for details."
+  exit $status
+}
+
+# if file_paths_missing $PATH ; then
+#   install-files
+# fi
+#
+# Return success (0) if PATH needs to be installed
+
+file_paths_missing() {
+  local file prog
+  for prog in $@ ; do
+    case "$prog" in
+      /*.sh) file="$prog" ;;
+      /*)    file="$prog.sh" ;;
+      *.sh)  file="$HOME/lib/$prog" ;;
+      *)     file="$HOME/lib/$prog.sh" ;;
+    esac
+    if [[ ! -f $file ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+if (( $# > 0 )); then
+  libs="$*"
+else
+  libs="sh-utils list-utils"
+fi
+
+if file_paths_missing $libs ; then
+  install_bash_lib
+fi
+
+exit 0

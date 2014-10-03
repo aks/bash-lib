@@ -3,7 +3,7 @@
 #
 # sh script utilities for managing lists of things
 
-LIST_UTILS_VERSION='list-utils.sh v2.3'
+LIST_UTILS_VERSION='list-utils.sh v2.4'
 
 source bash-check.sh                # make sure we're running bash >= 3.3
 

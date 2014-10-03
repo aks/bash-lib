@@ -198,29 +198,19 @@ These are the list utilities:
 
     list_add_once VAR  VAL1 [VAL2 ..]    # add VAL1.. uniquely to the end of VAR
 
-    add_list      VAR VAL1 [VAL2 ...]    # alias to list_add
-
-    add_list_once VAR VAL ...            # alias to list_add_once
-
     list_push VAR VAL ...                # alias to list_add
-
-    push_list VAR VAL ...                # alias to list_add
 
     list_insert      VAR VAL ...         # insert VAL.. at the front of VAR
 
     list_insert_once VAR VAL ...         # insert VAL.. at the front of VAR; 
 
-    insert_list      VAR VAL ...         # alias to list_insert
-
-    insert_list_once VAR VAL ...         # alias to list_insert_once
-
     list_pop VAR                         # removes top VAL on VAR and returns in variable "item"
 
-    pop_list VAR                         # an alias to list_pop 
+    list_remove VAR VAL ...              # remove VAL.. from the list VAR
 
     list_get  VAR N                      # get the Nth item of VAR to stdout
 
-    list_item VAR N                      # set 'item' to the Nth item of VAR
+    list_item VAR N                      # set the variable 'item' to the Nth item of VAR
 
     list_set  VAR N VAL                  # set the Nth item of VAR to VAL
 
@@ -232,21 +222,23 @@ These are the list utilities:
 
     list_size VAR                        # returns the number of items
 
+    list_dump VAR                        # output the contents of VAR, with indexes
+
     sort_str VAL ...                     # sort the space-separated words of VAL ..
 
-    sort_list VAR                        # sort the contents of VAR (a list) in place
+    list_sort VAR                        # sort the contents of VAR (a list) in place
 
-    sorted_list VAR                      # output the items of VAR sorted
+    list_sorted VAR                      # output the items of VAR sorted
 
-    sort_str2lines                       # sort STR with each item in a separate line
+    sort_str2lines STRING                # sort STR with each item in a separate line
 
-    sort_list2lines                      # sort LIST with each item in a separate line
+    sort_list2lines VAR                  # sort LIST with each item in a separate line
 
     split_into  VAR "STRING" SEP         # split "STRING" by SEP into VAR
 
     split_str   "STRING" [SEP]           # split "STRING" by SEP
 
-    join_list VAR [SEP] ..               # join the items in VAR into a list, separated by SEP,
+    list_join VAR [SEP] ..               # join the items in VAR into a list, separated by SEP,
       SEP can be 
         AND    -- separate with " and "
         OR     -- separate with " or "
@@ -259,31 +251,37 @@ These are the list utilities:
 
     join_lines                           # read STDIN and catenate lines; remove trailing NL
 
-    lookup_list LISTVAR KEY              # lookup KEY in LISTVAR
+    list_lookup LISTVAR KEY              # lookup KEY in LISTVAR
 
-    grep_list   LISTVAR PAT              # grep PAT across LISTVAR
+    list_grep   LISTVAR PAT              # grep PAT across LISTVAR
 
-    map_list    LISTVAR EXPR [JOINSTR]   # create a list of EXPR applied to each item in LISTVAR
+    list_map    LISTVAR EXPR [JOINSTR]   # create a list of EXPR applied to each item in LISTVAR
 
-    reduce_list LISTVAR EXPR [INIT]      # reduce LISTVAR using EXPR, with initial value INIT
+    list_reduce LISTVAR EXPR [INIT]      # reduce LISTVAR using EXPR, with initial value INIT
 
-    sum_list LISTVAR                     # sum the items in LISTVAR
+    list_sum LISTVAR                     # sum the items in LISTVAR
 
-    max_list LISTVAR                     # return the maximum item in LISTVAR
+    list_max LISTVAR                     # return the maximum item in LISTVAR
 
-    min_list LISTVAR                     # return the minimum item in LISTVAR
+    list_min LISTVAR                     # return the minimum item in LISTVAR
 
-    avg_list LISTVAR                     # return the average of the items in LISTVAR
+    list_avg LISTVAR                     # return the average of the items in LISTVAR
 
-    print_list LISTVAR [indent=INDENT] [width=WIDTH] [sep=SEP] [cols=COLS]
+    list_print LISTVAR [indent=INDENT] [width=WIDTH] [sep=SEP] [cols=COLS]
 
-    print_list LISTVAR [i=INDENT] [w=WIDTH] [s=SEP]  [c=COLS]
+    list_print LISTVAR [i=INDENT] [w=WIDTH] [s=SEP]  [c=COLS]
 
         print the items in LIST in vertically-sorted columns.  Use COLS if given,
         otherwise the number of columns is computed from WIDTH (defaults to 80) and
         the maximum width of all the items in LISTVAR
 
     list_help                             # describe the list functions
+
+There are convenient aliases for most `list_XXX` functions as `XXX_list`.  For
+example, `join_list` => `list_join`, `list_pop` => `pop_list`, `map_list` =>
+`list_map`, etc.  This allows people who think _VERB-NOUN_ to use the functions
+like `grep_list`, while other people who think _NOUN-VERB_ can use `list_grep`.
+The canonical function name begins with `list_`.
 
 Splitting
 ---------
@@ -314,13 +312,13 @@ done by tabs.
 Lookup functions
 ----------------
 
-    lookup_list LIST "WORD"
+    list_lookup LIST "WORD"
 
 Looks up `WORD` in the array `LIST` for the uniquely matching item, using
 disambiguating case-insensitive matching.  If no match, return empty string and
 code 1; if 2 or more matches, return empty string, and error code 2.
 
-    grep_list LIST PATTERN
+    list_grep LIST PATTERN
 
 Look up items matching `PATTERN` in the array `LIST`.  Return all matching items,
 and return code 0.  If no matching items, return empty string and return code

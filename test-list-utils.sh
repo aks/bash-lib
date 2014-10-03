@@ -284,6 +284,7 @@ test_10_print_list() {
   check_output plout5 "print_list words i=1 c=2"
   end_test
 }
+
 test_10a_print_list() {
   start_test
     workfiles=( '.environment*' '.cshrc*' '.aliases*' '.prompts*' '.bashrc*' '.inputrc'
@@ -296,6 +297,7 @@ test_10a_print_list() {
     check_output plouta6 "print_list workfiles i=4 c=1"
   end_test
 }
+
 test_11_join_list() {
   start_test
   list_init tlist
@@ -417,6 +419,27 @@ test_20_list_IFS_check() {
   check_equal "$IFS" "$saveIFS"
   join_list foo >$tmpfile
   check_equal "$IFS" "$saveIFS"
+  end_test
+}
+
+# test the list_remove function
+test_21_list_remove() {
+  start_test
+  list_init   words
+  list_add    words now is the 'time' 'for' all good men to come to the aid of their country
+  check_size  words  16
+  list_remove words 'is'
+                  # now the time for all good men to come to the aid of their country
+  check_size  words  15
+  check_item  words  1 'the'
+  list_remove words 'the'
+                  # now time for all good men to come to aid of their country
+  check_size  words  13
+  check_item  words  1 'time'
+  list_remove words 'to'
+                  # now time for all good men come aid of their country
+  check_size  words 11
+  check_item  words 6 'come'
   end_test
 }
 

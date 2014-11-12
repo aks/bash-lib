@@ -23,6 +23,7 @@ libs = 	\
         test-utils.sh           \
         test-template.sh        \
 	text-utils.sh		\
+	time-utils.sh		\
     	# end of list
 
 prompt-colors.sh: generate-prompt-colors
@@ -40,6 +41,7 @@ tests= \
 	test-list-utils.sh	\
 	test-real-utils.sh	\
 	test-text-utils.sh	\
+	test-time-utils.sh	\
 	test-sh-utils.sh	\
 	#test-sync-files.sh	\
 	# end of tests

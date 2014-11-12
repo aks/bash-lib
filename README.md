@@ -83,9 +83,10 @@ Follow the links below for detailed descriptions of each module.
 * [real-utils.sh](#real_utils)
 * [text-utils.sh](#text_utils)
 * [test-utils.sh](#test_utils)
+* [time-utils.sh](#time_utils)
 
 date-util.sh <a name="date_utils" id="date_utils">
--------------
+============
 
 The `date-utils` library enables easy management of dates and its year, month,
 and day components.  A variety of date formats are supported both on input
@@ -189,7 +190,7 @@ date format, given by `DATE_FORMAT`.  If `DATE_FORMAT` is not defined, the forma
 `%F` is used.  (See `man strftime` for details).
 
 list-utils.sh <a name="list_utils" id="list_utils">
--------------
+=============
 
 bash script utilities for managing lists of things
 
@@ -346,7 +347,7 @@ code 1.  `AMBIGMSG` is the error message used in the case of error code 2.
           "'%s" is an ambiguous word"
 
 hash-utils.sh <a name="hash_utils" id="hash_utils">
--------------
+=============
 
 Hashes are associative arrays. Hashes have __keys__ and associated
 __values__.   Use this library to simplify and ease your use of
@@ -423,7 +424,7 @@ must run `make`, or invoke `generate-prompt-colors` manually.
 
 
 real-utils.sh <a name="real_utils" id="real_utils">
--------------
+=============
 real-utils.sh is a bash library that enables real number arithmetic in bash
 scripts.  Real numbers are managed as floating point strings in the format
 "X.Y", where X is the integer portion, and "Y" is the fractional part.
@@ -514,7 +515,7 @@ default is 2.
 
 
 sh-utils.sh <a name="sh_utils" id="sh_utils">
------------
+=============
 handy functions for writing bash-based scripts
 
 Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
@@ -569,7 +570,7 @@ arguments on `STDERR`.
 
 
 text-utils.sh <a name="text_utils" id="text_utils">
--------------
+=============
 Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
 
 Text processing utilities for bash scripts.
@@ -595,7 +596,7 @@ The following functions are provided by this library:
 
 
 test-utils.sh <a name="test_utils" id="test_utils">
--------------
+=============
 Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
 
 The `test-utils.sh` library provides an infrasructure for test-driven
@@ -760,3 +761,42 @@ contain `VALUE`, or show the `ERROR`.
 
 In all cases, the `ERROR` message is optional.
 
+time-utils.sh <a name="time_utils" id="time_utils">
+=============
+The `time-utils` library enables easy management of timestamps, with hour,
+minute, seconds, and timezone components.  A variety of time formats are
+supported both on input parsing, and on output formatting. 
+
+    time_parse [TIMESTRING]
+    time_arg   [TIMESTRING]
+
+Parse `TIMESTRING` in one of several recognized formats: `HH:MM:SS`,
+`HH:MM:SS.ssss`, If the `TIMESTRING` is successfully parsed, the variables
+`hours`, `mins`, and `secs` are set the corresponding numbers.  `time_arg` is
+another name for the same function.
+
+If `TIMESTRING` is empty, a line of input from `STDIN` is read and used instead.
+
+    time2secs [TIMESTRING]
+
+Parse `TIMESTRING` (or `STDIN)` and convert to seconds.
+
+    time_format [FORMAT] HOURS MINS SECS
+    time_format [FORMAT] TIMESTRING
+
+The `time_format` function accepts an optional format string, followed by three
+numeric arguments, for the hour, minutes, and seconds, or a single string
+argument in any of the parsable date formats, and reformats into the default
+time format, given by `TIME_FORMAT`.  If `TIME_FORMAT` is not defined, the
+format `%T` is used.  (See `man strftime` for details).
+
+    time_add TIME1 TIME2
+
+Add `TIME1` to `TIME2` and produce a `time_format` result.
+
+    time_sub TIME1 TIME2
+
+Subtract `TIME2` from `TIME1` and produce a `time_format` result.
+
+# end of README
+# vim: set ai sw=2

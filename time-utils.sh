@@ -142,8 +142,11 @@ time_add() {
 time_sub() {
   local t1=`time2secs $1`
   local t2=`time2secs $2`
-  local time=$(( t1 - t2 ))
-  time_format $time
+  if (( t1 > t2 )) ; then
+    time_format $(( t1 - t2 ))
+  else
+    time_format $(( t2 - t1 ))
+  fi
 }
 
 # time_format SECONDS
@@ -161,9 +164,9 @@ time_format() {
   local days hours mins secs
   secs2hms $secs_in
   if (( days > 0 )); then
-    printf "%d:%02d:%02d:%02d\n" $days $hours $mins $secs
+    printf "%d:%02d:%02d:%02d\n" "$days" "$hours" "$mins" "$secs"
   else
-    printf "%02d:%02d:%02d\n" $hours $mins $secs
+    printf "%02d:%02d:%02d\n" "$hours" "$mins" "$secs"
   fi
 }
 

@@ -17,7 +17,7 @@
 #          the files will be installed.
 #
 
-SHELL ?= /usr/local/bin/bash
+SHELL ?= /bin/bash
 
 distuser ?= $$USER
 disthost ?= $(distuser)@$$DISTHOST

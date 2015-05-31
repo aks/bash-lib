@@ -56,7 +56,7 @@
 #   values of almost 2,500,000) are assumed to be representable as
 #   variables of type 'int'.
 
-CALENDAR_UTILS_VERSION="calendar-utils.sh v1.1"
+CALENDAR_UTILS_VERSION="calendar-utils.sh v1.2"
 [[ "$CALENDAR_UTILS_SH" = "$CALENDAR_UTILS_VERSION" ]] && return
 CALENDAR_UTILS_SH="$CALENDAR_UTILS_VERSION"
 
@@ -68,26 +68,46 @@ Usage:
     source calendar-utils.sh
 
 Functions:
-  date_to_jdn YYYY MM DD         -- return Julian Day Number for given DATE
-  day_of_week YEAR MM DD [STYLE] -- return the day of the week for the given date
-  days_in_month YEAR MM          -- return # of days in the month MM for YEAR
-  days_in_month[MM]              -- array indexed by month (1..12) to return # days
-  easter YEAR                    -- return date of Easter for YEAR
-  gregorian_easter YEAR          -- return date of Easter for YEAR in Gregorian calendar
-  is_leap_year YEAR              -- return whether or not YEAR is a leap year
-  jdn_to_date JDN                -- return date for given Julian Day Number (JDN)
-  julian_period YEAR             -- return Julian year for given Gregorian YEAR
-  style_for_year YEAR            -- compute the calendar style for the given YEAR
-  week_number YYYY MM DD         -- return the week number for the given date
+
+date_to_jdn YYYY MM DD         -- return Julian Day Number for given DATE
+
+day_of_week YEAR MM DD [STYLE] -- return the day of the week for the given date
+
+days_in_month YEAR MM          -- return # of days in the month MM for YEAR
+
+days_in_month[MM]              -- array indexed by month (1..12) to return # days
+
+easter YEAR                    -- return date of Easter for YEAR
+
+gregorian_easter YEAR          -- return date of Easter for YEAR in Gregorian calendar
+
+is_leap_year YEAR              -- return whether or not YEAR is a leap year
+
+jdn_to_date JDN                -- return date for given Julian Day Number (JDN)
+
+julian_period YEAR             -- return Julian year for given Gregorian YEAR
+
+style_for_year YEAR            -- compute the calendar style for the given YEAR
+
+week_number YYYY MM DD         -- return the week number for the given date
 
 Astronomical (obscure) Functions:
-  epact YEAR                     -- return the epact for the given YEAR
-  golden_number YEAR             -- return the golden number for YEAR
-  indiction YEAR                 -- return indication for YEAR
-  paschal_full_moon YEAR         -- return the Paschal full moon date for YEAR
-  solar_number YEAR              -- return the solar number for YEAR
+
+epact YEAR                     -- return the epact for the given YEAR
+
+golden_number YEAR             -- return the golden number for YEAR
+
+indiction YEAR                 -- return indication for YEAR
+
+paschal_full_moon YEAR         -- return the Paschal full moon date for YEAR
+
+solar_number YEAR              -- return the solar number for YEAR
+
 EOF
 }
+help_calendar() { calendar_help ; }
+
+source help-util.sh
 
 NO_STYLE_DATES=0
 JULIAN_DATES=1
@@ -117,6 +137,7 @@ GREGORIAN_START_JDAY=2299150     # Julian Day Number for GREGORIAN_START_DATE
 # Return the given style, or the default style depending on the calendar year
 
 style_for_year() {
+  help_args_func calendar_help $# || return
   local year=$(( 10#$1 ))
   local style=${2:-${NO_STYLE_DATES}}
   if (( style == NO_STYLE_DATES )) ; then
@@ -128,6 +149,7 @@ style_for_year() {
 # style_for_date YYYY MM DD [style]
 
 style_for_date() {
+  help_args_func calendar_help $# 3 || return
   local -i year month day
   year=$(( 10#$1 ))  month=$(( 10#$2 ))  day=$(( 10#$3 ))  style=${4:-$NO_STYLE_DATES}
   if (( style == NO_STYLE_DATES )) ; then
@@ -150,6 +172,7 @@ style_for_date() {
 # less than 1582, and GREGORIAN_DATES is assumed otherwise.
 
 is_leap_year() {
+  help_args_func calendar_help $# 1 || return
   local year="$1"
   local style=`style_for_year $year $2`
   if (( style == JULIAN_DATES )) ; then
@@ -174,6 +197,7 @@ is_leap_year() {
 days_in_month=( - 31 28 31 30 31 30 31 31 30 31 30 31 )
 
 days_in_month() {
+  help_args_func calendar_help $# 2 || return
   local year=$(( 10#$1 ))
   local month=$(( 10#$2 ))
   local style=`style_for_date $year $month 1 $3`
@@ -197,6 +221,7 @@ days_in_month() {
 # Reference: Section 2.4 of version 2.9 of the FAQ.
 
 solar_number() {
+  help_args_func calendar_help $# || return
   local year="$1"
   echo $(( ( year + 8 ) % 28 + 1 ))
 }
@@ -215,6 +240,7 @@ solar_number() {
 #     0 for Sunday, 1 for Monday, 2 for Tuesday, etc.
 
 day_of_week() {
+  help_args_func calendar_help $# 3 || return
   local year=$(( 10#$1 ))
   local month=$(( 10#$2 ))
   local day=$(( 10#$3 ))
@@ -241,6 +267,7 @@ day_of_week() {
 #     Golden Number (1..19)
 
 golden_number() {
+  help_args_func calendar_help $# || return
   local year=$(( 10#$1 ))
   echo $(( year % 19 + 1 ))
 }
@@ -257,6 +284,7 @@ golden_number() {
 #     Epact (1..30)
 
 epact() {
+  help_args_func calendar_help $# || return
   local year=$(( 10#$1 ))
   local style=`style_for_year $year $2`
   if (( style == JULIAN_DATES )); then
@@ -290,6 +318,7 @@ paschal_jul_months=( 4  3  4  4  3  4  3  4  4  3  4  4  3  4  4  3  4  3  4 )
 paschal_jul_days=(   5 25 13  2 22 10 30 18  7 27 15  4 24 12  1 21  9 29 17 )
 
 paschal_full_moon() {
+  help_args_func calendar_help $# || return
   local year=$(( 10#1 ))
   local style=`style_for_year $year $2`
 
@@ -329,6 +358,7 @@ paschal_full_moon() {
 #
 
 easter() {
+  help_args_func calendar_help $# || return
   local year=$(( 10#$1 ))
   local style=`style_for_year $year $2`
   local G I J C H L
@@ -362,6 +392,7 @@ easter() {
 # If the year is outside the legal range, month and day are zero.
 
 gregorian_easter() {
+  help_args_func calendar_help $# || return
   local year=$(( 10#$1 ))
   local H I J L
   if (( year < 1900 || year > 2099 )) ; then
@@ -388,6 +419,7 @@ gregorian_easter() {
 #     Indiction (1..15)
 
 indiction() {
+  help_args_func calendar_help $# || return
   echo $(( ( 10#$1 + 2 ) % 15 + 1 ))
 }
 
@@ -408,6 +440,7 @@ indiction() {
 JULIAN_YEARS_OFFSET=4713
 
 julian_period() {
+  help_args_func calendar_help $# || return
   local year=$(( 10#$1 ))
   echo $(( year + 4713 ))
 }
@@ -429,6 +462,7 @@ julian_period() {
 #     Julian Day Number
 
 date_to_jdn() {
+  help_args_func calendar_help $# 3 || return
   local year=$((  10#$1 ))
   local month=$(( 10#$2 ))
   local day=$((   10#$3 ))
@@ -465,6 +499,7 @@ date_to_jdn() {
 #     Address of day (1..31)
 
 jdn_to_date() {
+  help_args_func calendar_help $# || return
   local jday=$(( 10#$1 ))
   local style=${2:-$NO_STYLE_DATES}    # default to gregorian calendar
 
@@ -505,6 +540,7 @@ jdn_to_date() {
 #     week year           (also in 'week_year')
 
 week_number() {
+  help_args_func calendar_help $# 3 || return
   local year=$((  10#$1 ))
   local month=$(( 10#$2 ))
   local day=$((   10#$3 ))

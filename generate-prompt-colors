@@ -16,6 +16,8 @@ PROMPT_COLOR_FILENAME='prompt-colors.sh'
 export PATH=$PATH:$HOME/lib
 source sh-utils.sh
 source list-utils.sh
+source talk-utils.sh
+source run-utils.sh
 
 usage() {
   cat 1>&2 <<EOF

@@ -1,14 +1,12 @@
 #!/bin/bash
 # real-utils.sh
 #
-# Copyright 2014 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2015 Alan K. Stebbens <aks@stebbens.org>
 
 
-REAL_UTILS_VERSION="real-utils.sh v1.4"
+REAL_UTILS_VERSION="real-utils.sh v1.5"
 [[ "$REAL_UTILS_SH" = "$REAL_UTILS_VERSION" ]] && return
 REAL_UTILS_SH="$REAL_UTILS_VERSION"
-
-source sh-utils.sh
 
 real_help() {
   cat 1>&2 <<'EOF'

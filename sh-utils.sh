@@ -2,45 +2,29 @@
 #
 # handy functions for writing bash-based scripts
 #
-# Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2015 Alan K. Stebbens <aks@stebbens.org>
 #
 
-SH_UTILS_VERSION="sh-utils.sh v1.6"
+SH_UTILS_VERSION="sh-utils.sh v2.0"
 
 [[ "$SH_UTILS_SH" = "$SH_UTILS_VERSION" ]] && return
 SH_UTILS_SH="$SH_UTILS_VERSION"
 
 sh_utils_help() {
     cat 1>&2 <<'EOF'
-Shell command utility functions:
+The shell command utility functions consist of several groups
+of functions which collectively are quite useful in development
+command-line utilities and other system scripts.
 
-All of these `talk`, `error`, and `die` functions conditionally print the
-arguments on STDERR.
+The following are separate modules that are included with sh-utils:
 
-   talk MSG ..              Print all args on `STDERR`
-  vtalk MSG ..              If `$norun` or `$verbose` is set, print all args.
- votalk MSG ..              If `$verbose` only (no `$norun`) is set, print all args.
- nrtalk MSG ..              if `$norun` set, print all args
- nvtalk MSG                 Unless `$verbose` is set, print all args
- nqtalk MSG                 Unless `$quiet` is set, print all args
+- arg-utils     - help with arguments or STDIN
+- help-util     - help with help on selected functions
+- option-utils  - manage option and argument lists
+- run-utils     - run system commands, with $norun and $verbose 
+- talk-utils    - conditional output to STDERR
 
-  talkf FMT ARGS ..         Printf `FMT` `ARGS`
- vtalkf FMT ARGS ..         If `$norun` or `$verbose` set, printf `FMT, `ARGS`
-votalkf FMT ARGS ..         If `$verbose` only (no `$norun`) is set, printf `FMT`, `ARGS`
-nrtalkf FMT ARGS ..         If `$norun` set, printf `FMT`, `ARGS`
-nvtalkf FMT ARGS ..         Unless `$verbose` is set, printf `FMT` `ARGS`
-nqtalkf FMT ARGS ..         Unless `$quiet` is set, printf `FMT` `ARGS`
-
-   warn MSG                 Print all args on `STDERR`
-  error [CODE] "MSG"        Print `MSG` on `STDERR`, then exit with code `CODE` (or 2)
-    die "MSG"               Print `MSG` on `STDERR`, then die (with `kill -ABRT`)
-
-  warnf FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR`
- errorf [CODE] FMT ARGS ..  Printf `FMT` `ARGS` on `STDERR`, then exit `$CODE` [2]
-   dief FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR`, then die (with `kill -ABRT`)
-
-run COMMAND ARGS ..         Show `COMMAND` `ARGS` if `$norun` or `$verbase`;
-                            run `COMMAND` unless `$norun`.
+These are some miscellaneous functions:
 
 rm_file_later FILE          Cause `FILE` to be removed upon program exit.
 
@@ -48,94 +32,9 @@ add_trap "CMD" SIGNAL ..    Add `CMD` to the trap list for `SIGNAL`
 
 fn_exists FUNCTION          Return 0 (true) if `FUNCTION` exists; 1 (false) otherwise
 
-numarg_or_input "$1"        Return a numeric argument or read it from `STDIN`
-
-args_or_input "$@"          Return arguments or read them from `STDIN`
-
-args_or_stdin "$@"          Return the arguments or read all of `STDIN`
-
-arg_or_input "$1"           Return the argument or read it from `STDIN`
-
-append_args "$@"            Append the arguments to the next line from `STDIN`
-
-append_arg "$1"             Append the argument to the next line from `STDIN`
-
 EOF
 }
 help_sh_utils() { sh_utils_help ; }
-
-# All output goes to STDERR
-#
-#   talk MSG                                   show MSG
-#   warn MSG      alias for talk
-#  vtalk MSG      if $verbose or $norun,       show MSG
-# votalk MSG      if $verbose only (no $norun) show MSG
-# nrtalk MSG      if $norun,                   show MSG
-# nvtalk MSG      unless $verbose              show MSG
-# nqtalk MSG      unless $quiet                show MSG
-
-talk()        { echo 1>&2 "$@" ; return 0 ;}
-warn()        { talk "$@" ; }
-vtalk()	      { [[ -n "$norun$verbose" ]]          && talk "$@" || return 1 ; }
-votalk()      { [[ -n "$verbose" && -z "$norun" ]] && talk "$@" || return 1 ; }
-nrtalk()      { [[ -n "$norun" ]]                  && talk "$@" || return 1 ; }
-nvtalk()      { [[ -z "$verbose" ]]                && talk "$@" || return 1 ; }
-nqtalk()      { [[ -z "$quiet" ]]                  && talk "$@" || return 1 ; }
-
-# error [CODE] MSG - show MSG on STDERR then exit with error CODE [default 2]
-
-error()       {
-  local code=2
-  case "$1" in [0-9]*) code=$1 ; shift ;; esac
-  talk "$@"
-  exit $code
-}
-
-#   talkf FMT ARGS..                                 printf FMT ARGS
-#   warnf FMT ARGS..    alias for talkf
-#  vtalkf FMT ARGS..    if $norun or $verbose set,   printf FMT ARGS
-# votalkf FMT ARGS..    if $verbose & unless $norun, printf FMT ARGS
-# nrtalkf FMT ARGS..    if $norun,                   printf FMT ARGS
-# nvtalkf FMT ARGS..    unless $verbose is set,      printf FMT ARGS
-# nqtalkf FMT ARGS..    unless $quiet is set,        printf FMT ARGS
-
-talkf()       { printf 1>&2 "$@" ; return 0 ;}
-warnf()       { talkf "$@" ; }
-vtalkf()      { [[ -n "$norun$verbose" ]]          && talkf "$@" || return 1 ; }
-votalkf()     { [[ -n "$verbose" && -z "$norun" ]] && talkf "$@" || return 1 ; }
-nrtalkf()     { [[ -n "$norun" ]]                  && talkf "$@" || return 1 ; }
-nvtalkf()     { [[ -z "$verbose" ]]                && talkf "$@" || return 1 ; }
-nqtalkf()     { [[ -z "$quiet" ]]                  && talkf "$@" || return 1 ; }
-
-# errorf [CODE] FMT ARGS .. print FMT ARGS on STDERR, then exit with CODE[2]
-
-errorf()      {
-  local code=2
-  case "$1" in [0-9]*) code=$1 ; shift ;; esac
-  talkf "$@"
-  exit $code
-}
-
-# die "Error message"
-# dief FMT ARGS ..
-#
-# These functions are designed to be used within other bash scripts.  Simply
-# exiting with an error code is not sufficient because many bash scripts don't
-# have very good exception handling.  So.. our "die" function prints its error
-# message on STDERR, and then causes the current process to abort.
-
-die() { dief "%s\n" "$@" ; }
-
-dief() {
-  talkf "$@"
-  talk "Call stack:"
-  for ((i=1; i<${#BASH_SOURCE[@]}; i++)); do
-    case "${FUNCNAME[$i]}" in die|dief) continue ;; esac
-    talkf "%s <%s:%s>\n" "${FUNCNAME[$i]}" "${BASH_SOURCE[$i]}"  "${BASH_LINENO[$i-1]}"
-  done
-  kill -ABRT $$
-  exit 2
-}
 
 # rm_file_later FILE
 #
@@ -164,153 +63,11 @@ add_trap() {
   done
 }
 
-# run COMMAND ARGS ...
-
-run() {
-  if [[ $norun ]]; then
-    talk "(norun) $@"
-  else
-    safe_run "$@"
-  fi
-  return 0
-}
-
-# safe_run COMMAND ARGS
-# Safe run -- run command even in "$norun" mode
-
-safe_run() {
-  if [[ -n "$verbose$norun" ]]; then
-    talk ">> $@"
-  fi
-  if ! eval "$@" ; then
-    code=$?
-    return $code
-  fi
-  return 0
-}
-
 # fn_exists FUNCTION
 #
 # Return 0 (true) or 1 (false) if FUNCTION is defined.
 
 fn_exists() { declare -f "$1" >/dev/null ; }
-
-# The following functions, "numarg_or_input", "arg_for_input", and
-# "args_or_input" enable bash functions using them to flexibly accept an
-# argument, or arguments, on their call, or on STDIN.
-#
-# For example, let's say we have two bash functions to convert Celsius to
-# Fareigheit and vice-versa.  Let's call them "c2f" and "f2c".  With these
-# functions, they can be used in two ways:
-#
-# Typical functions with arguments:
-#
-# c2f 69              # convert 69C to F
-# f2c 10              # convert 10F to C
-#
-# Or, accepting their input on STDIN, as in a pipe:
-#
-#  echo 69 | c2f      # convert 69C to F
-#  echo 10 | f2c      # convert 10F to C
-#
-# The advantage of the latter appraoch is that the functions can be fitted into
-# a pipe where the data can come from another process directly, on its STDOUT.
-#
-# The definition of these two functions would be:
-#
-#  # f2c -- convert F to C via: (°F  -  32)  x  5/9 = °C
-#  function f2c() {
-#    local f=`numarg_or_input "$1"`
-#    echo "scale=1; ($f - 32)*5/9' | bc
-#  }
-#  # c2f -- convert C to F via °C  x  9/5 + 32 = °F
-#  function c2f() {
-#    local c=`numarg_or_input "$1"`
-#    echo "scale=1; $c * 9/5 + 32" | bc
-#
-
-# local arg=`numarg_or_input $1`
-#
-# Return the numeric argument or read from stdin
-
-numarg_or_input() {
-  local -i arg
-  if [[ $# -eq 0 || -z "$1" ]] ; then
-    local func="${FUNCNAME[1]}"
-    local -a args
-    while (( ${#args[*]} == 0 )) ; do
-      read -p "${func}? " args
-    done
-    arg=$(( 10#${args[0]} ))
-  else
-    arg=$(( 10#$1 ))
-  fi
-  echo $arg
-}
-_numarg_or_input() { numarg_or_input "$1" ; }
-
-# local arg=`arg_or_input "$1"`
-#
-# Return the argument given, or the first non-empty line from STDIN
-
-arg_or_input() {
-  local arg
-  if [[ $# -eq 0 || -z "$1" ]]; then
-    local func="${FUNCNAME[1]}"
-    local -a args
-    while (( ${#args[*]} == 0 )) ; do
-      read -p "${func}? " args
-    done
-    arg="${args[0]}"
-  else
-    arg="$1"
-  fi
-  echo "$arg"
-}
-_arg_or_input() { arg_or_input "$1" ; }
-
-
-# local args=( `args_or_input "$@"` )
-#
-# Return the arguments or read a line of non-empty input
-
-args_or_input() {
-  if (( $# == 0 )) ; then
-    local -a args
-    local func="${FUNCNAME[1]}"
-    while (( ${#args[*]} == 0 )); do
-      read -p "$func? " -a args
-    done
-    echo "${args[@]}"
-  else
-    echo "$@"
-  fi
-}
-_args_or_input() { args_or_input "$@" ; }
-
-# args_or_stdin "$@" | some-pipe
-#
-# return the given arguments, or read & return STDIN until EOF
-
-args_or_stdin() {
-  [[ $# -gt 0 ]] && echo "$*" || cat
-}
-_args_or_stdin() { args_or_stdin "$@" ; }
-
-
-# append_arg  ARG
-# append_args ARGS
-#
-# appends ARGS to the next line of input, and return the entire string
-#
-#    echo SOMEDATA | input_with_arg SOMEARG ==> SOMEDATA SOMEARG
-
-append_arg() {
-  local -a data
-  read -a data
-  echo "${data[@]}" "$@"
-}
-append_args() { append_arg "$@" ; }
 
 
 # end of sh-utils.sh

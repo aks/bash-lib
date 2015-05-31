@@ -336,7 +336,7 @@ test_12_map_list() {
   end_test
 }
 
-test_12a_map_list_func_expr() {
+test_13_map_list_func_expr() {
   start_test
   #        0  1  2    3      4    5   6    7   8   9   10 11  12  13  14   15
   words=( now is the 'time' 'for' all good men to come to the aid of their country )
@@ -367,14 +367,32 @@ test_12a_map_list_func_expr() {
 
 }
 
-test_12b_map_list_joinstr() {
+test_14_map_list_joinstr() {
   start_test
   words=( now is the "time" "for" all good men to come to the aid of their country )
-  check_output map_list_joinstr "map_list words \"echo \\\"unset \\\$item\"\\\" \"\$CHAR_NL\" "
+  gen_echo() { echo "unset \"$1\"" ; }
+  check_output map_list_joinstr "map_list words gen_echo \"\$CHAR_NL\""
   end_test
 }
 
-test_14_reductions() {
+
+test_16_map_list_exprs() {
+  start_test
+  numbers=( 0 1 2 3 4 5 6 7 8 9 )
+  squares=( `list_map numbers '( x * x )'` )
+  check_size numbers `list_size numbers`
+  check_item_equal squares 2 4
+  check_item_equal squares 3 9
+  check_item_equal squares 4 16
+  check_item_equal squares 5 25
+  check_item_equal squares 6 36
+  check_item_equal squares 7 49
+  check_item_equal squares 8 64
+  check_item_equal squares 9 81
+  end_test
+}
+
+test_18_reductions() {
   start_test
   words=( now is the 'time' 'for' all good men to come to the aid of their country )
   num_words=`list_size words`

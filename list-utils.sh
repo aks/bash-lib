@@ -3,13 +3,15 @@
 #
 # sh script utilities for managing lists of things
 
-LIST_UTILS_VERSION='list-utils.sh v2.4'
+LIST_UTILS_VERSION='list-utils.sh v2.5'
 
 source bash-check.sh                # make sure we're running bash >= 3.3
 
 # Don't source this list more than once per session (per version)
 [[ "$LIST_UTILS_SH" = "$LIST_UTILS_VERSION" ]] && return
 LIST_UTILS_SH="$LIST_UTILS_VERSION"
+
+source help-util.sh
 
 export CHAR_NL=$'\n'
 export CHAR_TAB=$'\t'
@@ -183,7 +185,7 @@ errorf() { printf "$@" 1>&2 ; exit 1 ; }
 # Initialize VAR as an empty list
 
 list_init() {
-  list_help_func $# 1 || return
+  help_args_func list_help $# 1 || return
   eval "${1}=()"
 }
 init_list() { list_init "$@" ; }
@@ -192,7 +194,7 @@ init_list() { list_init "$@" ; }
 #  Supports insertion of multiple values into the list
 
 list_add() {
-  list_help_func $# 2 || return
+  help_args_func list_help $# 2 || return
   local var="$1"
   shift
   local w
@@ -208,7 +210,7 @@ push_list() { list_add "$@" ; }
 #
 # Add each VALUE only once to VAR
 list_add_once() {
-  list_help_func $# 2 || return
+  help_args_func list_help $# 2 || return
   local var="$1"
   shift
   while [[ $# -gt 0 ]]; do
@@ -225,7 +227,7 @@ add_list_once() { list_add_once "$@" ; }
 # remove VALUEs from VAR
 
 list_remove() {
-  list_help_func $# 2 || return
+  help_args_func list_help $# 2 || return
   local var="$1"
   local size=`list_size $var`
   shift
@@ -252,7 +254,7 @@ remove_list_item() { list_remove "$@" ; }
 # Insert VALUE at the front of the list
 
 list_insert() {
-  list_help_func $# 2 || return
+  help_args_func list_help $# 2 || return
   local var="$1"
   shift
   eval "$var=( \"\$@\" \"\${$var[@]}\" )"
@@ -263,7 +265,7 @@ insert_list() { list_insert "$@" ; }
 # Insert VALUE(s)... into the list only if it is not already in the list.
 
 list_insert_once() {
-  list_help_func $# 2 || return
+  help_args_func list_help $# 2 || return
   local var="$1"
   shift
   while (( $# > 0 )); do
@@ -287,7 +289,7 @@ insert_list_once() { list_insert_once "$@" ; }
 # value inserted into a variable ("item").
 
 list_pop() {
-  list_help_func $# 1 || return
+  help_args_func list_help $# 1 || return
   local var="$1"
   local x=`list_size $var`
   if (( --x < 0 )); then
@@ -307,7 +309,7 @@ pop_list() { list_pop "$@" ; }
 # Echo the Nth item from VARLIST to output
 
 list_get() {
-  list_help_func $# 2 || return
+  help_args_func list_help $# 2 || return
   eval "echo -n \"\${$1[$2]}\""
 }
 get_list_item() { list_get "$@" ; }
@@ -317,7 +319,7 @@ get_list_item() { list_get "$@" ; }
 # Set the variable 'item' to the Nth item from VARLIST
 
 list_item() {
-  list_help_func $# 2 || return
+  help_args_func list_help $# 2 || return
   local var="$1"
   local n=$(( 10#$2 ))
   eval "item=\"\${$var[$n]}\""
@@ -328,7 +330,7 @@ list_item() {
 # Set the Nth item in VARLIST to VAL
 
 list_set() {
-  list_help_func $# 3 || return
+  help_args_func list_help $# 3 || return
   local var="${1:?'Missing list name'}"
   local n=${2:?'Missing index'}
   local val="${3:?'Missing value'}"
@@ -344,7 +346,7 @@ set_list_item() { list_set "$@" ; }
 # the beginning items.
 
 list_items() {
-  list_help_func $# 1 || return
+  help_args_func list_help $# 1 || return
   local var=${1:?'Missing list name'}
   if (( $# == 1 || -z "$2$3")); then
     eval "local IFS=' ' ; echo \"\${$var[@]}\""
@@ -365,11 +367,11 @@ list_items() {
 # Show the list items, with indexes
 
 list_dump() {
-  list_help_func $# 1 || return
+  help_args_func list_help $# 1 || return
   local var=${1:?'Missing list name'}
   local size=`list_size $var`
   local x val fmt
-  if (( size >= 1000 ));  then fmt="[%4d] %s\n" 
+  if (( size >= 1000 ));  then fmt="[%4d] %s\n"
   elif (( size >= 100 )); then fmt="[%3d] %s\n"
   else                         fmt="[%2d] %s\n" ; fi
   printf "%s:\n" "$var"
@@ -387,7 +389,7 @@ dump_list() { list_dump "$@" ; }
 # omitted).
 
 list_copy() {
-  list_help_func $# 2 || return
+  help_args_func list_help $# 2 || return
   local srclist="$1"
   local dstlist="$2"
   shift 2
@@ -406,7 +408,7 @@ copy_list() { list_copy "$@" ; }
 # to return 0.
 
 in_list () {
-  list_help_func $# 2 || return
+  help_args_func list_help $# 2 || return
   local vals val1 val2 match_all=
   eval "vals=( \"\${$1[@]}\" )"
   shift
@@ -439,7 +441,7 @@ list_member() { in_list "$@" ; }
 
 # list_size NAME -- return list size
 list_size() {
-  list_help_func $# 1 || return
+  help_args_func list_help $# 1 || return
   eval "echo \"\${#$1[@]}\""
 }
 
@@ -452,14 +454,14 @@ args2lines() { local w ; for w in "$@" ; do echo "$w" ; done ; }
 # sort_str2lines "STRING ..."  -- output the words of STRING on separate lines, sorted
 
 sort_str2lines()  {
-  list_help_func $# 1 || return
+  help_args_func list_help $# 1 || return
   args2lines "$@"                 | sort -f
 }
 
 # sort_list2lines LISTVAR -- output the items of LISTVAR, sorted, one per line
 
 sort_list2lines() {
-  list_help_func $# 1 || return
+  help_args_func list_help $# 1 || return
   eval "args2lines \"\${$1[@]}\"" | sort -f
 }
 
@@ -471,7 +473,7 @@ join_lines()      { tr '\n' ' ' | sed -e 's/ $//' ; }
 # str_sort
 
 sort_str() {
-  list_help_func $# 1 || return
+  help_args_func list_help $# 1 || return
   sort_str2lines "$@" | join_lines
 }
 str_sort() { sort_str "$@" ; }
@@ -480,7 +482,7 @@ str_sort() { sort_str "$@" ; }
 # sorted_list LISTVAR
 
 list_sorted() {
-  list_help_func $# 1 || return
+  help_args_func list_help $# 1 || return
   sort_list2lines $1  | join_lines
 }
 sorted_list() { list_sorted "$@" ; }
@@ -489,7 +491,7 @@ sorted_list() { list_sorted "$@" ; }
 # sort_list LISTVAR
 
 list_sort() {
-  list_help_func $# 1 || return
+  help_args_func list_help $# 1 || return
   eval "$1=( `sorted_list $1` )"
 }
 sort_list() { list_sort "$@" ; }
@@ -507,7 +509,7 @@ sort_list() { list_sort "$@" ; }
 # and comma.  By default, splitting is done by tabs.
 
 split_str() {
-  list_help_func $# 1 || return
+  help_args_func list_help $# 1 || return
   local sep="${2:-$CHAR_TAB}"
   echo "$1"			      |
   tr "$sep" '\n'		      |
@@ -525,7 +527,7 @@ str_split() { split_str "$@" ; }
 #   See split_str for details on SEP
 
 split_into() {
-  list_help_func $# 2 || return
+  help_args_func list_help $# 2 || return
   local var="$1"
   local sep="${3:-' 	'}"
   eval "$var=( `split_str \"$2\" \"$sep\"` )"
@@ -551,7 +553,7 @@ split_into() {
 # All keywords are case-insensitive.
 
 list_join() {
-  list_help_func $# 1 || return
+  help_args_func list_help $# 1 || return
   local var="$1"
   local count=`list_size $var`
   local val key index
@@ -613,7 +615,7 @@ join_list() { list_join "$@" ; }
 # return code 2: KEY ambiguous
 
 list_lookup() {
-  list_help_func $# 2 || return
+  help_args_func list_help $# 2 || return
   local listvar="$1"
   local key="$2"
   local nitems=`list_size $listvar`        # number of items
@@ -652,7 +654,7 @@ lookup_list() { list_lookup "$@" ; }
 # You can redefine "lookup_error" to use your own messages.
 
 lookup_error() {
-  list_help_func $# 2 || return
+  help_args_func list_help $# 2 || return
   if [[ $1 -eq 1 ]]; then
     errorf "${3:-'%s' was not found}" "$2"
   elif [[ $1 -eq 2 ]]; then
@@ -666,7 +668,7 @@ lookup_error() {
 #   matches.
 
 list_grep() {
-  list_help_func $# 2 || return
+  help_args_func list_help $# 2 || return
   local listvar="$1"
   local pat="$2"
   local nitems=`list_size $listvar`
@@ -686,107 +688,141 @@ list_grep() {
 }
 grep_list() { list_grep "$@" ; }
 
-# list_reduce LISTVAR EXPR INIT
+# list_reduce LISTVAR EXPR [INIT]
 #
-#     For each consecutive pair of items in LISTVAR, perform ITEM EXPR ITEM,
-#     starting with INIT EXPR ITEM.  If EXPR is an operator (e.g., +, -, etc.)
-#     invoke it using arithmetic evaluation, with two variables 'a' and 'b'
-#     representing the values being evaluated.  Otherwise, invoke it using
-#     function call notation, with the previous value (starting with INIT)
-#     preceding the next item value
+#     For each consecutive pair of items in LISTVAR, evaluate EXPR.  If EXPR
+#     begins with a function name, the EXPR is simply evaluated.  If EXPR
+#     begins with a non-alphabetic character, the EXPR is evaluated in an
+#     arithmetic context.  In either case, the EXPR should reference two
+#     variables '$a' and '$b', or, in the arithmetic case: 'a' and 'b'.
+#
+#     If both variables are not referenced in EXPR, then the EXPR is evaluated
+#     as an infix operation between the two values: "a EXPR b".
+#
+#     If INIT is omitted, use the first iten in LISTVAR.
 #
 #     Examples:
-#       sum=`reduce_list list_of_nums 'a + b' 0`
-#       prod=`reduce_list list_of_nums 'a * b' 1`
+#
+#       sum=`reduce_list list_of_nums '+'`
+#
+#       prod=`reduce_list list_of_nums '*'`
+#
+#       min=`reduce_list list_of_nums '(a <= b ? a : b)'`
+#
+#       squares=`list_map list_of_nums '(x * x)'`
+#
+#       sum_of_squares=`list_reduce squares '+'`
 
 list_reduce() {
-  list_help_func $# 2 || return
-  local listvar="$1"
-  local expr="$2"
-  local init="$3"
-  local start=0
-  if [[ -z "$init" ]]; then
-    init=`list_get $listvar 0`      # use the 1st item as the initial value
-    start=1                         # start the loop on the 2nd item
+  help_args_func list_help $# 2 || return
+  local _listvar="$1"
+  local _expr="$2"
+  local _init="$3"
+  local _start=0
+  if [[ -z "$_init" ]]; then
+    _init=`list_get $_listvar 0`      # use the 1st item as the initial value
+    _start=1                          # start the loop on the 2nd item
   fi
-  local x
-  local val="$init"
-  local item_count=`list_size $listvar`
-  case "$expr" in
-    [a-zA-Z_]*) funccall=1 ;;
-    *)          funccall=0 ;;
-  esac
-  for ((x=start; x<item_count; x++)) ; do
-    if (( funcall )) ; then
-      eval "val=\"\`$func \"$val\" \"`list_get $listvar $x`\"\`"
-    else
-      local a="$val"
-      local b="`list_get $listvar $x`"
-      eval "val=\$(( $expr ))"
-    fi
+  local _x
+  local _val="$_init"
+  local _item_count=`list_size $_listvar`
+  local _exprtype=0                   # assume infix operator
+  if [[ "$_expr" =~ ^[a-zA-Z_] ]] ; then
+    _exprtype=1                       # function call
+  elif [[ "$_expr" =~ \$a\>|\<a\> && "$_expr" =~ \$b\>|\<b\> ]]; then
+    _exprtype=2                       # explicit variables
+  fi
+  for ((_x=_start; _x<_item_count; _x++)) ; do
+    local a="$_val"
+    local b="`list_get $_listvar $_x`"
+    case _exprtype in
+      0) eval "_val=\$(( $a $_expr $b ))" ;;
+      1) eval "_val=\"`$_expr '$a' $_expr '$b' `\"" ;;
+      2) eval "_val=\$(( $_expr ))" ;;
+    esac
   done
-  echo "$val"
+  echo "$_val"
 }
 reduce_list() { list_reduce "$@" ; }
 
 # newlist=( `list_map LISTVAR EXPR [JOINSTR]` )
 #
-#     Invoke EXPR on each item in LISTVAR, collecting the results into a list,
-#     returned as the result.  If EXPR contains a reference to "\$item" or
-#     ${#item} (for length), then it is evaluated as is, otherwise, "EXPR
-#     $item" is evaluated.  The results are joined (with `join_list`) using
-#     JOINSTR which defaults to ' '.
+#     Evaluate EXPR on each item in LISTVAR, collecting the results into a
+#     list, returned as the result.  The EXPR can refer to the current value
+#     using the name 'x' or 'item'.   If EXPR contains neither 'x' nor 'item',
+#     then it is treated as a function call applied to the current value.
+#
+#     If the EXPR begins with '(', then the evaluation occurs in an arithmetic
+#     context.
+#
+#     Empty items in the LISTVAR are ignored.
+#
+#     The  results are joined (with `join_list`) using JOINSTR which defaults
+#     to ' '.
 
 list_map() {
-  list_help_func $# 2 || return
-  local listvar="$1"
-  local expr="$2"
-  local joinstr="${3:- }"               # join string (or a blank)
-  local newlist=()
-  local x item
-  local item_count=`list_size $listvar`
-  for ((x=0; x<item_count; x++)) ; do
-    item="`list_get $listvar $x`"
+  help_args_func list_help $# 2 || return
+  local _listvar="$1"
+  local _expr="$2"
+  local _joinstr="${3:- }"               # join string (or a blank)
+  local _newlist=()
+  local _x x item
+  local _item_count=`list_size $_listvar`
+
+  # expression types: 
+  #  0 -  EXPR [ITEM]                   # expression with implicit argument
+  #  1 -  EXPR                          # expression with explicit argument
+  #  2 -  ( EXPR )                      # arithmetic expression (must reference x)
+
+  local _exprtype=0                     # assume expression with implicit argument
+  if [[ "$_expr" =~ ^\ *\( ]]; then
+    _exprtype=2                         # arithmetic context eval
+  elif [[ "$_expr" =~ \$(\{\#?)?(item|x)([^a-zA-z0-9_]|$) ]] ; then
+    _exprtype=1                         # explicit argument
+  fi
+  for ((_x=0; _x<_item_count; _x++)) ; do
+    item="`list_get $_listvar $_x`"     # get the current value
     [[ -z "$item" ]] && continue        # ignore empty items
-    if [[ "$expr" =~ \$(\{\#?)?item ]]; then    # if $item referenced, then eval expr as is
-      item="`eval \"$expr\"`"
-    else                                # otherwise,
-      item="`eval \"$expr $item\"`"     # treat expr as a function with $item argument
-    fi
-    list_add newlist "$item"
+    x="$item"                           # x = item
+    case $_exprtype in
+      0) item="`eval \"$_expr \\\"$item\\\"\"`" ;;  # eval expr with implicit arg
+      1) item="`eval \"$_expr\"`" ;;                # eval expr with explicit arg
+      2) eval "item=\"\$(( $_expr ))\"" ;;          # eval arithmetic expr with explicit arg
+    esac
+    list_add _newlist "$item"           # accumulate the result
   done
-  list_join newlist NOWRAP "$joinstr"
+  list_join _newlist NOWRAP "$_joinstr"
 }
 map_list() { list_map "$@" ; }
 
 # list_max listname
 list_max() {
-  list_help_func $# 1 || return
-  list_reduce $1 'a >= b ? a : b'
+  help_args_func list_help $# 1 || return
+  list_reduce $1 '(a >= b ? a : b)'
 }
 max_list() { list_max "$@" ; }
 
 # list_min LISTNAME
 list_min() {
-  list_help_func $# 1 || return
-  list_reduce $1 'a >= b ? b : a'
+  help_args_func list_help $# 1 || return
+  list_reduce $1 '(a >= b ? b : a)'
 }
 min_list() { list_min "$@" ; }
 
 # list_sum LISTNAME
 list_sum() {
-  list_help_func $# 1 || return
-  list_reduce $1 'a + b'
+  help_args_func list_help $# 1 || return
+  list_reduce $1 '+'
 }
 sum_list() { list_sum "$@" ; }
 
 # list_avg LISTNAME
 list_avg() {
-  list_help_func $# 1 || return
+  help_args_func list_help $# 1 || return
   local listvar="$1"
   local size=`list_size $listvar`
   if (( size > 0 )); then
-    local sum=`list_reduce $listvar 'a + b'`
+    local sum=`list_sum $listvar`
     echo $(( sum / size ))
   fi
 }
@@ -798,7 +834,7 @@ avg_list() { list_avg "$@" ; }
 #   to `maxwidth`, separate columns by `sep` blanks (defaults to 2)
 
 list_print() {
-  list_help_func $# 1 || return
+  help_args_func list_help $# 1 || return
   local listvar="$1"
   shift
   _set_args "indent width sep cols" "$@"
@@ -895,25 +931,6 @@ _set_args() {
 
 # Legacy name
 make_list() { join_list "$@" ; }
-
-# list_help_func GIVEN [NEED] || return
-#
-# If GIVEN is less than NEED, provide the help for the function named NAME.
-#
-# Typical call:
-#
-#    list_help_func $# 2 || return
-
-list_help_func() {
-  local func="${FUNCNAME[1]}"         # who called us?
-  if (( $1 < ${2:-1} )) ; then
-    list_help 2>&1 | awk "/^$func/{p=1; print;next}
-                          /^[^ ▸]/{if(p){exit}}
-                          {if(p){print}}" 1>&2
-    return 1
-  fi
-  return 0
-}
 
 # end of list-utils.sh
 # vim: sw=2 ai

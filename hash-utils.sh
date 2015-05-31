@@ -1,13 +1,14 @@
 # hash-utils.sh
-# Copyright 2014 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2014-2015 Alan K. Stebbens <aks@stebbens.org>
 #
 # bash script utilities for managing hashes (associative arrays)
 
-HASH_UTILS_VERSION='hash-utils.sh v1.1'
+HASH_UTILS_VERSION='hash-utils.sh v1.2'
 [[ "$HASH_UTILS_SH" = "$HASH_UTILS_VERSION" ]] && return
 HASH_UTILS_SH="$HASH_UTILS_VERSION"
 
 source list-utils.sh
+source help-util.sh
 
 hash_help() {
   cat 1>&2 <<EOF
@@ -35,6 +36,7 @@ hash_delete VAR KEY                  # delete VAR[KEY]
 hash_delete_if VAR KEY CONDITION     # delete VAR[KEY} if CONDITION is true
 
 hash_keys VAR                        # return all the keys in hash
+
 hash_values VAR                      # return all the values in hash
 
 hash_each VAR KEYVAR EXPR            # eval EXPR, setting KEYVAR to each key in VAR
@@ -76,7 +78,7 @@ error()  { echo "$*" 1>&2   ; exit 1 ; }
 # if DEFAULT given, set as the default value on non-existant keys
 
 hash_init() {
-  hash_help_func $# || return
+  help_args_func hash_help $# || return
   local var="$1"
   eval "unset $var"
   eval "declare -gA $var"            # declare the global associative array
@@ -89,7 +91,7 @@ hash_init() {
 # Set the default value for the hash VAR
 
 hash_set_default() {
-  hash_help_func $# 2 || return
+  help_args_func hash_help $# 2 || return
   eval "declare -g ${1}_default"
   eval "${1}_default=\"$2\""
 }
@@ -99,7 +101,7 @@ hash_set_default() {
 # Return the default value for the hash VAR
 
 hash_default() {
-  hash_help_func $# || return
+  help_args_func hash_help $# || return
   eval "echo \"\${${1}_default}\""
 }
 
@@ -111,7 +113,7 @@ hash_default() {
 #    default: (empty)
 
 hash_info() {
-  hash_help_func $# || return
+  help_args_func hash_help $# || return
   local var="$1"
   local type=`declare -p $var 2>/dev/null`
   if [[ ! ( "$type" =~ -A ) ]]; then
@@ -132,7 +134,7 @@ hash_info() {
 #  Supports insertion of multiple values into the hash
 
 hash_set() { 
-  hash_help_func $# 3 || return
+  help_args_func hash_help $# 3 || return
   local var="$1"
   shift
   local key val
@@ -156,7 +158,7 @@ hash_get_keys() {
 # Reset the hash VAR to its initial empty state.
 
 hash_reset() {
-  hash_help_func $# || return
+  help_args_func hash_help $# || return
   local var="$1" keys k
   hash_get_keys $var
   for k in "${keys[@]}" ; do
@@ -170,7 +172,7 @@ hash_reset() {
 # Get the value associated with KEY.  If there is none, use any defined default value.
 
 hash_get() {
-  hash_help_func $# 2 || return
+  help_args_func hash_help $# 2 || return
   local val
   eval "val=\"\${$1['$2']}\""
   [[ -z "$val" ]] && { eval "val=\"\${${1}_default}\"" ; }
@@ -182,7 +184,7 @@ hash_get() {
 # Delete VAR[KEY]
 
 hash_delete() {
-  hash_help_func $# 2 || return
+  help_args_func hash_help $# 2 || return
   unset $1["$2"]
 }
 
@@ -191,7 +193,7 @@ hash_delete() {
 # Delete VAR[KEY] if COND is true
 
 hash_delete_if() {
-  hash_help_func $# 3 || return
+  help_args_func hash_help $# 3 || return
   if [[ -n "$3" ]]; then
     unset $1["$2"]
   fi
@@ -201,12 +203,12 @@ hash_delete_if() {
 # hash_values VAR
 
 hash_keys() {
-  hash_help_func $# || return
+  help_args_func hash_help $# || return
   eval "echo \"\${!$1[@]}\""
 }
 
 hash_values() {
-  hash_help_func $# || return
+  help_args_func hash_help $# || return
   eval "echo \"\${$1[@]}\""
 }
 
@@ -220,13 +222,13 @@ hash_values() {
 # current value is assigned to VAL on each iteration.
 
 hash_each() {
-  hash_help_func $# 3 || return
+  help_args_func hash_help $# 3 || return
   local val
   hash_each_pair $1 $2 val "$3"
 }
 
 hash_each_pair() {
-  hash_help_func $# 4 || return
+  help_args_func hash_help $# 4 || return
   local name key keyn valn expr
   local -a keys
   name="${1:?'Missing hash variable name'}"
@@ -246,7 +248,7 @@ hash_each_pair() {
 # Returns 1 otherwise.
 
 in_hash() {
-  hash_help_func $# 2 || return
+  help_args_func hash_help $# 2 || return
   local val=`hash_get $1 "$2"`
   [[ -n "$val" ]] && return 0 || return 1
 }
@@ -257,7 +259,7 @@ hash_include() { in_hash "$@" ; }
 
 # hash_size NAME -- return list size
 hash_size() { 
-  hash_help_func $# || return
+  help_args_func hash_help $# || return
   eval "echo \"\${#$1[@]}\"" 
 }
 
@@ -266,7 +268,7 @@ hash_size() {
 # Merge hash VAR2 into VAR1
 
 hash_merge() {
-  hash_help_func $# 2 || return
+  help_args_func hash_help $# 2 || return
   local key val
   hash_each_pair $2 key val "hash_put $1 \"\$key\" \"\$val\""
 }
@@ -283,7 +285,7 @@ hash_merge() {
 #        )
 
 hash_print() {
-  hash_help_func $# || return
+  help_args_func hash_help $# || return
   local var="$1"
   shift
   local indent width gutter sep cols widtharg gutterarg separg prefix 
@@ -310,7 +312,7 @@ print_hash() { "$@" ; }
 
 # hash_print_items VAR
 hash_print_items() {
-  hash_help_func $# || return
+  help_args_func hash_help $# || return
   local var="$1" k
   local -a keys
   hash_get_keys $var
@@ -349,25 +351,6 @@ _set_args() {
       2) error "'$opt' is ambiguous" ;;
     esac
   done
-}
-
-# hash_help_func GIVEN [NEED] || return
-#
-# If GIVEN is less than NEED, provide the help for the function named NAME.
-#
-# Typical call:
-#
-#    hash_help_func $# 2 || return
-
-hash_help_func() {
-  local func="${FUNCNAME[1]}"         # who called us?
-  if (( $1 < ${2:-1} )) ; then
-    hash_help 2>&1 | awk "/^$func/{p=1; print;next}
-                          /^[^ 	]/{if(p){exit}}
-                          {if(p){print}}"
-    return 1
-  fi
-  return 0
 }
 
 # end of hash-utils.sh

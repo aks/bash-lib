@@ -3,6 +3,10 @@ Things to do
 
 * Create the check_out, check_err, etc. functions.
 
+* write tests for run-utils.sh
+
+* write more tests for arg-utils.sh
+
 * create a test suite for test-utils.sh: test-test-utils.sh :-)
 
 * check for co-dependencies in all the -util.sh libraries.  Eg: mutually sourcing each other.

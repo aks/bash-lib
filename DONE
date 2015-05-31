@@ -1,3 +1,13 @@
+2015/05/31
+* sh-utils.sh: 
+  - refactored into talk-utils, arg-utils, run-utils
+* Makefile:
+  - added the newly refactored modules
+* test-run-utils.sh:
+  - added new tests
+* test-talk-utils.sh:
+  - extracted tests from test-sh-utils.sh
+
 2014/07/26
 * Makefile:
   - fixed missing "bash-lib.sh" script

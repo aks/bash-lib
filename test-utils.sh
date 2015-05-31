@@ -275,7 +275,7 @@ TEST_print_status() {
   local checks errors
   (( checks = TEST_checks - TEST_checks_start ))
   (( errors = TEST_errors - TEST_errors_start ))
-  printf 1>&2 "%3d checks, %3d errors: " $checks $errors
+  printf 1>&2 "%4d checks, %4d errors: " $checks $errors
   if (( ! test_details && ! test_verbose )) ; then
     local x st last_st=' '
     for((x=TEST_checks_start; x<${#TEST_check_status[@]}; x++)) ; do

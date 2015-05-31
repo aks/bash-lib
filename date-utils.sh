@@ -1,9 +1,9 @@
 # bash 
 # date-utils.sh  -- date management utility for bash
 #
-# Copyright 2009-2014 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2009-2015 Alan K. Stebbens <aks@stebbens.org>
 
-DATE_UTILS_VERSION="date-utils.sh v1.8"
+DATE_UTILS_VERSION="date-utils.sh v1.10"
 [[ "$DATE_UTILS_SH" = "$DATE_UTILS_VERSION" ]] && return
 DATE_UTILS_SH="$DATE_UTILS_VERSION"
 
@@ -20,87 +20,77 @@ format NN/NN/NNNN is interpreted: if set to 1, that format is taken to mean
 "DD/MM/YYYY", where DD is the day of the month; otherwise, it is parsed as
 'MM/DD/YYYY'.
 
-    date_parse [DATESTRING]
-    date_arg   [DATESTRING]
+date_parse [DATESTRING]   - parse DATESTRING
+date_arg   [DATESTRING]   - an alias for date_parse
 
-Parse DATESTRING in one of several recognized formats: `YYYY-MM-DD`,
-`YYYY.MM.DD`, `YYYY/MM/DD`, `YYYY MM DD`, `MM DD YYYYY`, `DD.MM.YYYY`, and `DD
-MM YYYYY` (if `EUROPEAN_DATES` is set).  If the DATESTRING is successfully
-parsed, the variables `year`, `month`, and `day` are set to their respective
-numbers.  `date_arg` is another name for the same function.
+    Parse DATESTRING in one of several recognized formats:
+    `YYYY-MM-DD`, `YYYY.MM.DD`, `YYYY/MM/DD`, `YYYY MM DD`, `MM DD
+    YYYYY`, `DD.MM.YYYY`, and `DD MM YYYYY` (if `EUROPEAN_DATES` is
+    set).  If the DATESTRING is successfully parsed, the variables
+    `year`, `month`, and `day` are set to their respective numbers.
+    `date_arg` is another name for the same function.
 
-If DATESTRING is empty, a line of input from STDIN is read and used instead.
+    If DATESTRING is empty, a line of input from STDIN is read and
+    used instead.
 
-    month_number MONTHNAME
-    month_num    MONTHNAME
+month_number MONTHNAME     - Given a month name, output it's index.
+month_num    MONTHNAME
 
-Given a month name, output it's index.
+days_in_month MONTH        - Number of days in MONTH
 
-    days_in_month MONTH
+    The `days_in_month` function converts a month number or name
+    (spelled out or abbreviated) into a number of days corresponding
+    to that month (not including leap-year effects).  Example:
+    `days_in_month Feb` ==> 28
 
-The `days_in_month` function converts a month number or name (spelled out or
-abbreviated) into a number of days corresponding to that month (not including
-leap-year effects).  Example: `days_in_month Feb` ==> 28
+days_in_month[M]           - array of days in month, indexed by month
 
-    days_in_month[M]
+    Array of integers, indexed by month number, corresponding to the
+    number of days in the given month `M`.
 
-Array of integers, indexed by month number, corresponding to the number of
-days in the given month `M`.
+days_before_month[M]       - number of days before month M
 
-    days_before_month[M]
+    Array of integers representing the number of days from the
+    beginning of the year up to the month `M`.
 
-Array of integers representing the number of days from the beginning of the
-year up to the month `M`.
+is_leap_year YEAR          - return true (0) if YEAR is a leap year
 
-    is_leap_year YEAR
+last_day_of_month YYYY MM  - last day of the month for YYYY/MM
 
-Return 0 (true) if `YEAR` is a leap year; return 1 (false) otherwise.
+date_to_adays YYYY MM DD   - absolute days for the date
+date_to_adays YYYY-MM-DD
 
-    last_day_of_month YYYY MM
+    Returns the number of absolute days from the beginning of the
+    Gregorian calendar for the given date, which can be specified with
+    three numeric arguments, or a single string argument, which must
+    be parseable by `date_parse`.
 
-Return the last day of the month corresponding to year `YYYY` and month `MM`.
+jdays_to_date JDAYS        - the date for Julian JDAYs
 
-    date_to_adays YYYY MM DD
-    date_to_adays YYYY-MM-DD
+    Converts JDAYS (a Julian day number) into the corresponding date.
+    If the date is greater than October 10, 1584, then the Gregorian
+    calendar is used, otherwise the Julian calendar is used for
+    earlier dates.
 
-Returns the number of absolute days from the beginning of the Gregorian
-calendar for the given date, which can be specified with three numeric
-arguments, or a single string argument, which must be parseable by
-`date_parse`.
+adays_to_date ABSDAYS      - the date for absolute ABSDAYS
 
-    jdays_to_date JDAYS
+adays_to_jdays ADAYS       - Julian days from absolute ADAYS
+jdays_to_adays JDAYS       - absolute days from Julian JDAYS
 
-Converts JDAYS (a Julian day number) into the corresponding date.  If the date
-is greater than October 10, 1584, then the Gregorian calendar is used,
-otherwise the Julian calendar is used for earlier dates.
+weeknumber DATESTRING      - the weeknumber for the DATESTRING
+weeknumber YYYY MM DD      - the weeknumber for YYYY MM DD
 
-    adays_to_date ABSDAYS
+date_to_weekday_name DATESTRING   - weekday name
+date_to_weekday_name YYYY MM DD
 
-Converts ABSDAYS into a date formatted by `print_date`.
+date_to_weekday_num DATESTRING    - weekday number (0..6)
+date_to_weekday_num YYYY MM DD
 
-    adays_to_jdays ADAYS
-    jdays_to_adays JDAYS
+date_day_num DATESTRING           - day number for the given date
+date_day_num YYYY MM DD
 
-These functions convert from absolute days to Julian day number, and vice-versa.
-
-    weeknumber [DATESTRING | YYYY MM DD]
-
-Returns the week number for the given DATESTRING or DATE.
-
-    date_to_weekday_name [DATESTRING | YYYY MM DD]
-
-Returns the weekday name for the given DATESTRING or DATE.
-
-    date_to_weekday_num [DATESTRING | YYYY MM DD]
-
-Returns the wekday number (0..6) for the given DATESTRING or DATE.
-
-    date_day_num [DATESTRING | YYYY MM DD]
-
-Returns the day number for the given DATESTRING or DATE.
-
-    date_format [FORMAT] YYYY MM DD
-    date_format [FORMAT] YYYY-MM-DD
+date_format [FORMAT] YYYY MM DD   - format the date, given FORMAT
+date_format [FORMAT] YYYY-MM-DD
 
 The `format_date` function accepts an optional format string, followed by
 three numeric arguments, for the year, month, and day, or a single string
@@ -112,9 +102,6 @@ EOF
 
 }
 date_help() { help_date ; }
-
-## FIXME -- maybe don't need this
-## source real-utils.sh
 
 # ensure EUROPEAN_DATES is unset by default
 if [[ -z "$EUROPEAN_DATES" ]]; then
@@ -537,10 +524,10 @@ gregorian_date_to_adays() {
     local offset_years=`abs $year + 1`
     local days_in_1BC=`date_day_num -1 $month $day`
   fi
-  local      prior_year_days=$(( offset_years * 365 ))
-  local    julian_leap_years=$(( offset_years / 4 ))
+  local      prior_year_days=$((    offset_years * 365 ))
+  local    julian_leap_years=$((    offset_years / 4 ))
   local        century_years=$(( -( offset_years / 100 ) ))
-  local gregorian_leap_years=$(( offset_years / 400 ))
+  local gregorian_leap_years=$((    offset_years / 400 ))
   if (( year > 0 )) ; then
     echo $(( day_num + prior_year_days + julian_leap_years - century_years + gregorian_leap_years ))
   else

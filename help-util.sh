@@ -19,14 +19,25 @@
 #
 # Each collection of functions that wish to make use of this utility should
 # have a HELPFUNC that prints a brief description of each command (function),
-# where each function name begins a line (without any leading whitespace.
+# where each function name begins an unindented comment line, with exactly one
+# blank after the comment character.  A description may follow -- as a bash
+# comment, indented or not.  Finally, the doc entry for the given function is
+# an empty comment line.
+#
+# For reference examples, please see either list-utils.sh or hash-utils.sh.
 
 # usage:
 #
-#   help_args_func HELPFUNC $# [NEEDED]
+#  some_function() {
+#    help_args_func HELPFUNC $# [NEEDED]
+#    ...
+#  }
 
 help_args_func() {
   local func="${FUNCNAME[1]}"         # who called?
+  if [[ "$func" =~ ^_|^help_ ]]; then # begins with _ or help_?
+    func="${FUNCNAME[2]}"             # use it's caller func
+  fi
   if (( $2 < ${3:-1} )) ; then
     $1 2>&1 | awk "BEGIN { t=\"\" }
                    /^$func[^a-z0-9_]/ {p=1;

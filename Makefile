@@ -20,6 +20,7 @@ libs = 	\
 	list-utils.sh		\
 	prompt-colors.sh	\
 	real-utils.sh		\
+	reset-util-vars.sh	\
 	run-utils.sh		\
         sh-utils.sh             \
 	sync-files.sh		\

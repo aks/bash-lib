@@ -5,10 +5,17 @@
 # Copyright 2006-2015 Alan K. Stebbens <aks@stebbens.org>
 #
 
-SH_UTILS_VERSION="sh-utils.sh v2.0"
+SH_UTILS_VERSION="sh-utils.sh v2.1"
 
 [[ "$SH_UTILS_SH" = "$SH_UTILS_VERSION" ]] && return
 SH_UTILS_SH="$SH_UTILS_VERSION"
+
+# Need to bring these in with sh-utils -- because I have many
+# scripts that were developed before the refactoring.
+
+source talk-utils.sh
+source run-utils.sh
+source options-utils.sh
 
 sh_utils_help() {
     cat 1>&2 <<'EOF'

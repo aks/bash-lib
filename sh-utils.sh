@@ -15,7 +15,7 @@ SH_UTILS_SH="$SH_UTILS_VERSION"
 
 source talk-utils.sh
 source run-utils.sh
-source options-utils.sh
+source option-utils.sh
 
 sh_utils_help() {
     cat 1>&2 <<'EOF'

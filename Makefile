@@ -18,6 +18,7 @@ libs = 	\
 	hash-utils.sh		\
 	help-util.sh		\
 	list-utils.sh		\
+	option-utils.sh		\
 	prompt-colors.sh	\
 	real-utils.sh		\
 	reset-util-vars.sh	\

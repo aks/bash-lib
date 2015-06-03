@@ -68,12 +68,13 @@ add_option() {
 }
 add_opt() { add_option "$@" ; }
 
-all_args() {
+all_opts() {
   if (( ${#options} == 1 )); then     # don't output empty '-'
     echo "$option_pairs"
   else
     echo "$option_pairs $options"          # output both the option_pairs and options
   fi
 }
+all_args() { all_opts "$@" ; }
 
 # end of option-utils.sh

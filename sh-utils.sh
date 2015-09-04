@@ -5,7 +5,7 @@
 # Copyright 2006-2015 Alan K. Stebbens <aks@stebbens.org>
 #
 
-SH_UTILS_VERSION="sh-utils.sh v2.1"
+SH_UTILS_VERSION="sh-utils.sh v2.2"
 
 [[ "$SH_UTILS_SH" = "$SH_UTILS_VERSION" ]] && return
 SH_UTILS_SH="$SH_UTILS_VERSION"

@@ -60,8 +60,10 @@ CALENDAR_UTILS_VERSION="calendar-utils.sh v1.2"
 [[ "$CALENDAR_UTILS_SH" = "$CALENDAR_UTILS_VERSION" ]] && return
 CALENDAR_UTILS_SH="$CALENDAR_UTILS_VERSION"
 
+source help-util.sh
+
 calendar_help() {
-  cat 1>&2 <<EOF
+  help_pager <<EOF
 calendar-utils provide some basic calendaring functions.
 Usage:
 

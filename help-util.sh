@@ -26,6 +26,27 @@
 #
 # For reference examples, please see either list-utils.sh or hash-utils.sh.
 
+# help_pager <<END_OF_MESSAGE
+#    some message
+#    ...
+# END_OF_MESSAGE
+
+# Use the user's defined pager, or use a default one.
+
+help_pager() {
+  local prog="$HELP_PAGER"
+  if [[ -z "$prog" ]]; then
+    for prog in less more cat ; do
+      prog=`which $prog 2>/dev/null`
+      if [[ -n "$prog" ]]; then
+        export HELP_PAGER="$prog"
+        break
+      fi
+    done
+  fi
+  $prog 1>&2
+}
+
 # usage:
 #
 #  some_function() {
@@ -39,13 +60,13 @@ help_args_func() {
     func="${FUNCNAME[2]}"             # use it's caller func
   fi
   if (( $2 < ${3:-1} )) ; then
-    $1 2>&1 | awk "BEGIN { t=\"\" }
+    $1 |& awk 1>&2 "BEGIN { t=\"\" }
                    /^$func[^a-z0-9_]/ {p=1;
                                       if (length(t) > 0){print t};
                                       print; next}
                    /^[ 	]*$/         {if (p) {exit};
                                       t=\"\"; next}
-                   /^[^ 	]/   {if(!p){t = t $0; next}}
+                   /^[^ 	]/   {if(!p){t = t \$0; next}}
                                      {if(p){print}}"
     return 1
   fi

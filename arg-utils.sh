@@ -10,15 +10,17 @@ ARG_UTILS_VERSION="arg-utils.sh v2.0"
 [[ "$ARG_UTILS_SH" = "$ARG_UTILS_VERSION" ]] && return
 ARG_UTILS_SH="$ARG_UTILS_VERSION"
 
+source help-utils.sh
+
 arg_utils_help() {
-    cat 1>&2 <<'EOF'
+    help_pager <<'EOF'
 The `arg-utils.sh` library is a collection of bash functions that
 enable flexible argument handling on functions that need to be able
 to accept arguments on the command-line or on STDIN.
 
 When writing a bash function that can accept input on the command line or from
 STDIN, the function should begin with an invocation of one of the following
-functions.  
+functions.
 
 For example, if we had a function that needed a numeric argument, the following
   invocation would be used:
@@ -49,6 +51,7 @@ append_args "$@"         Append the arguments to the next line from `STDIN`
 append_arg "$1"          Append the argument to the next line from `STDIN`
 EOF
 }
+
 help_arg_utils() { arg_utils_help ; }
 
 # The following functions, "numarg_or_input", "arg_for_input", and
@@ -56,7 +59,7 @@ help_arg_utils() { arg_utils_help ; }
 # argument, or arguments, on their call, or on STDIN.
 #
 # For example, let's say we have two bash functions to convert Celsius to
-# Fareigheit and vice-versa.  Let's call them "c2f" and "f2c".  With these
+# Farheneit and vice-versa.  Let's call them "c2f" and "f2c".  With these
 # functions, they can be used in two ways:
 #
 # Typical functions with arguments:
@@ -83,17 +86,21 @@ help_arg_utils() { arg_utils_help ; }
 #  function c2f() {
 #    local c=`numarg_or_input "$1"`
 #    echo "scale=1; $c * 9/5 + 32" | bc
-#
+#  }
+
 
 # local arg=`numarg_or_input $1`
 #
 # Return the numeric argument or read from stdin
 
 numarg_or_input() {
+  __numarg_or_input "$@"
+}
+
+__numarg_or_input() {
   local -i arg
   if [[ $# -eq 0 || -z "$1" ]] ; then
-    local func="${FUNCNAME[1]}"
-    [[ "$func" = "_numarg_or_input" ]] && func="${FUNCNAME[2]}"
+    local func=`__calling_funcname`
     local -a args
     while (( ${#args[*]} == 0 )) ; do
       read -p "${func}? " args
@@ -104,17 +111,34 @@ numarg_or_input() {
   fi
   echo $arg
 }
-_numarg_or_input() { numarg_or_input "$1" ; }
+
+# func=`__calling_funcname`
+#
+# Obtain the first function name not prefixed with "__"
+
+__calling_funcname() {
+  local _x=1
+  local func="${FUNCNAME[1]}"
+  for (( _x=1; _x <= ${#FUNCNAME[*]}; _x++ )); do
+    [[ "$func" =~ ^__ ]] && continue
+    func="${FUNCNAME[$_x]}"
+    break
+  done
+  echo "$func"
+}
 
 # local arg=`arg_or_input "$1"`
 #
 # Return the argument given, or the first non-empty line from STDIN
 
 arg_or_input() {
+  __arg_or_input "$@"
+}
+
+__arg_or_input() {
   local arg
   if [[ $# -eq 0 || -z "$1" ]]; then
-    local func="${FUNCNAME[1]}"
-    [[ "$func" = "_arg_or_input" ]] && func="${FUNCNAME[2]}"
+    local func=`__calling_funcname`
     local -a args
     while (( ${#args[*]} == 0 )) ; do
       read -p "${func}? " args
@@ -125,7 +149,6 @@ arg_or_input() {
   fi
   echo "$arg"
 }
-_arg_or_input() { arg_or_input "$1" ; }
 
 
 # local args=( `args_or_input "$@"` )
@@ -133,10 +156,13 @@ _arg_or_input() { arg_or_input "$1" ; }
 # Return the arguments or read a line of non-empty input
 
 args_or_input() {
+  __args_or_input "$@"
+}
+
+__args_or_input() {
   if (( $# == 0 )) ; then
     local -a args
-    local func="${FUNCNAME[1]}"
-    [[ "$func" = "_args_or_input" ]] && func="${FUNCNAME[2]}"
+    local func=`__calling_funcname`
     while (( ${#args[*]} == 0 )); do
       read -p "$func? " -a args
     done
@@ -145,16 +171,22 @@ args_or_input() {
     echo "$@"
   fi
 }
-_args_or_input() { args_or_input "$@" ; }
 
 # args_or_stdin "$@" | some-pipe
 #
 # return the given arguments, or read & return STDIN until EOF
 
 args_or_stdin() {
-  [[ $# -gt 0 ]] && echo "$*" || cat
+  __args_or_stdin "$@"
 }
-_args_or_stdin() { args_or_stdin "$@" ; }
+
+__args_or_stdin() {
+  if [[ $# -gt 0 ]] ; then
+    echo "$*"
+  else
+    cat
+  fi
+}
 
 
 # append_arg  ARG

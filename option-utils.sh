@@ -3,9 +3,11 @@
 
 # utility for collecting lists of options and arguments
 
-OPTION_UTILS_VERSION="option-utils.sh v1.0"
+OPTION_UTILS_VERSION="option-utils.sh v1.1"
 [[ "$OPTION_UTILS_SH" = "$OPTION_UTILS_VERSION" ]] && return
 OPTION_UTILS_SH="$OPTION_UTILS_VERSIONS"
+
+source help-util.sh
 
 option_help() {
   cat 1>&2 <<'EOF'
@@ -36,8 +38,6 @@ EOF
 }
 help_option() { option_help ; }
 
-source help-util.sh
-
 init_options() {
   declare -g option_pairs=
   declare -g options='-'         # a list of clustered single options
@@ -47,6 +47,10 @@ reset_options() { init_options ; }
 
 add_optarg() {
   help_args_func option_help $# 2 || return
+  __add_optarg "$@"
+}
+
+__add_optarg() {
   while (( $# > 0 )); do
     case "$1" in
       -*) option_pairs+=" $1 $2" ;;
@@ -58,6 +62,10 @@ add_optarg() {
 
 add_option() {
   help_args_func option_help $# 1 || return
+  __add_option "$@"
+}
+
+__add_option() {
   while (( $# > 0 )); do
     case "$1" in
       -*) options+="${1#-}" ;;      # append option without leading '-'
@@ -66,7 +74,9 @@ add_option() {
     shift
   done
 }
-add_opt() { add_option "$@" ; }
+
+add_opt()   {   add_option "$@" ; }
+__add_opt() { __add_option "$@" ; }
 
 all_opts() {
   if (( ${#options} == 1 )); then     # don't output empty '-'
@@ -75,6 +85,8 @@ all_opts() {
     echo "$option_pairs $options"          # output both the option_pairs and options
   fi
 }
-all_args() { all_opts "$@" ; }
+all_args()   { all_opts "$@" ; }
+__all_opts() { all_opts "$@" ; }
+__all_args() { all_opts "$@" ; }
 
 # end of option-utils.sh

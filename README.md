@@ -93,8 +93,8 @@ Follow the links below for detailed descriptions of each module.
 * [time-utils.sh](#time_utils)
 
 
-`arg-utils.sh` <a name="arg_utils" id="arg_utils">
-==============
+arg-utils.sh <a name="arg_utils" id="arg_utils">
+============
 
 The `arg-utils.sh` library is a collection of bash functions that enable
 flexible argument handling on functions that need to be able to accept
@@ -178,8 +178,8 @@ The definition of these two functions would be:
     }
 
 
-`help-util.sh` <a nam="help_util" id="help_util">
-==============
+help-util.sh <a nam="help_util" id="help_util">
+============
 
 This utility makes it easy to provide helpful responses for shell functions
 that are missing arguments.
@@ -212,8 +212,8 @@ For reference examples, please see either `list-utils.sh` or `hash-utils.sh`.
     END_OF_MESSAGE
 
 
-`date-utils.sh` <a name="date_utils" id="date_utils">
-==============
+date-utils.sh <a name="date_utils" id="date_utils">
+=============
 
 The `date-utils` library enables easy management of dates and its year, month,
 and day components.  A variety of date formats are supported both on input
@@ -318,7 +318,7 @@ date format, given by `DATE_FORMAT`.  If `DATE_FORMAT` is not defined, the forma
 `%F` is used.  (See `man strftime` for details).
 
 
-`list-utils.sh` <a name="list_utils" id="list_utils">
+list-utils.sh <a name="list_utils" id="list_utils">
 ==============
 
 `bash` script utilities for managing lists of things.
@@ -437,16 +437,15 @@ Split `STRING` by `SEP`.
 Join the items in `VAR` into a list, separated by `SEP`.
 `SEP` can be:
 
-| `SEP` | Meaning |
-| ----- |-------- |
-| `AND` | separate with `" and "` |
-| `OR` | separate with `" or "` |
-| `KEYS` | enclose each item with `X'` and `'`, followed by `,` |
-| `TAB` | use tabs to separate items |
-| `NL` | separate each item with newline (and some spaces) |
-| `NOWRAP` | do not auto-wrap long lines (default is `WRAP`) |
-| `','` | separate items with a comma (default) |
-| `str` | separate each item with an given string. |
+* `AND   ` - separate with `" and "` 
+* `OR    ` - separate with `" or "` 
+* `KEYS  ` - enclose each item with `X'` and `'`, followed by `,` 
+* `TAB   ` - use tabs to separate items 
+* `NL    ` - separate each item with newline (and some spaces) 
+* `NOWRAP` - do not auto-wrap long lines (default is `WRAP`) 
+* `','   ` - separate items with a comma (default) 
+* `str   ` - separate each item with an given string. 
+
 
     join_lines
 
@@ -563,7 +562,7 @@ error code 2.
           "'%s' is not a valid word" \
           "'%s" is an ambiguous word"
 
-`hash-utils.sh` <a name="hash_utils" id="hash_utils">
+hash-utils.sh <a name="hash_utils" id="hash_utils">
 =============
 
 Hashes are associative arrays. Hashes have __keys__ and associated
@@ -651,8 +650,8 @@ for "gutter").
 
     hash_help                             # describe the list functions
 
-`option-utils.sh` <a name="option_utils" id="options_utils">
-=================
+option-utils.sh <a name="option_utils" id="options_utils">
+===============
 
 The `option-util.sh` library is a small set of functions to manage
 building options and arguments, which is often needed in the
@@ -679,8 +678,8 @@ All of the accumulated options and arguments can be output with
     all_opts                 # outputs both option_pairs and options
 
 
-`prompt-colors.sh` <a name="prompt_colors" id="prompt_colors">
-----------------
+prompt-colors.sh <a name="prompt_colors" id="prompt_colors">
+================
 
 `prompt-colors.sh` is a bash script that creates two functions:
 `define_color_names` and `reset_color_names`, and then invokes the former.  The
@@ -700,9 +699,9 @@ The file `prompt-colors.sh` is actually dynamically generated from the script
 must run `make`, or invoke `generate-prompt-colors` manually.
 
 
-`real-utils.sh` <a name="real_utils" id="real_utils">
+real-utils.sh <a name="real_utils" id="real_utils">
 =============
-`real-utils.sh` is a bash library that enables real number arithmetic in bash
+The `real-utils.sh` bash library provides real number arithmetic in bash
 scripts.  Real numbers are managed as floating point strings in the format
 `"X.Y"`, where `X` is the integer portion, and `Y` is the fractional part.
 
@@ -790,8 +789,8 @@ default is 2.
     TAU  = 6.283185307179586   # 2*PI
     E    = 2.718281828459045
 
-`run-utils.sh` <a name="run_utils" id="run_utils">
-==============
+run-utils.sh <a name="run_utils" id="run_utils">
+============
 Shell utility functions for running system commands:
 
     run COMMAND ARGS ..       Show `COMMAND` `ARGS` if `$norun` or `$verbase`;
@@ -804,8 +803,8 @@ Shell utility functions for running system commands:
     add_trap "CMD" SIGNAL ..  Add `CMD` to the trap list for `SIGNAL`
 
 
-`sh-utils.sh` <a name="sh_utils" id="sh_utils">
-=============
+sh-utils.sh <a name="sh_utils" id="sh_utils">
+===========
 Handy functions for writing bash-based scripts
 
 The shell command utility functions consist of several groups
@@ -829,8 +828,8 @@ There are also some miscellaneous functions:
     fn_exists FUNCTION          Return 0 (true) if `FUNCTION` exists; 1 (false) otherwise
 
 
-`talk-utils.sh` <a name="talk_utils" id="talk_utils">
-===============
+talk-utils.sh <a name="talk_utils" id="talk_utils">
+=============
 All of the `talk`, `error`, and `die` functions conditionally print the
 arguments on `STDERR`.  The conditions that are available include: `$verbose`,
 `$quiet`, `$norun`, and are indicated by the prefixes: `v`, `q`, and `nr`,
@@ -1012,7 +1011,7 @@ collected reference output to compare against, and the test will fail.
 Examples of Tests:
 ------------------
 
-Please carefully review the various test files in this repo:
+Please carefully review the various test files in this repository:
 
     test-date-utils.sh    -- test the functions in date-utils.sh
     test-hash-utils.sh    -- test the functions in hash-utils.sh

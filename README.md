@@ -79,6 +79,7 @@ also has a more efficient, non-argument checking name, prefixed with `__`.
 Follow the links below for detailed descriptions of each module.
 
 * [arg-utils.sh](#arg_utils)
+* [calendar-utils.sh](#calendar_utils)
 * [date-utils.sh](#date_utils)
 * [hash-utils.sh](#hash_utils)
 * [help-util.sh](#help_util)
@@ -177,39 +178,50 @@ The definition of these two functions would be:
       echo "scale=1; $c * 9/5 + 32" | bc
     }
 
+calendar-utils.sh <a name="calendar_utils" id="calendar_utils">
+=================
+calendar-utils provide some basic calendaring functions.
 
-help-util.sh <a nam="help_util" id="help_util">
-============
+Usage:
 
-This utility makes it easy to provide helpful responses for shell functions
-that are missing arguments.
+    source calendar-utils.sh
 
-Each collection of related shell functions can share a common `help_FUNC`
-function, which is then filtered for the specific function name for which
-help is being sought.
+Functions:
 
-Each function that can be used by a user should start with a call to
-`help_args_func`, passing the `HELPFUNC`, `$#`, and the minimum number of
-arguments.
+    date_to_jdn YYYY MM DD         -- return Julian Day Number for given DATE
 
-If the using function is called with less than the required arguments the
-`HELPFUNC` is invoked and the output filtered through a simple filter that does
-not print until the calling function name is found and then prints only until
-the next empty line of test.
+    day_of_week YEAR MM DD [STYLE] -- return the day of the week for the given date
 
-Each collection of functions that wish to make use of this utility should
-have a `HELPFUNC` that prints a brief description of each command (function),
-where each function name begins an unindented comment line, with exactly one
-blank after the comment character.  A description may follow -- as a bash
-comment, indented or not.  Finally, the doc entry for the given function is
-an empty comment line.
+    days_in_month YEAR MM          -- return # of days in the month MM for YEAR
 
-For reference examples, please see either `list-utils.sh` or `hash-utils.sh`.
+    days_in_month[MM]              -- array indexed by month (1..12) to return # days
 
-    help_pager <<END_OF_MESSAGE
-    some message
-    ...
-    END_OF_MESSAGE
+    easter YEAR                    -- return date of Easter for YEAR
+
+    gregorian_easter YEAR          -- return date of Easter for YEAR in Gregorian calendar
+
+    is_leap_year YEAR              -- return whether or not YEAR is a leap year
+
+    jdn_to_date JDN                -- return date for given Julian Day Number (JDN)
+
+    julian_period YEAR             -- return Julian year for given Gregorian YEAR
+
+    style_for_year YEAR            -- compute the calendar style for the given YEAR
+
+    week_number YYYY MM DD         -- return the week number for the given date
+
+    Astronomical (obscure) Functions:
+
+    epact YEAR                     -- return the epact for the given YEAR
+
+    golden_number YEAR             -- return the golden number for YEAR
+
+    indiction YEAR                 -- return indication for YEAR
+
+    paschal_full_moon YEAR         -- return the Paschal full moon date for YEAR
+
+    solar_number YEAR              -- return the solar number for YEAR
+
 
 
 date-utils.sh <a name="date_utils" id="date_utils">
@@ -316,6 +328,129 @@ three numeric arguments, for the year, month, and day, or a single string
 argument in any of the parsable date formats, and reformats into the default
 date format, given by `DATE_FORMAT`.  If `DATE_FORMAT` is not defined, the format
 `%F` is used.  (See `man strftime` for details).
+
+
+hash-utils.sh <a name="hash_utils" id="hash_utils">
+=============
+
+Hashes are associative arrays. Hashes have __keys__ and associated
+__values__.   Use this library to simplify and ease your use of
+associated arrays.
+
+These are the hash utilities:
+
+    hash_init VAR [DEFAULT]
+
+Initialize `VAR` as an empty hash.
+
+    hash_default VAR
+
+Return the default value for `HASH.`
+
+    hash_set_default VAR DEFAULT
+
+Set the default value for `HASH`.
+
+    hash_put VAR KEY VAL ...
+
+Insert `[KEY]=VAL` into the hash.
+
+    hash_set VAR KEY VAL
+
+Alias to `hash_put`.
+
+    hash_get  VAR KEY
+
+Output the item associated with `KEY` in `VAR` to `STDOUT`.
+
+    hash_delete VAR KEY
+
+Delete `VAR[KEY]`.
+
+    hash_delete_if VAR KEY CONDITION
+
+Delete `VAR[KEY]` if `CONDITION` is true.
+
+    hash_keys VAR
+
+Return all the keys in hash `VAR`.
+
+    hash_values VAR
+
+Return all the values in hash `VAR`.
+
+    hash_each VAR KEYVAR EXPR
+
+Evaluate `EXPR`, setting `KEYVAR` to each key in `VAR`.
+
+    hash_copy HASH NEWHASH KEY1 ...
+
+Copy items at `KEY1`, .. from `HASH1` to `NEWHASH`.
+
+    in_hash      VAR KEY
+    has_key      VAR KEY
+    hash_member  VAR KEY
+    hash_include VAR KEY
+
+Test if `KEY` is in the hash `VAR`.
+
+    hash_size VAR
+
+Returns the number of `[key]=value` pairs
+
+    hash_merge VAR1 VAR2
+
+Merge key/value pairs from `VAR2` with `VAR1`.
+
+    hash_print HASHVAR [indent=INDENT] [width=WIDTH] [gutter=GUTTER] [cols=COLS] [sep=SEP]
+
+Print the items in `HASHVAR` in vertically-sorted columns.  The
+number of columns is determined by `COLS`, if given, or by `WIDTH`
+(defaults to 80) divided by the maximum width of all items in
+`HASHVAR`.
+
+Use `GUTTER` blanks (default 2) to separate columns.
+
+If `SEP` is given, it is used to delimit columns instead of blanks.
+
+Each option may be abbreviated to its leading character (e.g., "g"
+for "gutter").
+
+    hash_help                             # describe the list functions
+
+
+help-util.sh <a nam="help_util" id="help_util">
+============
+
+This utility makes it easy to provide helpful responses for shell functions
+that are missing arguments.
+
+Each collection of related shell functions can share a common `help_FUNC`
+function, which is then filtered for the specific function name for which
+help is being sought.
+
+Each function that can be used by a user should start with a call to
+`help_args_func`, passing the `HELPFUNC`, `$#`, and the minimum number of
+arguments.
+
+If the using function is called with less than the required arguments the
+`HELPFUNC` is invoked and the output filtered through a simple filter that does
+not print until the calling function name is found and then prints only until
+the next empty line of test.
+
+Each collection of functions that wish to make use of this utility should
+have a `HELPFUNC` that prints a brief description of each command (function),
+where each function name begins an unindented comment line, with exactly one
+blank after the comment character.  A description may follow -- as a bash
+comment, indented or not.  Finally, the doc entry for the given function is
+an empty comment line.
+
+For reference examples, please see either `list-utils.sh` or `hash-utils.sh`.
+
+    help_pager <<END_OF_MESSAGE
+    some message
+    ...
+    END_OF_MESSAGE
 
 
 list-utils.sh <a name="list_utils" id="list_utils">
@@ -563,93 +698,6 @@ error code 2.
           "'%s' is not a valid word" \
           "'%s" is an ambiguous word"
 
-hash-utils.sh <a name="hash_utils" id="hash_utils">
-=============
-
-Hashes are associative arrays. Hashes have __keys__ and associated
-__values__.   Use this library to simplify and ease your use of
-associated arrays.
-
-These are the hash utilities:
-
-    hash_init VAR [DEFAULT]
-
-Initialize `VAR` as an empty hash.
-
-    hash_default VAR
-
-Return the default value for `HASH.`
-
-    hash_set_default VAR DEFAULT
-
-Set the default value for `HASH`.
-
-    hash_put VAR KEY VAL ...
-
-Insert `[KEY]=VAL` into the hash.
-
-    hash_set VAR KEY VAL
-
-Alias to `hash_put`.
-
-    hash_get  VAR KEY
-
-Output the item associated with `KEY` in `VAR` to `STDOUT`.
-
-    hash_delete VAR KEY
-
-Delete `VAR[KEY]`.
-
-    hash_delete_if VAR KEY CONDITION
-
-Delete `VAR[KEY]` if `CONDITION` is true.
-
-    hash_keys VAR
-
-Return all the keys in hash `VAR`.
-
-    hash_values VAR
-
-Return all the values in hash `VAR`.
-
-    hash_each VAR KEYVAR EXPR
-
-Evaluate `EXPR`, setting `KEYVAR` to each key in `VAR`.
-
-    hash_copy HASH NEWHASH KEY1 ...
-
-Copy items at `KEY1`, .. from `HASH1` to `NEWHASH`.
-
-    in_hash      VAR KEY
-    has_key      VAR KEY
-    hash_member  VAR KEY
-    hash_include VAR KEY
-
-Test if `KEY` is in the hash `VAR`.
-
-    hash_size VAR
-
-Returns the number of `[key]=value` pairs
-
-    hash_merge VAR1 VAR2
-
-Merge key/value pairs from `VAR2` with `VAR1`.
-
-    hash_print HASHVAR [indent=INDENT] [width=WIDTH] [gutter=GUTTER] [cols=COLS] [sep=SEP]
-
-Print the items in `HASHVAR` in vertically-sorted columns.  The
-number of columns is determined by `COLS`, if given, or by `WIDTH`
-(defaults to 80) divided by the maximum width of all items in
-`HASHVAR`.
-
-Use `GUTTER` blanks (default 2) to separate columns.
-
-If `SEP` is given, it is used to delimit columns instead of blanks.
-
-Each option may be abbreviated to its leading character (e.g., "g"
-for "gutter").
-
-    hash_help                             # describe the list functions
 
 option-utils.sh <a name="option_utils" id="options_utils">
 ===============
@@ -814,19 +862,19 @@ command-line utilities and other system scripts.
 
 The following are separate modules that are included with `sh-utils`:
 
-- `arg-utils   ` - help with arguments or STDIN
-- `help-util   ` - help with help on selected functions
+- `arg-utils`    - help with arguments or `STDIN`
+- `help-util`    - help with help on selected functions
 - `option-utils` - manage option and argument lists
-- `run-utils   ` - run system commands, with $norun and $verbose 
-- `talk-utils  ` - conditional output to STDERR
+- `run-utils`    - run system commands, with `$norun` and `$verbose` 
+- `talk-utils`   - conditional output to `STDERR`
 
 There are also some miscellaneous functions:
 
-    rm_file_later FILE          Cause `FILE` to be removed upon program exit.
+    rm_file_later FILE         Cause `FILE` to be removed upon program exit.
 
-    add_trap "CMD" SIGNAL ..    Add `CMD` to the trap list for `SIGNAL`
+    add_trap "CMD" SIGNAL ..   Add `CMD` to the trap list for `SIGNAL`
 
-    fn_exists FUNCTION          Return 0 (true) if `FUNCTION` exists; 1 (false) otherwise
+    fn_exists FUNCTION         Return 0 (true) if `FUNCTION` exists; 1 (false) otherwise
 
 
 talk-utils.sh <a name="talk_utils" id="talk_utils">

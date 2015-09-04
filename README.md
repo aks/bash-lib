@@ -1,6 +1,5 @@
 bash-lib
 ========
-
 Library of bash scripts.
 
 Author: Alan K. Stebbens <aks@stebbens.org>
@@ -73,27 +72,156 @@ which defines `reset_util_vars`, which you can then invoke to reset the shell
 variables that prevent redundant sourcings.  Alternatively, you can increment
 the version number in the utility libraries that you are modifying.
 
+Many of these utility functions have helpful argument checking.  In order to
+avoid unnecessary overhead, each function name that provides argument checking
+also has a more efficient, non-argument checking name, prefixed with `__`.
 
 Follow the links below for detailed descriptions of each module.
 
-* [date-util.sh](#date_utils)
-* [list-utils.sh](#list_utils)
+* [arg-utils.sh](#arg_utils)
+* [date-utils.sh](#date_utils)
 * [hash-utils.sh](#hash_utils)
+* [help-util.sh](#help_util)
+* [list-utils.sh](#list_utils)
 * [prompt-colors.sh](#prompt_colors)
 * [real-utils.sh](#real_utils)
+* [run-utils.sh](#run_utils)
+* [sh-utils.sh](#sh_utils)
+* [talk-utils.sh](#talk_utils)
 * [text-utils.sh](#text_utils)
 * [test-utils.sh](#test_utils)
 * [time-utils.sh](#time_utils)
 
-date-util.sh <a name="date_utils" id="date_utils">
-============
+
+`arg-utils.sh` <a name="arg_utils" id="arg_utils">
+==============
+
+The `arg-utils.sh` library is a collection of bash functions that enable
+flexible argument handling on functions that need to be able to accept
+arguments on the command-line or on `STDIN`.
+
+When writing a bash function that can accept input on the command line or from
+`STDIN`, the function should begin with an invocation of one of the following
+functions.
+
+For example, if we had a function that needed a numeric argument, the following
+invocation would be used:
+
+    local f=`numarg_or_input "$1"`
+
+If a text argument is needed:
+
+    local txtarg=`arg_or_input "$1"`
+
+For those cases where two or more arguments can be accepted, either on the
+command-line or from `STDIN`:
+
+    local args=( `args_or_input "$@"` )
+
+The following are the `arg-util` functions:
+
+    numarg_or_input "$1"
+
+Return a numeric argument or read it from `STDIN`
+
+    arg_or_input "$1"
+
+Return the argument or read it from `STDIN`
+
+    args_or_input "$@"
+
+Return arguments or read them from `STDIN`
+
+    args_or_stdin "$@"
+    
+Return the arguments or read all of `STDIN`
+
+    append_args "$@"
+    
+Append the arguments to the next line from `STDIN`
+
+    append_arg "$1"
+
+Append the argument to the next line from `STDIN`
+
+Example
+-------
+
+Let's say we have two bash functions to convert Celsius to Fahrenheit and
+vice-versa.  Let's call them `c2f` and `f2c`.  With these functions, they can
+be used in two ways:
+
+Typical functions with arguments:
+
+    c2f 69              # convert 69C to F
+    f2c 10              # convert 10F to C
+
+Or, accepting their input on `STDIN`, as in a pipe:
+
+     echo 69 | c2f      # convert 69C to F
+     echo 10 | f2c      # convert 10F to C
+
+The advantage of the latter approach is that the functions can be fitted into
+a pipe where the data can come from another process directly on its `STDOUT`.
+
+The definition of these two functions would be:
+
+    # f2c -- convert F to C via: (°F  -  32)  x  5/9 = °C
+    function f2c() {
+      local f=`numarg_or_input "$1"`
+      echo "scale=1; ($f - 32)*5/9' | bc
+    }
+    # c2f -- convert C to F via °C  x  9/5 + 32 = °F
+    function c2f() {
+      local c=`numarg_or_input "$1"`
+      echo "scale=1; $c * 9/5 + 32" | bc
+    }
+
+
+`help-util.sh` <a nam="help_util" id="help_util">
+==============
+
+This utility makes it easy to provide helpful responses for shell functions
+that are missing arguments.
+
+Each collection of related shell functions can share a common `help_FUNC`
+function, which is then filtered for the specific function name for which
+help is being sought.
+
+Each function that can be used by a user should start with a call to
+`help_args_func`, passing the `HELPFUNC`, `$#`, and the minimum number of
+arguments.
+
+If the using function is called with less than the required arguments the
+`HELPFUNC` is invoked and the output filtered through a simple filter that does
+not print until the calling function name is found and then prints only until
+the next empty line of test.
+
+Each collection of functions that wish to make use of this utility should
+have a `HELPFUNC` that prints a brief description of each command (function),
+where each function name begins an unindented comment line, with exactly one
+blank after the comment character.  A description may follow -- as a bash
+comment, indented or not.  Finally, the doc entry for the given function is
+an empty comment line.
+
+For reference examples, please see either `list-utils.sh` or `hash-utils.sh`.
+
+    help_pager <<END_OF_MESSAGE
+    some message
+    ...
+    END_OF_MESSAGE
+
+
+`date-utils.sh` <a name="date_utils" id="date_utils">
+==============
 
 The `date-utils` library enables easy management of dates and its year, month,
 and day components.  A variety of date formats are supported both on input
-parsing, and on output formatting.  The envar `EUROPEAN_DATES` controls how the
-format `NN/NN/NNNN` is interpreted: if set to 1, that format is taken to mean
-`DD/MM/YYYY`, where DD is the day of the month; otherwise, it is parsed as
-`MM/DD/YYYY`.
+parsing, and on output formatting.  
+
+The envar `EUROPEAN_DATES` controls how the format `NN/NN/NNNN` is interpreted:
+if set to 1, that format is taken to mean `DD/MM/YYYY`, where DD is the day of
+the month; otherwise, it is parsed as `MM/DD/YYYY`.
 
     date_parse [DATESTRING]
     date_arg   [DATESTRING]
@@ -104,8 +232,8 @@ MM YYYYY` (if `EUROPEAN_DATES` is set).  If the `DATESTRING` is successfully
 parsed, the variables `year`, `month`, and `day` are set to their respective
 numbers.  `date_arg` is another name for the same function.
 
-If `DATESTRING` is empty, a line of input from STDIN is read and used instead.
-This makes the script handy in a pipe.  Example:
+If `DATESTRING` is empty, a line of input from `STDIN` is read and used
+instead.  This makes the script handy in a pipe.  Example:
 
     extract_first_date_from_log /var/log/messages | date_parse
 
@@ -146,7 +274,7 @@ Return the last day of the month corresponding to year `YYYY` and month `MM`.
 
 Returns the number of absolute days from the beginning of the Gregorian
 calendar for the given date, which can be specified with three numeric
-arguments, or a single string argument, which must be parseable by
+arguments, or a single string argument, which must be parsable by
 `date_parse`.
 
     jdays_to_date JDAYS
@@ -174,7 +302,7 @@ Returns the weekday name for the given `DATESTRING` or date components.
 
     date_to_weekday_num [DATESTRING | YYYY MM DD]
 
-Returns the wekday number (0..6) for the given `DATESTRING` or date components.
+Returns the weekday number (0..6) for the given `DATESTRING` or date components.
 
     date_day_num [DATESTRING | YYYY MM DD]
 
@@ -189,99 +317,184 @@ argument in any of the parsable date formats, and reformats into the default
 date format, given by `DATE_FORMAT`.  If `DATE_FORMAT` is not defined, the format
 `%F` is used.  (See `man strftime` for details).
 
-list-utils.sh <a name="list_utils" id="list_utils">
-=============
 
-bash script utilities for managing lists of things
+`list-utils.sh` <a name="list_utils" id="list_utils">
+==============
 
-In the descriptions below, `VAR` is an array variable; `VAL`, `VAL1`, .. are values.
+`bash` script utilities for managing lists of things.
 
+In the descriptions below, `VAR` is an array variable and `VAL`\*, are
+values.
+
+The functions that modify a list variable (e.g., `list_push`, `list_pop`)
+cannot be used within a sub-shell (e.g., a command substitution).
+
+Commands executed within a sub-shell are incapable of affecting variables in
+the parent shell.  In other words, the expression `var=$(list_pop list)` looks
+nice but won't work.    Instead, do:
+
+    list_pop some_list    # sets "$item" with the popped value
+
+List Functions
+--------------
 These are the list utilities:
 
-    list_init VAR                        # initialize VAR as an empty list
+    list_init VAR
 
-    list_add      VAR VAL1 [VAL2 ...]    # add VAL1.. to the end of VAR
+Initialize `VAR` as an empty list.
 
-    list_add_once VAR  VAL1 [VAL2 ..]    # add VAL1.. uniquely to the end of VAR
+    list_add      VAR VAL1 [VAL2 ...]
 
-    list_push VAR VAL ...                # alias to list_add
+Add one or more values (`VAL1..`) to the end of `VAR`.  There is no check for
+duplicates.
 
-    list_insert      VAR VAL ...         # insert VAL.. at the front of VAR
+    list_add_once VAR  VAL1 [VAL2 ..]
 
-    list_insert_once VAR VAL ...         # insert VAL.. at the front of VAR; 
+Add one or more values (`VAL1..`) uniquely to the end of `VAR`.
 
-    list_pop VAR                         # removes top VAL on VAR and returns in variable "item"
+    list_push VAR VAL ...
 
-    list_remove VAR VAL ...              # remove VAL.. from the list VAR
+Alias to `list_add`.
 
-    list_get  VAR N                      # get the Nth item of VAR to stdout
+    list_insert      VAR VAL ...
 
-    list_item VAR N                      # set the variable 'item' to the Nth item of VAR
+Insert `VAL..` at the front of `VAR`.
 
-    list_set  VAR N VAL                  # set the Nth item of VAR to VAL
+    list_insert_once VAR VAL ...
 
-    list_items VAR [START [END]]         # return list items from START to END (or all)
+Insert one or more values (`VAL..`) at the front of `VAR`. 
 
-    list_copy LIST NEWLIST [START [END]] # copy list LIST to NEWLIST, from START to END
+    list_pop VAR
 
-    in_list VAR  [-any|-all] VAL ...     # return true if one or more values are in a list
+Removes `VAL` from the list `VAR` and returns it in the variable `item`.
 
-    list_size VAR                        # returns the number of items
+    list_remove VAR VAL ...
 
-    list_dump VAR                        # output the contents of VAR, with indexes
+Remove one or more given values (`VAL..`) from the list `VAR`.
 
-    sort_str VAL ...                     # sort the space-separated words of VAL ..
+    list_get  VAR N
 
-    list_sort VAR                        # sort the contents of VAR (a list) in place
+Get the `N`th item of `VAR` to `STDOUT`.
 
-    list_sorted VAR                      # output the items of VAR sorted
+    list_item VAR N
 
-    sort_str2lines STRING                # sort STR with each item in a separate line
+Set the variable `item` to the `N`th item of `VAR`.
 
-    sort_list2lines VAR                  # sort LIST with each item in a separate line
+    list_set  VAR N VAL
 
-    split_into  VAR "STRING" SEP         # split "STRING" by SEP into VAR
+Set the `N`th item of `VAR` to `VAL`.
 
-    split_str   "STRING" [SEP]           # split "STRING" by SEP
+    list_items VAR [START [END]]
 
-    list_join VAR [SEP] ..               # join the items in VAR into a list, separated by SEP,
-      SEP can be 
-        AND    -- separate with " and "
-        OR     -- separate with " or "
-        KEYS   -- enclose each item with X' and ', follwed by ','
-        TAB    -- use tabs to separate items
-        NL     -- separate each item with newline (and some spaces)
-        NOWRAP -- do not auto-wrap long lines (default is WRAP)
-        ','    -- separate items with a comma (default)
-        str    -- separate each item with an given string.
+Return list items from `START` to `END` (or all).
 
-    join_lines                           # read STDIN and catenate lines; remove trailing NL
+    list_copy LIST NEWLIST [START [END]]
 
-    list_lookup LISTVAR KEY              # lookup KEY in LISTVAR
+Copy list `LIST` to `NEWLIST,` from `START` to `END`.
 
-    list_grep   LISTVAR PAT              # grep PAT across LISTVAR
+    in_list VAR  [-any|-all] VAL ...
 
-    list_map    LISTVAR EXPR [JOINSTR]   # create a list of EXPR applied to each item in LISTVAR
+Return true if one or more values are in list `VAR`.
 
-    list_reduce LISTVAR EXPR [INIT]      # reduce LISTVAR using EXPR, with initial value INIT
+    list_size VAR
 
-    list_sum LISTVAR                     # sum the items in LISTVAR
+Returns the number of items in `VAR`.
 
-    list_max LISTVAR                     # return the maximum item in LISTVAR
+    list_dump VAR
 
-    list_min LISTVAR                     # return the minimum item in LISTVAR
+Output the contents of `VAR`, with indexes.
 
-    list_avg LISTVAR                     # return the average of the items in LISTVAR
+    sort_str VAL ...
+
+Sort the space-separated words of `VAL ..`.
+
+    list_sort VAR
+
+Sort the contents of `VAR` (a list) in place.
+
+    list_sorted VAR
+
+Output the items of `VAR` sorted.
+
+    sort_str2lines STRING
+
+Sort `STRING` with each item in a separate line.
+
+    sort_list2lines VAR
+
+Sort list `VAR` with each item in a separate line.
+
+    split_into  VAR "STRING" [SEP]
+
+Split `STRING` by `SEP` into `VAR`.
+
+    split_str   "STRING" [SEP]
+
+Split `STRING` by `SEP`.
+
+    list_join VAR [SEP] ..
+
+Join the items in `VAR` into a list, separated by `SEP`.
+`SEP` can be:
+
+| `SEP` | Meaning |
+| ----- + ------- |
+| `AND` | separate with `" and "` |
+| `OR` | separate with `" or "` |
+| `KEYS` | enclose each item with `X'` and `'`, followed by `,` |
+| `TAB` | use tabs to separate items |
+| `NL` | separate each item with newline (and some spaces) |
+| `NOWRAP` | do not auto-wrap long lines (default is `WRAP`) |
+| `','` | separate items with a comma (default) |
+| `str` | separate each item with an given string. |
+
+    join_lines
+
+Read `STDIN` and catenate lines; remove trailing `NL`.
+
+    list_lookup LISTVAR KEY
+
+Lookup and return matching `KEY` in `LISTVAR`.  `KEY` can be an abbreviation.
+
+    list_grep   LISTVAR PAT
+
+Perform a `grep` using pattern `PAT` across the contents of `LISTVAR`.
+
+    list_map    LISTVAR EXPR [JOINSTR]
+
+Create a list of `EXPR` applied to each item in `LISTVAR`.
+
+    list_reduce LISTVAR EXPR [INIT]
+
+Reduce `LISTVAR` using `EXPR,` with initial value `INIT`.
+
+    list_sum LISTVAR
+
+Sum the items in `LISTVAR`.
+
+    list_max LISTVAR
+
+Return the maximum item in `LISTVAR`.
+
+    list_min LISTVAR
+
+Return the minimum item in `LISTVAR`.
+
+    list_avg LISTVAR
+
+Return the average of the items in `LISTVAR`.
 
     list_print LISTVAR [indent=INDENT] [width=WIDTH] [sep=SEP] [cols=COLS]
 
     list_print LISTVAR [i=INDENT] [w=WIDTH] [s=SEP]  [c=COLS]
 
-        print the items in LIST in vertically-sorted columns.  Use COLS if given,
-        otherwise the number of columns is computed from WIDTH (defaults to 80) and
-        the maximum width of all the items in LISTVAR
+Print the items in `LIST` in vertically-sorted columns.  Use `COLS` if given,
+otherwise the number of columns is computed from `WIDTH` (defaults to 80) and
+the maximum width of all the items in `LISTVAR`.
 
-    list_help                             # describe the list functions
+    list_help
+
+Describe the list functions.
 
 There are convenient aliases for most `list_XXX` functions as `XXX_list`.  For
 example, `join_list` => `list_join`, `list_pop` => `pop_list`, `map_list` =>
@@ -289,31 +502,35 @@ example, `join_list` => `list_join`, `list_pop` => `pop_list`, `map_list` =>
 like `grep_list`, while other people who think _NOUN-VERB_ can use `list_grep`.
 The canonical function name begins with `list_`.
 
+Programmers wanting to make use of the list functions can use any of the list
+names prefixed with `__` to avoid the argument checking that is more helpful
+for interactive usage.  For example, within a script, the size of a list `FOO`
+is obtained with `__list_size FOO`.
+
 Splitting
 ---------
 
     split_into  VAR "STRING" SEP
 
-splits a `STRING` into parts using separator (`SEP`) (default is ',')
+Splits a `STRING` into parts using separator (`SEP`) (default is ',')
 and assigns the resulting separated, quoted strings to the `VAR`.
 
     split_str   "STRING" [SEP]
 
-outputs the split of `STRING` into parts using a separator `SEP`
+Outputs the split of `STRING` into parts using a separator `SEP`
 (defaulting to space/tab).
 
     split_input [SEP]
 
-splits the input text into parts using separator (`SEP`) (default is tab).
+Splits the input text into parts using separator (`SEP`) (default is tab).
 
 For the split functions:
 
-If `SEP` does not include a space (" "), care is taken to avoid removing
+If `SEP` does not include a space (`" "`), care is taken to avoid removing
 whitespace from the split values.
 
-`SEP` can be multiple characters; for example ' ,' (a space, comma)
-will split using both space and comma.  By default, splitting is
-done by tabs.
+`SEP` can be multiple characters; for example `' ,'` (a space, comma) will
+split using both space and comma.  By default, splitting is done by tabs.
 
 Lookup functions
 ----------------
@@ -327,16 +544,16 @@ code 1; if 2 or more matches, return empty string, and error code 2.
     list_grep LIST PATTERN
 
 Look up items matching `PATTERN` in the array `LIST`.  Return all matching items,
-and return code 0.  If no matching items, return empty string and return code
-1.
+and return code 0.  If no matching items, return empty string and return code 1.
 
     lookup_error CODE WORD [NOTFOUNDMSG [AMBIGMSG]]
 
-A utility function to be used in conjuction with a `lookup_list` or `grep_list`
-invocation.  `CODE` is an error code returned from `lookup_list` or `grep_list`.
-`WORD` is the word used on the search, and is used as the "%s" argument in either
-error message.  `NOTFOUNDMSG` is the error message used in the case of error 
-code 1.  `AMBIGMSG` is the error message used in the case of error code 2.
+A utility function to be used in conjunction with a `lookup_list` or
+`grep_list` invocation.  `CODE` is an error code returned from `lookup_list` or
+`grep_list`.  `WORD` is the word used on the search, and is used as the `"%s"`
+argument in either error message.  `NOTFOUNDMSG` is the error message used in
+the case of error code 1.  `AMBIGMSG` is the error message used in the case of
+error code 2.
 
 `lookup_error` is used like this:
 
@@ -346,7 +563,7 @@ code 1.  `AMBIGMSG` is the error message used in the case of error code 2.
           "'%s' is not a valid word" \
           "'%s" is an ambiguous word"
 
-hash-utils.sh <a name="hash_utils" id="hash_utils">
+`hash-utils.sh` <a name="hash_utils" id="hash_utils">
 =============
 
 Hashes are associative arrays. Hashes have __keys__ and associated
@@ -355,56 +572,116 @@ associated arrays.
 
 These are the hash utilities:
 
-    hash_init VAR [DEFAULT]           # initialize VAR as an empty hash
+    hash_init VAR [DEFAULT]
 
-    hash_default VAR                  # return the default value for HASH
+Initialize `VAR` as an empty hash.
 
-    hash_set_default VAR DEFAULT      # set the default value for HASH
+    hash_default VAR
 
-    hash_put VAR KEY VAL ...          # insert KEY=>VAL into the hash
-    hash_set VAR KEY VAL              # alias to "hash_put"
+Return the default value for `HASH.`
 
-    hash_get  VAR KEY                 # get the Nth item of VAR to stdout
+    hash_set_default VAR DEFAULT
 
-    hash_delete VAR KEY               # delete VAR[KEY]
+Set the default value for `HASH`.
 
-    hash_delete_if VAR KEY CONDITION  # delete VAR[KEY} if CONDITION is true
+    hash_put VAR KEY VAL ...
 
-    hash_keys VAR                     # return all the keys in hash
-    hash_values VAR                   # return all the values in hash
+Insert `[KEY]=VAL` into the hash.
 
-    hash_each VAR KEYVAR EXPR         # eval EXPR, setting KEYVAR to each key in VAR
+    hash_set VAR KEY VAL
 
-    hash_copy HASH NEWHASH KEY1 ...   # copy items at KEY1, .. from HASH1 to NEWHASH
+Alias to `hash_put`.
 
-    in_hash VAR KEY                   # test if KEY is in the hash VAR
-    has_key VAR KEY
-    hash_member VAR KEY
+    hash_get  VAR KEY
+
+Output the item associated with `KEY` in `VAR` to `STDOUT`.
+
+    hash_delete VAR KEY
+
+Delete `VAR[KEY]`.
+
+    hash_delete_if VAR KEY CONDITION
+
+Delete `VAR[KEY]` if `CONDITION` is true.
+
+    hash_keys VAR
+
+Return all the keys in hash `VAR`.
+
+    hash_values VAR
+
+Return all the values in hash `VAR`.
+
+    hash_each VAR KEYVAR EXPR
+
+Evaluate `EXPR`, setting `KEYVAR` to each key in `VAR`.
+
+    hash_copy HASH NEWHASH KEY1 ...
+
+Copy items at `KEY1`, .. from `HASH1` to `NEWHASH`.
+
+    in_hash      VAR KEY
+    has_key      VAR KEY
+    hash_member  VAR KEY
     hash_include VAR KEY
 
-    hash_size VAR                     # returns the number of key=>value pairs
+Test if `KEY` is in the hash `VAR`.
 
-    hash_merge VAR1 VAR2              # merge key/value pairs from VAR2 with VAR1
+    hash_size VAR
+
+Returns the number of `[key]=value` pairs
+
+    hash_merge VAR1 VAR2
+
+Merge key/value pairs from `VAR2` with `VAR1`.
 
     hash_print HASHVAR [indent=INDENT] [width=WIDTH] [gutter=GUTTER] [cols=COLS] [sep=SEP]
 
-          print the items in `HASHVAR` in vertically-sorted columns.  The
-          number of columns is determined by `COLS`, if given, or by `WIDTH`
-          (defaults to 80) divided by the maximum width of all items in
-          `HASHVAR`.
+Print the items in `HASHVAR` in vertically-sorted columns.  The
+number of columns is determined by `COLS`, if given, or by `WIDTH`
+(defaults to 80) divided by the maximum width of all items in
+`HASHVAR`.
 
-          Use `GUTTER` blanks (default 2) to separate columns.
+Use `GUTTER` blanks (default 2) to separate columns.
 
-          If `SEP` is given, it is used to delimit columns intead of blanks.
+If `SEP` is given, it is used to delimit columns instead of blanks.
 
-          Each option may be abbreviated to its leading character (e.g., "g"
-          for "gutter").
+Each option may be abbreviated to its leading character (e.g., "g"
+for "gutter").
 
     hash_help                             # describe the list functions
 
+`option-utils.sh` <a name="option_utils" id="options_utils">
+=================
 
-prompt-colors.sh <a name="prompt_colors" id="prompt_colors">
+The `option-util.sh` library is a small set of functions to manage
+building options and arguments, which is often needed in the
+development of command-line utilities.  
+
+These functions use two global variables: `option_pairs` and
+`options`.  The `option_pairs` variable is used to accumulate pairs
+of options and arguments, e.g.: `-F FILE`, while `options` is used to
+accumulate single character options that can be clustered behind a
+single dash "-".
+
+All of the accumulated options and arguments can be output with
+`all_opts`.
+
+    init_opts                # empty "option_pairs" and "options"
+
+    reset_opts               # same as init_opts
+
+    add_optarg OPTION ARG .. # add OPTION and ARG to the option_pairs list
+
+    add_option OPTION ..     # add OPTION to the single options list
+    add_opt    OPTION ..     # eg: add_arg -c -d ..  or add_arg c d ..
+
+    all_opts                 # outputs both option_pairs and options
+
+
+`prompt-colors.sh` <a name="prompt_colors" id="prompt_colors">
 ----------------
+
 `prompt-colors.sh` is a bash script that creates two functions:
 `define_color_names` and `reset_color_names`, and then invokes the former.  The
 `define_color_names` function creates a bunch of color variable names, setting
@@ -419,15 +696,15 @@ Usage:
 
 
 The file `prompt-colors.sh` is actually dynamically generated from the script
-`generate-color-names`, and is not even part of this repo.  To create it, you
+`generate-color-names`, and is not even part of this repository.  To create it, you
 must run `make`, or invoke `generate-prompt-colors` manually.
 
 
-real-utils.sh <a name="real_utils" id="real_utils">
+`real-utils.sh` <a name="real_utils" id="real_utils">
 =============
-real-utils.sh is a bash library that enables real number arithmetic in bash
+`real-utils.sh` is a bash library that enables real number arithmetic in bash
 scripts.  Real numbers are managed as floating point strings in the format
-"X.Y", where X is the integer portion, and "Y" is the fractional part.
+`"X.Y"`, where `X` is the integer portion, and `Y` is the fractional part.
 
 Usage:
 
@@ -513,17 +790,51 @@ default is 2.
     TAU  = 6.283185307179586   # 2*PI
     E    = 2.718281828459045
 
+`run-utils.sh` <a name="run_utils" id="run_utils">
+==============
+Shell utility functions for running system commands:
 
-sh-utils.sh <a name="sh_utils" id="sh_utils">
+    run COMMAND ARGS ..       Show `COMMAND` `ARGS` if `$norun` or `$verbase`;
+                              run `COMMAND` unless `$norun`.
+
+    safe_run COMMAND ARGS ... Same as "run", but always executes.
+
+    rm_file_later FILE        Cause `FILE` to be removed upon program exit.
+
+    add_trap "CMD" SIGNAL ..  Add `CMD` to the trap list for `SIGNAL`
+
+
+`sh-utils.sh` <a name="sh_utils" id="sh_utils">
 =============
-handy functions for writing bash-based scripts
+Handy functions for writing bash-based scripts
 
-Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
+The shell command utility functions consist of several groups
+of functions which collectively are quite useful in development
+command-line utilities and other system scripts.
 
-Shell command utility functions:
+The following are separate modules that are included with `sh-utils`:
 
-All of these `talk`, `error`, and `die` functions conditionally print the
-arguments on `STDERR`.
+- `arg-utils   ` - help with arguments or STDIN
+- `help-util   ` - help with help on selected functions
+- `option-utils` - manage option and argument lists
+- `run-utils   ` - run system commands, with $norun and $verbose 
+- `talk-utils  ` - conditional output to STDERR
+
+There are also some miscellaneous functions:
+
+    rm_file_later FILE          Cause `FILE` to be removed upon program exit.
+
+    add_trap "CMD" SIGNAL ..    Add `CMD` to the trap list for `SIGNAL`
+
+    fn_exists FUNCTION          Return 0 (true) if `FUNCTION` exists; 1 (false) otherwise
+
+
+`talk-utils.sh` <a name="talk_utils" id="talk_utils">
+===============
+All of the `talk`, `error`, and `die` functions conditionally print the
+arguments on `STDERR`.  The conditions that are available include: `$verbose`,
+`$quiet`, `$norun`, and are indicated by the prefixes: `v`, `q`, and `nr`,
+respectively.  The additional prefixes of `vo`, `nv`, and `nq` test for "verbose only", "no-verbose", and "no-quiet", respectively.
 
        talk MSG ..              Print all args on `STDERR`
       vtalk MSG ..              If `$norun` or `$verbose` is set, print all args.
@@ -547,32 +858,9 @@ arguments on `STDERR`.
      errorf [CODE] FMT ARGS ..  Printf `FMT` `ARGS` on `STDERR`, then exit `$CODE` [2]
        dief FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR`, then die (with `kill -ABRT`)
 
-    run COMMAND ARGS ..         Show `COMMAND` `ARGS` if `$norun` or `$verbase`;
-                                run `COMMAND` unless `$norun`.
-
-    rm_file_later FILE          Cause `FILE` to be removed upon program exit.
-
-    add_trap "CMD" SIGNAL ..    Add `CMD` to the trap list for `SIGNAL`
-
-    fn_exists FUNCTION          Return 0 (true) if `FUNCTION` exists; 1 (false) otherwise
-
-    numarg_or_input "$1"        Return a numeric argument or read it from `STDIN`
-
-    args_or_input "$@"          Return arguments or read them from `STDIN`
-
-    args_or_stdin "$@"          Return the arguments or read all of `STDIN`
-
-    arg_or_input "$1"           Return the argument or read it from `STDIN`
-
-    append_args "$@"            Append the arguments to the next line from `STDIN`
-
-    append_arg "$1"             Append the argument to the next line from `STDIN`
-
 
 text-utils.sh <a name="text_utils" id="text_utils">
 =============
-Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
-
 Text processing utilities for bash scripts.
 
 usage:
@@ -597,9 +885,7 @@ The following functions are provided by this library:
 
 test-utils.sh <a name="test_utils" id="test_utils">
 =============
-Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
-
-The `test-utils.sh` library provides an infrasructure for test-driven
+The `test-utils.sh` library provides an infrastructure for test-driven
 development (TDD) of `bash` scripts.
 
 Usage:

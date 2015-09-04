@@ -438,7 +438,7 @@ Join the items in `VAR` into a list, separated by `SEP`.
 `SEP` can be:
 
 | `SEP` | Meaning |
-| ----- + ------- |
+| ----- |-------- |
 | `AND` | separate with `" and "` |
 | `OR` | separate with `" or "` |
 | `KEYS` | enclose each item with `X'` and `'`, followed by `,` |

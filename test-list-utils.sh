@@ -37,11 +37,9 @@ test_02_list_sort() {
   list_add list2  $words
   check_size list2 16
 
-  sorted_words=`sort_str $words`
-  check_unequal "$sorted_words" "$words"
-
   sort_list list2
   check_size list2 16
+  sorted_words="`sort_str \"$words\"`"
   sorted_words2=`join_list list2 nowrap ' '`
   check_equal "$sorted_words" "$sorted_words2"
   check_unequal "$words" "$sorted_words2"
@@ -399,7 +397,7 @@ test_18_reductions() {
   items=( `map_list words 'echo ${#item}'` )
   count_chars_orig=`echo "${words[@]}" | wc -c`
   count_chars=$(( `sum_list items` + num_words ))
-  check_eq $count_chars $count_chars_orig 'sum_list count error; got $count_chars'
+  check_eq $count_chars $count_chars_orig "sum_list count error; got $count_chars; should be $count_chars_orig"
   min=`min_list items`
   check_eq $min 2  "min test failed; got $min, should be 2"
   max=`max_list items`
@@ -429,10 +427,10 @@ test_19_list_help_func() {
 # test to make sure IFS is not changed by list_items and list_join, which alters it
 test_20_list_IFS_check() {
   start_test
-  saveIFS="$IFS"
+  local saveIFS="$IFS"
   list_init foo
   list_add foo now is the 'time' 'for' all good men to come to the aid
-  tmpfile="/tmp/foo.$$"
+  local tmpfile="/tmp/foo.$$"
   list_items foo >$tmpfile
   check_equal "$IFS" "$saveIFS"
   join_list foo >$tmpfile

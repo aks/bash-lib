@@ -447,6 +447,7 @@ Join the items in `VAR` into a list, separated by `SEP`.
 * `str   ` - separate each item with an given string. 
 
 
+
     join_lines
 
 Read `STDIN` and catenate lines; remove trailing `NL`.

@@ -1160,5 +1160,4 @@ Add `TIME1` to `TIME2` and produce a `time_format` result.
 
 Subtract `TIME2` from `TIME1` and produce a `time_format` result.
 
-# end of README
-# vim: set ai sw=2
+vim: set ai sw=2

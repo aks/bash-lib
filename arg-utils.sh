@@ -10,7 +10,7 @@ ARG_UTILS_VERSION="arg-utils.sh v2.0"
 [[ "$ARG_UTILS_SH" = "$ARG_UTILS_VERSION" ]] && return
 ARG_UTILS_SH="$ARG_UTILS_VERSION"
 
-source help-utils.sh
+source help-util.sh
 
 arg_utils_help() {
     help_pager <<'EOF'

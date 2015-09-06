@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# test-all.sh [options]
+# 
+# Run all tests with the name "test-*-*.sh"
+#
+# Copyright 2015, Alan K. Stebbens <aks@stebbens.org>
+
+lines="--------------"
+for test in test-*-*.sh ; do
+  # don't run test-utils -- it's a library
+  [[ "$test" = 'test-utils.sh' ]] && continue
+  printf "\n%s %s %s\n" $lines $test $lines
+  $test "$@"
+done
+exit

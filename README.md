@@ -953,11 +953,11 @@ The following functions are provided by this library:
     html_decode [STRING]          # decode STRING (or STDIN) from HTML encoding
     url_decode  [STRING]          # decode STRING (or STDIN) from URL encoding
 
-    Most functions, except `split_str` and `sort_str`, can be used in a pipe
-    without an argument.  For example:
+Most functions, except `split_str` and `sort_str`, can be used in a pipe
+without an argument.  For example:
 
-        echo "This is a string" | uppercase   => "THIS IS A STRING"
-        html_encode <input-file >html-file
+    echo "This is a string" | uppercase   => "THIS IS A STRING"
+    html_encode <input-file >html-file
 
 test-utils.sh <a name="test_utils" id="test_utils">
 =============

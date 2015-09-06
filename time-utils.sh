@@ -4,15 +4,16 @@
 # Copyright 2014  Alan K. Stebbens <aks@stebbens.org>
 
 TIME_UTILS_VERSION="time-utils.sh v1.8"
-#[[ "$TIME_UTILS_SH" = "$TIME_UTILS_VERSION" ]] && return
+[[ "$TIME_UTILS_SH" = "$TIME_UTILS_VERSION" ]] && return
 TIME_UTILS_SH="$TIME_UTILS_VERSION"
 
 export TIME_FORMAT="%T"
 
-source sh-utils.sh
+source help-util.sh
+source talk-utils.sh
 
 help_time() {
-  cat <<'EOF'
+  help_pager 1>&2 <<'EOF'
 The `time-utils` library enables easy management of timestamps, with hour,
 minute, seconds, and timezone components.  A variety of time formats are
 supported both on input parsing, and on output formatting. 

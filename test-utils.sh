@@ -1,5 +1,5 @@
 # test-utils.sh
-# Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2015 Alan K. Stebbens <aks@stebbens.org>
 
 TEST_UTILS_VERSION="test-utils.sh v1.8"
 [[ "$TEST_UTILS_SH" = "$TEST_UTILS_VERSION" ]] && return
@@ -8,9 +8,10 @@ TEST_UTILS_SH="$TEST_UTILS_VERSION"
 export PATH=.:$HOME/lib:$PATH
 
 source list-utils.sh
+source help-util.sh
 
 test_help() {
-  cat 1>&2 <<'EOF'
+  help_pager <<'EOF'
 The `test-utils.sh` library provides an infrasructure for test-driven
 development (TDD) of `bash` scripts.
 
@@ -162,7 +163,7 @@ help_test() { test_help ; }
 
 
 TEST_usage() {
-  cat 1>&2 <<EOF
+  help_pager 1>&2 <<EOF
 usage: ${0##*/} [opts] [TEST-PATTERN ...]
 Run tests with options controlling behavior.
 
@@ -240,7 +241,8 @@ TEST_check_start() {
   TEST_update_status "$check_name" $TEST_checks
 }
 
-# checkend OK "ERROR"
+# checkend OK "ERROR" ["ERROR_ACTION"]
+# returns true (0) no error; false (1) for errors
 
 TEST_check_end() {
   if [[ -n "$1" ]]; then
@@ -250,15 +252,18 @@ TEST_check_end() {
     else
       TEST_update_status
     fi
+    return 0
   else
     TEST_check_status[$TEST_checks]='!'
     (( TEST_errors++ ))
     if (( test_verbose || verbose_errors )) ; then
       echo 1>&2 " error"
+      [[ -n "$3" ]] && eval "$3"      # maybe take action on error
       TEST_error_dump "$2"
     else
       echo -n 1>&2 $'\b'"!"
     fi
+    return 1
   fi
 }
 
@@ -328,7 +333,7 @@ TEST_check_expr() { TEST_check "$1" 1 '' "$2" ; }
 # TEST_check_size_func VAR FUNC VALUE [ERROR]
 
 TEST_check_size_func() { 
-  local insize=`list_size $1`
+  local insize=`__list_size $1`
   TEST_check_test $insize $2 $3 "${4:-"Size check failed; got: $insize; should be: $3"}"
 }
 
@@ -498,14 +503,20 @@ TEST_compare_output() {
   local ref="$1"
   local out="$2"
   local diff="$3"
-  if diff -w -U 0 $ref $out >$diff ; then
+  if \diff -w -U 0 $ref $out >$diff ; then
     eval "$4"
     if (( ! test_keep_ref_output )); then
-      rm "$out" # remove temp files
+      \rm -f "$out" # remove temp files
     fi
-    rm "$diff"
+    \rm "$diff"
   else
     eval "$5"
+    # show diffs on errors with -d
+    if (( $test_details )); then
+      echo 1>&2 "\n$diff"
+      \cat 1>&2 $diff
+      echo 1>&2 ""
+    fi
   fi
 }
 

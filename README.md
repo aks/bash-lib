@@ -874,29 +874,46 @@ There are also some miscellaneous functions:
 
     add_trap "CMD" SIGNAL ..   Add `CMD` to the trap list for `SIGNAL`
 
+    rm_trap "CMD" SIGNAL ..    Remove `CMD` from the trap list for `SIGNAL` ..
+
+    get_traps SIGNAL           Get the trap list for `SIGNAL`
+
+    filter_traps 'CMD'         Filter `CMD` from the trap list on `STDIN`
+
+    reset_traps SIGNAL         Reset (remove) the trap list for `SIGNAL`
+
     fn_exists FUNCTION         Return 0 (true) if `FUNCTION` exists; 1 (false) otherwise
 
 
 talk-utils.sh <a name="talk_utils" id="talk_utils">
 =============
-All of the `talk`, `error`, and `die` functions conditionally print the
-arguments on `STDERR`.  The conditions that are available include: `$verbose`,
-`$quiet`, `$norun`, and are indicated by the prefixes: `v`, `q`, and `nr`,
-respectively.  The additional prefixes of `vo`, `nv`, and `nq` test for "verbose only", "no-verbose", and "no-quiet", respectively.
+
+The `talk`, `error`, and `die` functions print their arguments on `STDERR.`
+The `talk` and `talkf` functions print unconditionally to `STDERR`, and return
+success (0).  The related functions with prefixes of 'v', 'vo', 'nr', 'nv',
+'nq' and 'nrv' print conditionally and return success (0) if they printed, and
+failure (1) otherwise.  This allows them to be used on conditionals.
+
+The `warn` function is just another name for `talk`: it prints its output on
+`STDERR`.  The `error` function does the same, accepting an optional error
+CODE, and then exits.  The `die` function sends a `SIGABRT` signal to the
+parent process id, forcing an abort.
 
        talk MSG ..              Print all args on `STDERR`
       vtalk MSG ..              If `$norun` or `$verbose` is set, print all args.
      votalk MSG ..              If `$verbose` only (no `$norun`) is set, print all args.
      nrtalk MSG ..              if `$norun` set, print all args
-     nvtalk MSG                 Unless `$verbose` is set, print all args
-     nqtalk MSG                 Unless `$quiet` is set, print all args
+     nvtalk MSG ..              Unless `$verbose` is set, print all args
+     nqtalk MSG ..              Unless `$quiet` is set, print all args
+    nrvtalk MSG ..              If `$norun` or `$verbose` is set, print all args.
 
-      talkf FMT ARGS ..         Printf `FMT` `ARGS`
-     vtalkf FMT ARGS ..         If `$norun` or `$verbose` set, printf `FMT, `ARGS`
-    votalkf FMT ARGS ..         If `$verbose` only (no `$norun`) is set, printf `FMT`, `ARGS`
-    nrtalkf FMT ARGS ..         If `$norun` set, printf `FMT`, `ARGS`
-    nvtalkf FMT ARGS ..         Unless `$verbose` is set, printf `FMT` `ARGS`
-    nqtalkf FMT ARGS ..         Unless `$quiet` is set, printf `FMT` `ARGS`
+       talkf FMT ARGS ..        Printf the arguments on `STDERR`
+      vtalkf FMT ARGS ..        If `$norun` or `$verbose` is set, `talkf` the args
+     votalkf FMT ARGS ..        If `$verbose` only (no `$norun`) is set, `talkf` the args
+     nrtalkf FMT ARGS ..        If `$norun` set, `talkf` the args
+     nvtalkf FMT ARGS ..        Unless `$verbose` is set, `talkf` the args
+     nqtalkf FMT ARGS ..        Unless `$quiet` is set, `talkf` the args
+    nrvtalkf FMT ARGS ..        If `$norun` or `$verbose` is set, `talkf` the args
 
        warn MSG                 Print all args on `STDERR`
       error [CODE] "MSG"        Print `MSG` on `STDERR`, then exit with code `CODE` (or 2)
@@ -918,18 +935,29 @@ usage:
 
 The following functions are provided by this library:
 
-    lowercase STRING          # return the lowercase string
-    uppercase STRING          # return the uppercase string
-    trim STRING               # trim blanks surrounding string
-    ltrim STRING              # trim left-side blanks from STRING
-    rtrim STRING              # trim right-side blanks from STRING
-    squeeze STRING            # squeeze multiple blanks in string
-    split_str STRING SEP      # split STRING using SEP [default: \t]
-    url_encode  [STRING]      # encode STRING (or STDIN) for URLs
-    url_decode  [STRING]      # decode STRING (or STDIN) from URL encoding
-    html_encode [STRING]      # encode STRING (or STDIN) for HTML presentation
-    html_decode [STRING]      # decode sTRING (or STDIN) from HTML presentation
+    lowercase STRING              # return the lowercase string
+    uppercase STRING              # return the uppercase string
+    trim STRING                   # trim blanks surrounding string
+    ltrim STRING                  # trim left-side blanks from STRING
+    rtrim STRING                  # trim right-side blanks from STRING
+    squeeze STRING                # squeeze multiple blanks in string
+    split_str STRING [SEP]        # split STRING using SEP [default: ' \t']
+    split_input [SEP]             # split STDIN using SEP [default: ' \t']
+    args2lines [ARG ..]           # echo each ARG (or STDIN) on a separate line
+    sort_str2lines "STRING .."    # output the sorted words in STRING on separate lines
+    join_lines                    # join lines on STDIN together with newlines
+    sort_str [WORDS TO BE SORTED] # return the sorted list of WORDS
+    str_sort [WORDS TO BE SORTED] # an alias for 'sort_str'
+    html_encode [STRING]          # encode STRING (or STDIN) for html
+    url_encode  [STRING]          # encode STRING (or STDIN) for url
+    html_decode [STRING]          # decode STRING (or STDIN) from HTML encoding
+    url_decode  [STRING]          # decode STRING (or STDIN) from URL encoding
 
+    Most functions, except `split_str` and `sort_str`, can be used in a pipe
+    without an argument.  For example:
+
+        echo "This is a string" | uppercase   => "THIS IS A STRING"
+        html_encode <input-file >html-file
 
 test-utils.sh <a name="test_utils" id="test_utils">
 =============

@@ -44,7 +44,7 @@ help_pager() {
       fi
     done
   fi
-  $prog 1>&2
+  $prog
 }
 
 # usage:
@@ -55,22 +55,39 @@ help_pager() {
 #  }
 
 help_args_func() {
-  local func="${FUNCNAME[1]}"         # who called?
-  if [[ "$func" =~ ^_|^help_ ]]; then # begins with _ or help_?
-    func="${FUNCNAME[2]}"             # use it's caller func
-  fi
-  if (( $2 < ${3:-1} )) ; then
-    $1 |& awk 1>&2 "BEGIN { t=\"\" }
-                   /^$func[^a-z0-9_]/ {p=1;
+  local func _x
+  for (( _x=1; _x <= ${#FUNCNAME[*]} ; _x++ )); do
+    func="${FUNCNAME[$_x]}"
+    [[ "$func" =~ ^_|^help_ ]] || break
+  done
+  (( $2 >= ${3:-1} )) && return 0     # return true on sufficient args
+                                      # not enough args.  Show some help
+  $1 | help_func_filter $func
+  return 1                            # return false on help
+}
+
+# help_func_filter FUNC
+
+# filters STDIN for FUNC and any following lines starting with a blank
+
+help_func_filter() {
+  awk "BEGIN { t=\"\" }
+                 /^$func[^a-z0-9_]/ { p=1;
                                       if (length(t) > 0){print t};
-                                      print; next}
-                   /^[ 	]*$/         {if (p) {exit};
-                                      t=\"\"; next}
-                   /^[^ 	]/   {if(!p){t = t \$0; next}}
-                                     {if(p){print}}"
-    return 1
-  fi
-  return 0
+                                      print
+                                      next 
+                                    }
+                 /^[ 	]*$/        { if (p) {exit}
+                                      t=\"\"
+                                      next
+                                    }
+                 /^[^ 	]/          { if(!p) {
+                                        t = t \$0
+                                        next
+                                      } else {
+                                        print
+                                      }
+                                    }"
 }
 
 # end of help-util.sh

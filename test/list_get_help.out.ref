@@ -1,0 +1,1 @@
+list_get      VAR N                  # get the Nth item of VAR to stdout

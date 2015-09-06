@@ -20,7 +20,7 @@ push_list VAR VAL ...                # alias to list_add
 
 list_insert      VAR VAL ...         # insert VAL.. at the front of VAR
 
-list_insert_once VAR VAL ...         # insert VAL.. at the front of VAR;
+list_insert_once VAR VAL ...         # insert VAL.. at the front of VAR
 
 insert_list      VAR VAL ...         # alias to list_insert
 
@@ -58,10 +58,6 @@ list_dump VAR                        # dump the list VAR, showing indexes and va
 
 dump_list VAR                        # alias to list_dump
 
-sort_str VAL ...                     # sort the space-separated words of VAL ..
-
-str_sort VAL ...                     # an alias to sort_str
-
 list_sort VAR                        # sort the contents of VAR (a list) in place
 
 sort_list VAR                        # alias to list_sort
@@ -70,13 +66,9 @@ list_sorted VAR                      # output the items of list VAR sorted
 
 sorted_list VAR                      # alias to list_sorted
 
-sort_str2lines "STRING"              # sort STR with each item in a separate line
-
 sort_list2lines LIST                 # sort LIST with each item in a separate line
 
 split_into  VAR "STRING" SEP         # split "STRING" by SEP into VAR
-
-split_str   "STRING" [SEP]           # split "STRING" by SEP
 
 list_join VAR [SEP] ..               # join the items in VAR into a list, separated by SEP,
   SEP can be

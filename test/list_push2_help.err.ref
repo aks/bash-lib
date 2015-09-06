@@ -1,2 +1,0 @@
-list_add      VAR VAL1 [VAL2 ...]    # add VAL1.. to the end of VAR
-

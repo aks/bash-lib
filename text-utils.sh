@@ -3,39 +3,57 @@
 #
 # Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
 
-TEXT_UTILS_VERSION="text-utils.sh v1.4"
+TEXT_UTILS_VERSION="text-utils.sh v1.6"
 [[ "$TEXT_UTILS_SH" = "$TEXT_UTILS_VERSION" ]] && return
 TEXT_UTILS_SH="$TEXT_UTILS_VERSION"
 
-help_test_utils() {
-  cat 1>&2 <<'EOF'
+source help-util.sh
+source arg-utils.sh
+
+text_help() {
+  help_pager <<'EOF'
 lowercase STRING              # return the lowercase string
+
 uppercase STRING              # return the uppercase string
+
 trim STRING                   # trim blanks surrounding string
+
 ltrim STRING                  # trim left-side blanks from STRING
+
 rtrim STRING                  # trim right-side blanks from STRING
+
 squeeze STRING                # squeeze multiple blanks in string
+
 split_str STRING [SEP]        # split STRING using SEP [default: ' \t']
- ... | split_input [SEP]      # split STDIN using SEP [default: ' \t']
+
+split_input [SEP]             # split STDIN using SEP [default: ' \t']
+
+args2lines [ARG ..]           # echo each ARG (or STDIN) on a separate line
+
+sort_str2lines "STRING .."    # output the sorted words in STRING on separate lines
+
+join_lines                    # join lines on STDIN together with newlines
+
+sort_str [WORDS TO BE SORTED] # return the sorted list of WORDS
+str_sort [WORDS TO BE SORTED] # an alias for 'sort_str'
+
 html_encode [STRING]          # encode STRING (or STDIN) for html
+
 url_encode  [STRING]          # encode STRING (or STDIN) for url
+
 html_decode [STRING]          # decode STRING (or STDIN) from HTML encoding
+
 url_decode  [STRING]          # decode STRING (or STDIN) from URL encoding
 
-All functions, except `split_str`, can be used in a pipe without an argument.
-For example:
+Most functions, except 'split_str' and 'sort_str', can be used in a pipe
+without an argument.  For example:
 
     echo "This is a string" | uppercase   => "THIS IS A STRING"
     html_encode <input-file >html-file
 EOF
-  exit
 }
 
-# args_or_stdin "$@" | a-pipe
-
-args_or_stdin() {
-  [[ $# -gt 0 ]] && echo -n "$@" || cat
-}
+help_text() { text_help ; }
 
 lowercase() { args_or_stdin "$@" | tr 'A-Z' 'a-z' ; }
 uppercase() { args_or_stdin "$@" | tr 'a-z' 'A-Z' ; }
@@ -61,12 +79,48 @@ split_str() {
 }
 
 split_input() {
-  local sep="${1:-$'\t'}"
+  local sep="${1:-$' \t'}"
   tr "$sep" '\n'                    |
   sed -Ee 's/^(.*[ ,?*].*)$/"\1"/'  |
   tr '\n' ' '
 }
 
+# args2lines ARG ..
+#
+# echo each ARG on a separate line
+
+args2lines()   { __args2lines "$@" ; }
+
+__args2lines() { args_or_stdin "$@" | tr ' \t' '\n' ; }
+
+# sort_str2lines "STRING ..."  -- output the words of STRING on separate lines, sorted
+
+sort_str2lines()  {
+  help_args_func text_help $# 1 || return
+  __sort_str2lines "$@"
+}
+
+__sort_str2lines() { __args2lines "$@" | sort -f ; }
+
+# join_lines -- join lines on STDIN together with newlines
+
+join_lines() { __join_lines "$@" ; }
+
+__join_lines() { tr '\n' ' ' | sed -e 's/ $//' ; }
+
+# sort_str [WORDS TO BE SORTED]
+# str_sort
+
+sort_str() {
+  help_args_func text_help $# 1 || return
+  __sort_str "$@"
+}
+
+str_sort()   {   sort_str "$@" ; }
+
+__str_sort() { __sort_str "$@" ; }
+
+__sort_str() { __sort_str2lines "$@" | __join_lines ; }
 
 # url_encode [STRING] -- encode STRING for URLs
 # url_encode          -- encode STDIN for URLs

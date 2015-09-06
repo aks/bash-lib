@@ -21,11 +21,16 @@ source text-utils.sh
 
 # run_filter_tests FUNC INPUT OUTPUT ERROR
 
-do_test() {
-  local func="$1"
-  local input="$2"
-  local output="$3"
-  local error="$4"
+do_test1() { do_filter_test 1 "$@" ; }
+do_test2() { do_filter_test 2 "$@" ; }
+do_test()  { do_test2         "$@" ; }
+
+do_filter_test() {
+  local howmany="$1"
+  local func="$2"
+  local input="$3"
+  local output="$4"
+  local error="$5"
 
   if [[ -n "$error" ]]; then
     error="Failed $func test with $error"
@@ -34,11 +39,23 @@ do_test() {
   fi
   # test function arg call first
   local out="`$func \"$input\"`"
-  check_equal "$out" "$output" "$error"
+  check_and_show_results "$output" "$out" "$error"
 
-  # test pipe with no arg call next
-  out="`echo \"$input\" | $func`"
-  check_equal "$out" "$output" "$error in pipe"
+  if (( howmany > 1 )); then
+    # test pipe with no arg call next
+    out="`echo \"$input\" | $func`"
+    check_and_show_results "$output" "$out" "$error in pipe"
+  fi
+}
+
+# check_and_show_results "$OUTPUT" "$GOT" "$ERROR"
+
+check_and_show_results() {
+  if ! check_equal "$1" "$2" "$3" ; then
+    echo 1>&2 ''
+    echo 1>&2 "expected: $1"
+    echo 1>&2 "     got: $2"
+  fi
 }
 
 test_01_lowercase() {
@@ -180,6 +197,29 @@ test_11_html_decode() {
 
   end_test
 }
+
+test_20_args2lines() {
+  start_test
+  do_test args2lines "this is a list of words" $'this\nis\na\nlist\nof\nwords'
+  end_test
+}
+
+test_22_sort_str2lines() {
+  start_test
+  do_test1 sort_str2lines "this is a list of words" $'a\nis\nlist\nof\nthis\nwords'
+  end_test
+}
+
+test_24_sort_str() {
+  start_test
+  words="now is the time for all good men to come to the aid of their country"
+  sorted_words=`sort_str $words`
+  check_unequal "$sorted_words" "$words"
+  more_sorted_words=`str_sort $words`
+  check_unequal "$more_sorted_words" "$words"
+  end_test
+}
+
 init_tests  "$@"
 run_tests
 summarize_tests

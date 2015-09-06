@@ -17,7 +17,7 @@ run_utils_help() {
     cat 1>&2 <<'EOF'
 Shell utility functions for running system commands:
 
-run COMMAND ARGS ..         Show `COMMAND` `ARGS` if `$norun` or `$verbase`;
+run COMMAND ARGS ..         Show `COMMAND` `ARGS` if `$norun` or `$verbose`;
                             run `COMMAND` unless `$norun`.
 
 safe_run COMMAND ARGS ...   Same as "run", but always executes.

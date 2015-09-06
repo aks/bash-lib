@@ -842,7 +842,7 @@ run-utils.sh <a name="run_utils" id="run_utils">
 ============
 Shell utility functions for running system commands:
 
-    run COMMAND ARGS ..       Show `COMMAND` `ARGS` if `$norun` or `$verbase`;
+    run COMMAND ARGS ..       Show `COMMAND` `ARGS` if `$norun` or `$verbose`;
                               run `COMMAND` unless `$norun`.
 
     safe_run COMMAND ARGS ... Same as "run", but always executes.

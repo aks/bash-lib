@@ -3,7 +3,7 @@
 #
 # sh script utilities for managing lists of things
 
-LIST_UTILS_VERSION='list-utils.sh v2.5'
+LIST_UTILS_VERSION='list-utils.sh v2.7'
 
 source bash-check.sh                # make sure we're running bash >= 3.3
 
@@ -505,24 +505,6 @@ sort_list2lines() {
 __sort_list2lines() {
   eval "args2lines \"\${$1[@]}\"" | sort -f
 }
-
-# join_lines -- join lines on STDIN together with newlines
-
-join_lines()      { tr '\n' ' ' | sed -e 's/ $//' ; }
-
-# sort_str [WORDS TO BE SORTED]
-# str_sort
-
-sort_str() {
-  help_args_func list_help $# 1 || return
-  __sort_str "$@"
-}
-
-__sort_str() {
-  __sort_str2lines "$@" | join_lines
-}
-
-str_sort() { sort_str "$@" ; }
 
 # list_sorted LISTVAR -- output the list items sorted; does not modify LISTVAR
 # sorted_list LISTVAR

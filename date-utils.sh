@@ -3,7 +3,7 @@
 #
 # Copyright 2009-2015 Alan K. Stebbens <aks@stebbens.org>
 
-DATE_UTILS_VERSION="date-utils.sh v1.10"
+DATE_UTILS_VERSION="date-utils.sh v1.12"
 [[ "$DATE_UTILS_SH" = "$DATE_UTILS_VERSION" ]] && return
 DATE_UTILS_SH="$DATE_UTILS_VERSION"
 
@@ -127,6 +127,8 @@ GREGORIAN_START_MONTH=10
 GREGORIAN_START_DAY=4
 
 GREGORIAN_START_JDAY=2299150     # Julian Day Number for GREGORIAN_START_DATE
+
+SECONDS_PER_DAY=$(( 24 * 60 * 60 ))
 
 # functions for date management
 #
@@ -435,7 +437,7 @@ date_to_adays() {
 # http://my.safaribooksonline.com/book/xml/0596009747/dates-and-times/xsltckbk2-chp-4-sect-4
 
 week_number() {
-  local jdays=`date_to_jday "$@"`
+  local jdays=`date_to_jdays "$@"`
   local d4=$(( ( ( ( jdays + 31741 - (jdays % 7) ) % 146097) % 36524) % 1461 ))
   local l=$(( d4 / 1460 ))
   local d1=$(( ( (d4 - l) % 365 ) + l ))
@@ -538,6 +540,24 @@ gregorian_date_to_adays() {
 # compute absolute value from X
 abs() { echo $(( $1 < 0 ? -$1 : $1 )) ; }
 
+# Set a constant for the epoch
+days_at_epoch=`date_to_adays 1970-01-01`
+
+# date_to_days_since_epoch YYYY-MM-DD
+
+date_to_days_since_epoch() {
+  local date="${1:-`date +%F`}"
+  local adays=`date_to_adays "$date"`
+  echo $(( adays - days_at_epoch + 1 ))
+}
+
+date_to_seconds() {
+  local days=`date_to_days_since_epoch "$@"`
+  echo $(( days * $SECONDS_PER_DAY ))
+}
+
+today() { date +'%F' ; }
+
 # date_format  FORMAT
 # date_format [FORMAT] [DATESTRING]
 # date_format [FORMAT] [YYYY MM DD]
@@ -580,11 +600,11 @@ date_format() {
       j) new=`df_day_of_year`    ;;
       n) new=$'\n'               ;;
       t) new=$'\t'               ;;
-      U) new=`df_week_num4`      ;;
+      U) new=`df_week_num0`      ;;
       u) new=`df_weekday_num1`   ;;
       V) new=`df_week_num_ISO`   ;;
       v) new=`df_eby4`           ;;
-      W) new=`df_week_num`       ;;
+      W) new=`df_week_num1`      ;;
       w) new=`df_weekday_num0`   ;;
       x) new=`df_date`           ;;
       Y) new=`df_year4`          ;;
@@ -633,6 +653,7 @@ month_names=( - January February March April May June July August September Octo
 df_month_name() {		# B
   echo "${month_names[$month]}"
 }
+
 df_month_abbrev() {		# b
   local name=`df_month_name`
   echo "${name:0:3}"
@@ -685,27 +706,33 @@ df_weekday_num1() {             # u
   echo $(( wd == 0 ? 7 : $wd )) # return 1..7 (Mon .. Sun)
 }
 
-df_week_num_ISO() {		# U
-  : 
+df_week_num0() {		# U
+  #week_number "$@"
+  date -r `date_to_seconds "$@"` +'%U'
 }
 
-df_week_num() {		        # V
-  local wn=`week_number "$@"`
-  echo $wn
+df_week_num_ISO() {		# V
+  # week_number "$@"
+  date -r `date_to_seconds "$@"` +'%V'
 }
 
 df_eby4() {		        # v
   local mname=`df_month_abbrev`
 }
-df_week_num() {		        # W
-  :
+
+df_week_num1() {		# W
+  #week_number "$@"
+  date -r `date_to_seconds "$@"` +'%W'
 }
+
 df_weekday_num0() {		# w
   date_to_weekday_num $year $month $day   # output 0..6 for Sun..Sat
 }
+
 df_date() {		        # x
   printf "%02d/%02d/%04d\n" $month $day $year
 }
+
 df_year4() {		        # Y
   printf "%04d\n" $year
 }
@@ -722,17 +749,6 @@ print_date() {
   printf "%04d-%02d-%02d\n" $year $month $day
 }
 printd() { print_date "$@" ; }
-
-# Set a constant for the epoch
-days_at_epoch=`date_to_adays 1970-01-01`
-
-# date_to_days_since_epoch YYYY-MM-DD
-
-date_to_days_since_epoch() {
-  local date="${1:-`date +%F`}"
-  local adays=`date_to_adays "$date"`
-  echo $(( adays - days_at_epoch ))
-}
 
 # get_date_5_years_before [YYYY-MM-DD]
 #

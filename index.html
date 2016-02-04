@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-dark.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <title>Bash-lib by aks</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Bash-lib</h1>
+        <h2>Library of bash scripts</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/aks/bash-lib/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/aks/bash-lib/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/aks/bash-lib" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>
+<a id="bash-lib" class="anchor" href="#bash-lib" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>bash-lib</h1>
+
+<p>Library of bash scripts.</p>
+
+<p>Author: Alan K. Stebbens <a href="mailto:aks@stebbens.org">aks@stebbens.org</a></p>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage:</h2>
+
+<pre><code>export PATH=$PATH:$HOME/lib
+source bash-lib.sh
+</code></pre>
+
+<p>Replace <code>$HOME/lib</code> with wherever these files are installed</p>
+
+<p>This bash library is modular, and the individual utilities can be independently
+sourced, as needed.</p>
+
+<p>Each library has a corresponding test script to ensure proper operation before 
+installation.  These test scripts are also the basis for regression tests, after
+new features are added (or bugs are fixed).</p>
+
+<p>For example, the <code>text-utils.sh</code> library has a test script called
+<code>test-text-utils.sh</code>.  The <code>test-utils.sh</code> library is used to operate all the
+tests and makes a very good example of how to implement TDD in bash scripts.</p>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation:</h2>
+
+<p>The installation is managed with <code>make</code>, using <code>Makefile</code> which, in turn,
+sources <code>Makefile.inc</code>.  If any changes are needed to support your
+installation, the changes should be made within the <code>Makefile</code>.</p>
+
+<pre><code>make
+</code></pre>
+
+<p>Show the various make targets.</p>
+
+<pre><code>make tests
+</code></pre>
+
+<p>Run all the tests to confirm proper operation.  Some of the tests can take a
+few minutes.  Progress will be shown, so there is no guessing.</p>
+
+<pre><code>make install
+</code></pre>
+
+<p>Install the bash library into <code>$HOME/lib</code> (the default).</p>
+
+<pre><code>make install libdirs=/usr/local/lib
+</code></pre>
+
+<p>Install into <code>/usr/local/lib</code>.</p>
+
+<pre><code>make clean
+</code></pre>
+
+<p>This will remove any temporary output files (from testing).  It will also
+remove <code>prompt-colors.sh</code> because it is a <em>generated</em> file.</p>
+
+<p>If this bash library is installed into an alternative path, e.g., <code>/opt/lib</code>,
+then any scripts that wish to make use of them will need to modify the <code>PATH</code>
+environment variable, in order to source the library files without explicit
+paths.</p>
+
+<p>This library is available at [<a href="https://github.com/aks/bash-lib.git">https://github.com/aks/bash-lib.git</a>].</p>
+
+<p>There is a script called <code>maybe-install-bash-lib</code> that can be incorporated into
+the installation process of other bash libraries that depend on <code>bash-lib</code>.  It
+will check to see if the named utilities are installed, and if not, perform an
+installation from the repository.</p>
+
+<p>If you wish to make improvements, feel free to fork this repo, make and test
+your changes, and the issue a pull request.</p>
+
+<p>As part of your testing, you'll probably need to source <code>reset-util-vars.sh</code>,
+which defines <code>reset_util_vars</code>, which you can then invoke to reset the shell
+variables that prevent redundant sourcings.  Alternatively, you can increment
+the version number in the utility libraries that you are modifying.</p>
+
+<p>Many of these utility functions have helpful argument checking.  In order to
+avoid unnecessary overhead, each function name that provides argument checking
+also has a more efficient, non-argument checking name, prefixed with <code>__</code>.</p>
+
+<p>Follow the links below for detailed descriptions of each module.</p>
+
+<ul>
+<li><a href="#arg_utils">arg-utils.sh</a></li>
+<li><a href="#calendar_utils">calendar-utils.sh</a></li>
+<li><a href="#date_utils">date-utils.sh</a></li>
+<li><a href="#hash_utils">hash-utils.sh</a></li>
+<li><a href="#help_util">help-util.sh</a></li>
+<li><a href="#list_utils">list-utils.sh</a></li>
+<li><a href="#prompt_colors">prompt-colors.sh</a></li>
+<li><a href="#real_utils">real-utils.sh</a></li>
+<li><a href="#run_utils">run-utils.sh</a></li>
+<li><a href="#sh_utils">sh-utils.sh</a></li>
+<li><a href="#talk_utils">talk-utils.sh</a></li>
+<li><a href="#text_utils">text-utils.sh</a></li>
+<li><a href="#test_utils">test-utils.sh</a></li>
+<li><a href="#time_utils">time-utils.sh</a></li>
+</ul>
+
+<h1>
+<a id="arg-utilssh-" class="anchor" href="#arg-utilssh-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>arg-utils.sh <a name="arg_utils" id="arg_utils"></a>
+</h1>
+
+<p>The <code>arg-utils.sh</code> library is a collection of bash functions that enable
+flexible argument handling on functions that need to be able to accept
+arguments on the command-line or on <code>STDIN</code>.</p>
+
+<p>When writing a bash function that can accept input on the command line or from
+<code>STDIN</code>, the function should begin with an invocation of one of the following
+functions.</p>
+
+<p>For example, if we had a function that needed a numeric argument, the following
+invocation would be used:</p>
+
+<pre><code>local f=`numarg_or_input "$1"`
+</code></pre>
+
+<p>If a text argument is needed:</p>
+
+<pre><code>local txtarg=`arg_or_input "$1"`
+</code></pre>
+
+<p>For those cases where two or more arguments can be accepted, either on the
+command-line or from <code>STDIN</code>:</p>
+
+<pre><code>local args=( `args_or_input "$@"` )
+</code></pre>
+
+<p>The following are the <code>arg-util</code> functions:</p>
+
+<pre><code>numarg_or_input "$1"
+</code></pre>
+
+<p>Return a numeric argument or read it from <code>STDIN</code></p>
+
+<pre><code>arg_or_input "$1"
+</code></pre>
+
+<p>Return the argument or read it from <code>STDIN</code></p>
+
+<pre><code>args_or_input "$@"
+</code></pre>
+
+<p>Return arguments or read them from <code>STDIN</code></p>
+
+<pre><code>args_or_stdin "$@"
+</code></pre>
+
+<p>Return the arguments or read all of <code>STDIN</code></p>
+
+<pre><code>append_args "$@"
+</code></pre>
+
+<p>Append the arguments to the next line from <code>STDIN</code></p>
+
+<pre><code>append_arg "$1"
+</code></pre>
+
+<p>Append the argument to the next line from <code>STDIN</code></p>
+
+<h2>
+<a id="example" class="anchor" href="#example" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Example</h2>
+
+<p>Let's say we have two bash functions to convert Celsius to Fahrenheit and
+vice-versa.  Let's call them <code>c2f</code> and <code>f2c</code>.  With these functions, they can
+be used in two ways:</p>
+
+<p>Typical functions with arguments:</p>
+
+<pre><code>c2f 69              # convert 69C to F
+f2c 10              # convert 10F to C
+</code></pre>
+
+<p>Or, accepting their input on <code>STDIN</code>, as in a pipe:</p>
+
+<pre><code> echo 69 | c2f      # convert 69C to F
+ echo 10 | f2c      # convert 10F to C
+</code></pre>
+
+<p>The advantage of the latter approach is that the functions can be fitted into
+a pipe where the data can come from another process directly on its <code>STDOUT</code>.</p>
+
+<p>The definition of these two functions would be:</p>
+
+<pre><code># f2c -- convert F to C via: (°F  -  32)  x  5/9 = °C
+function f2c() {
+  local f=`numarg_or_input "$1"`
+  echo "scale=1; ($f - 32)*5/9' | bc
+}
+# c2f -- convert C to F via °C  x  9/5 + 32 = °F
+function c2f() {
+  local c=`numarg_or_input "$1"`
+  echo "scale=1; $c * 9/5 + 32" | bc
+}
+</code></pre>
+
+<h1>
+<a id="calendar-utilssh-" class="anchor" href="#calendar-utilssh-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>calendar-utils.sh <a name="calendar_utils" id="calendar_utils"></a>
+</h1>
+
+<p>calendar-utils provide some basic calendaring functions.</p>
+
+<p>Usage:</p>
+
+<pre><code>source calendar-utils.sh
+</code></pre>
+
+<p>Functions:</p>
+
+<pre><code>date_to_jdn YYYY MM DD         -- return Julian Day Number for given DATE
+
+day_of_week YEAR MM DD [STYLE] -- return the day of the week for the given date
+
+days_in_month YEAR MM          -- return # of days in the month MM for YEAR
+
+days_in_month[MM]              -- array indexed by month (1..12) to return # days
+
+easter YEAR                    -- return date of Easter for YEAR
+
+gregorian_easter YEAR          -- return date of Easter for YEAR in Gregorian calendar
+
+is_leap_year YEAR              -- return whether or not YEAR is a leap year
+
+jdn_to_date JDN                -- return date for given Julian Day Number (JDN)
+
+julian_period YEAR             -- return Julian year for given Gregorian YEAR
+
+style_for_year YEAR            -- compute the calendar style for the given YEAR
+
+week_number YYYY MM DD         -- return the week number for the given date
+
+Astronomical (obscure) Functions:
+
+epact YEAR                     -- return the epact for the given YEAR
+
+golden_number YEAR             -- return the golden number for YEAR
+
+indiction YEAR                 -- return indication for YEAR
+
+paschal_full_moon YEAR         -- return the Paschal full moon date for YEAR
+
+solar_number YEAR              -- return the solar number for YEAR
+</code></pre>
+
+<h1>
+<a id="date-utilssh-" class="anchor" href="#date-utilssh-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>date-utils.sh <a name="date_utils" id="date_utils"></a>
+</h1>
+
+<p>The <code>date-utils</code> library enables easy management of dates and its year, month,
+and day components.  A variety of date formats are supported both on input
+parsing, and on output formatting.  </p>
+
+<p>The envar <code>EUROPEAN_DATES</code> controls how the format <code>NN/NN/NNNN</code> is interpreted:
+if set to 1, that format is taken to mean <code>DD/MM/YYYY</code>, where DD is the day of
+the month; otherwise, it is parsed as <code>MM/DD/YYYY</code>.</p>
+
+<pre><code>date_parse [DATESTRING]
+date_arg   [DATESTRING]
+</code></pre>
+
+<p>Parse <code>DATESTRING</code> in one of several recognized formats: <code>YYYY-MM-DD</code>,
+<code>YYYY.MM.DD</code>, <code>YYYY/MM/DD</code>, <code>YYYY MM DD</code>, <code>MM DD YYYYY</code>, <code>DD.MM.YYYY</code>, and <code>DD
+MM YYYYY</code> (if <code>EUROPEAN_DATES</code> is set).  If the <code>DATESTRING</code> is successfully
+parsed, the variables <code>year</code>, <code>month</code>, and <code>day</code> are set to their respective
+numbers.  <code>date_arg</code> is another name for the same function.</p>
+
+<p>If <code>DATESTRING</code> is empty, a line of input from <code>STDIN</code> is read and used
+instead.  This makes the script handy in a pipe.  Example:</p>
+
+<pre><code>extract_first_date_from_log /var/log/messages | date_parse
+</code></pre>
+
+<p>will set <code>year</code>, <code>month</code>, and <code>day</code> from the date extracted.</p>
+
+<pre><code>month_number MONTHNAME
+month_num    MONTHNAME
+</code></pre>
+
+<p>Given a month name, output it's index.</p>
+
+<pre><code>days_in_month MONTH
+</code></pre>
+
+<p>The <code>days_in_month</code> function converts a month number or name (spelled out or
+abbreviated) into a number of days corresponding to that month (not including
+leap-year effects).  Example: <code>days_in_month Feb</code> ==&gt; 28</p>
+
+<pre><code>days_in_month[M]
+</code></pre>
+
+<p>Array of integers, indexed by month number, corresponding to the number of
+days in the given month <code>M</code>.</p>
+
+<pre><code>days_before_month[M]
+</code></pre>
+
+<p>Array of integers representing the number of days from the beginning of the
+year up to the month <code>M</code>.</p>
+
+<pre><code>is_leap_year YEAR
+</code></pre>
+
+<p>Return 0 (true) if <code>YEAR</code> is a leap year; return 1 (false) otherwise.</p>
+
+<pre><code>last_day_of_month YYYY MM
+</code></pre>
+
+<p>Return the last day of the month corresponding to year <code>YYYY</code> and month <code>MM</code>.</p>
+
+<pre><code>date_to_adays YYYY MM DD
+date_to_adays YYYY-MM-DD
+</code></pre>
+
+<p>Returns the number of absolute days from the beginning of the Gregorian
+calendar for the given date, which can be specified with three numeric
+arguments, or a single string argument, which must be parsable by
+<code>date_parse</code>.</p>
+
+<pre><code>jdays_to_date JDAYS
+</code></pre>
+
+<p>Converts <code>JDAYS</code> (a Julian day number) into the corresponding date.  If the
+date is greater than October 10, 1584, then the Gregorian calendar is used,
+otherwise the Julian calendar is used for earlier dates.</p>
+
+<pre><code>adays_to_date ABSDAYS
+</code></pre>
+
+<p>Converts <code>ABSDAYS</code> into a date formatted by <code>print_date</code>.</p>
+
+<pre><code>adays_to_jdays ADAYS
+jdays_to_adays JDAYS
+</code></pre>
+
+<p>These functions convert from absolute days to Julian day number, and vice-versa.</p>
+
+<pre><code>week_number [DATESTRING | YYYY MM DD]
+</code></pre>
+
+<p>Returns the week number for the given <code>DATESTRING</code> or date components.</p>
+
+<pre><code>date_to_weekday_name [DATESTRING | YYYY MM DD]
+</code></pre>
+
+<p>Returns the weekday name for the given <code>DATESTRING</code> or date components.</p>
+
+<pre><code>date_to_weekday_num [DATESTRING | YYYY MM DD]
+</code></pre>
+
+<p>Returns the weekday number (0..6) for the given <code>DATESTRING</code> or date components.</p>
+
+<pre><code>date_day_num [DATESTRING | YYYY MM DD]
+</code></pre>
+
+<p>Returns the day number for the given <code>DATESTRING</code> or date components.</p>
+
+<pre><code>date_format [FORMAT] YYYY MM DD
+date_format [FORMAT] YYYY-MM-DD
+</code></pre>
+
+<p>The <code>format_date</code> function accepts an optional format string, followed by
+three numeric arguments, for the year, month, and day, or a single string
+argument in any of the parsable date formats, and reformats into the default
+date format, given by <code>DATE_FORMAT</code>.  If <code>DATE_FORMAT</code> is not defined, the format
+<code>%F</code> is used.  (See <code>man strftime</code> for details).</p>
+
+<h1>
+<a id="hash-utilssh-" class="anchor" href="#hash-utilssh-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>hash-utils.sh <a name="hash_utils" id="hash_utils"></a>
+</h1>
+
+<p>Hashes are associative arrays. Hashes have <strong>keys</strong> and associated
+<strong>values</strong>.   Use this library to simplify and ease your use of
+associated arrays.</p>
+
+<p>These are the hash utilities:</p>
+
+<pre><code>hash_init VAR [DEFAULT]
+</code></pre>
+
+<p>Initialize <code>VAR</code> as an empty hash.</p>
+
+<pre><code>hash_default VAR
+</code></pre>
+
+<p>Return the default value for <code>HASH.</code></p>
+
+<pre><code>hash_set_default VAR DEFAULT
+</code></pre>
+
+<p>Set the default value for <code>HASH</code>.</p>
+
+<pre><code>hash_put VAR KEY VAL ...
+</code></pre>
+
+<p>Insert <code>[KEY]=VAL</code> into the hash.</p>
+
+<pre><code>hash_set VAR KEY VAL
+</code></pre>
+
+<p>Alias to <code>hash_put</code>.</p>
+
+<pre><code>hash_get  VAR KEY
+</code></pre>
+
+<p>Output the item associated with <code>KEY</code> in <code>VAR</code> to <code>STDOUT</code>.</p>
+
+<pre><code>hash_delete VAR KEY
+</code></pre>
+
+<p>Delete <code>VAR[KEY]</code>.</p>
+
+<pre><code>hash_delete_if VAR KEY CONDITION
+</code></pre>
+
+<p>Delete <code>VAR[KEY]</code> if <code>CONDITION</code> is true.</p>
+
+<pre><code>hash_keys VAR
+</code></pre>
+
+<p>Return all the keys in hash <code>VAR</code>.</p>
+
+<pre><code>hash_values VAR
+</code></pre>
+
+<p>Return all the values in hash <code>VAR</code>.</p>
+
+<pre><code>hash_each VAR KEYVAR EXPR
+</code></pre>
+
+<p>Evaluate <code>EXPR</code>, setting <code>KEYVAR</code> to each key in <code>VAR</code>.</p>
+
+<pre><code>hash_copy HASH NEWHASH KEY1 ...
+</code></pre>
+
+<p>Copy items at <code>KEY1</code>, .. from <code>HASH1</code> to <code>NEWHASH</code>.</p>
+
+<pre><code>in_hash      VAR KEY
+has_key      VAR KEY
+hash_member  VAR KEY
+hash_include VAR KEY
+</code></pre>
+
+<p>Test if <code>KEY</code> is in the hash <code>VAR</code>.</p>
+
+<pre><code>hash_size VAR
+</code></pre>
+
+<p>Returns the number of <code>[key]=value</code> pairs</p>
+
+<pre><code>hash_merge VAR1 VAR2
+</code></pre>
+
+<p>Merge key/value pairs from <code>VAR2</code> with <code>VAR1</code>.</p>
+
+<pre><code>hash_print HASHVAR [indent=INDENT] [width=WIDTH] [gutter=GUTTER] [cols=COLS] [sep=SEP]
+</code></pre>
+
+<p>Print the items in <code>HASHVAR</code> in vertically-sorted columns.  The
+number of columns is determined by <code>COLS</code>, if given, or by <code>WIDTH</code>
+(defaults to 80) divided by the maximum width of all items in
+<code>HASHVAR</code>.</p>
+
+<p>Use <code>GUTTER</code> blanks (default 2) to separate columns.</p>
+
+<p>If <code>SEP</code> is given, it is used to delimit columns instead of blanks.</p>
+
+<p>Each option may be abbreviated to its leading character (e.g., "g"
+for "gutter").</p>
+
+<pre><code>hash_help                             # describe the list functions
+</code></pre>
+
+<h1>
+<a id="help-utilsh-" class="anchor" href="#help-utilsh-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>help-util.sh <a id="help_util"></a>
+</h1>
+
+<p>This utility makes it easy to provide helpful responses for shell functions
+that are missing arguments.</p>
+
+<p>Each collection of related shell functions can share a common <code>help_FUNC</code>
+function, which is then filtered for the specific function name for which
+help is being sought.</p>
+
+<p>Each function that can be used by a user should start with a call to
+<code>help_args_func</code>, passing the <code>HELPFUNC</code>, <code>$#</code>, and the minimum number of
+arguments.</p>
+
+<p>If the using function is called with less than the required arguments the
+<code>HELPFUNC</code> is invoked and the output filtered through a simple filter that does
+not print until the calling function name is found and then prints only until
+the next empty line of test.</p>
+
+<p>Each collection of functions that wish to make use of this utility should
+have a <code>HELPFUNC</code> that prints a brief description of each command (function),
+where each function name begins an unindented comment line, with exactly one
+blank after the comment character.  A description may follow -- as a bash
+comment, indented or not.  Finally, the doc entry for the given function is
+an empty comment line.</p>
+
+<p>For reference examples, please see either <code>list-utils.sh</code> or <code>hash-utils.sh</code>.</p>
+
+<pre><code>help_pager &lt;&lt;END_OF_MESSAGE
+some message
+...
+END_OF_MESSAGE
+</code></pre>
+
+<h1>
+<a id="list-utilssh-" class="anchor" href="#list-utilssh-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>list-utils.sh <a name="list_utils" id="list_utils"></a>
+</h1>
+
+<p><code>bash</code> script utilities for managing lists of things.</p>
+
+<p>In the descriptions below, <code>VAR</code> is an array variable and <code>VAL</code>*, are
+values.</p>
+
+<p>The functions that modify a list variable (e.g., <code>list_push</code>, <code>list_pop</code>)
+cannot be used within a sub-shell (e.g., a command substitution).</p>
+
+<p>Commands executed within a sub-shell are incapable of affecting variables in
+the parent shell.  In other words, the expression <code>var=$(list_pop list)</code> looks
+nice but won't work.    Instead, do:</p>
+
+<pre><code>list_pop some_list    # sets "$item" with the popped value
+</code></pre>
+
+<h2>
+<a id="list-functions" class="anchor" href="#list-functions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>List Functions</h2>
+
+<p>These are the list utilities:</p>
+
+<pre><code>list_init VAR
+</code></pre>
+
+<p>Initialize <code>VAR</code> as an empty list.</p>
+
+<pre><code>list_add      VAR VAL1 [VAL2 ...]
+</code></pre>
+
+<p>Add one or more values (<code>VAL1..</code>) to the end of <code>VAR</code>.  There is no check for
+duplicates.</p>
+
+<pre><code>list_add_once VAR  VAL1 [VAL2 ..]
+</code></pre>
+
+<p>Add one or more values (<code>VAL1..</code>) uniquely to the end of <code>VAR</code>.</p>
+
+<pre><code>list_push VAR VAL ...
+</code></pre>
+
+<p>Alias to <code>list_add</code>.</p>
+
+<pre><code>list_insert      VAR VAL ...
+</code></pre>
+
+<p>Insert <code>VAL..</code> at the front of <code>VAR</code>.</p>
+
+<pre><code>list_insert_once VAR VAL ...
+</code></pre>
+
+<p>Insert one or more values (<code>VAL..</code>) at the front of <code>VAR</code>. </p>
+
+<pre><code>list_pop VAR
+</code></pre>
+
+<p>Removes <code>VAL</code> from the list <code>VAR</code> and returns it in the variable <code>item</code>.</p>
+
+<pre><code>list_remove VAR VAL ...
+</code></pre>
+
+<p>Remove one or more given values (<code>VAL..</code>) from the list <code>VAR</code>.</p>
+
+<pre><code>list_get  VAR N
+</code></pre>
+
+<p>Get the <code>N</code>th item of <code>VAR</code> to <code>STDOUT</code>.</p>
+
+<pre><code>list_item VAR N
+</code></pre>
+
+<p>Set the variable <code>item</code> to the <code>N</code>th item of <code>VAR</code>.</p>
+
+<pre><code>list_set  VAR N VAL
+</code></pre>
+
+<p>Set the <code>N</code>th item of <code>VAR</code> to <code>VAL</code>.</p>
+
+<pre><code>list_items VAR [START [END]]
+</code></pre>
+
+<p>Return list items from <code>START</code> to <code>END</code> (or all).</p>
+
+<pre><code>list_copy LIST NEWLIST [START [END]]
+</code></pre>
+
+<p>Copy list <code>LIST</code> to <code>NEWLIST,</code> from <code>START</code> to <code>END</code>.</p>
+
+<pre><code>in_list VAR  [-any|-all] VAL ...
+</code></pre>
+
+<p>Return true if one or more values are in list <code>VAR</code>.</p>
+
+<pre><code>list_size VAR
+</code></pre>
+
+<p>Returns the number of items in <code>VAR</code>.</p>
+
+<pre><code>list_dump VAR
+</code></pre>
+
+<p>Output the contents of <code>VAR</code>, with indexes.</p>
+
+<pre><code>sort_str VAL ...
+</code></pre>
+
+<p>Sort the space-separated words of <code>VAL ..</code>.</p>
+
+<pre><code>list_sort VAR
+</code></pre>
+
+<p>Sort the contents of <code>VAR</code> (a list) in place.</p>
+
+<pre><code>list_sorted VAR
+</code></pre>
+
+<p>Output the items of <code>VAR</code> sorted.</p>
+
+<pre><code>sort_str2lines STRING
+</code></pre>
+
+<p>Sort <code>STRING</code> with each item in a separate line.</p>
+
+<pre><code>sort_list2lines VAR
+</code></pre>
+
+<p>Sort list <code>VAR</code> with each item in a separate line.</p>
+
+<pre><code>split_into  VAR "STRING" [SEP]
+</code></pre>
+
+<p>Split <code>STRING</code> by <code>SEP</code> into <code>VAR</code>.</p>
+
+<pre><code>split_str   "STRING" [SEP]
+</code></pre>
+
+<p>Split <code>STRING</code> by <code>SEP</code>.</p>
+
+<pre><code>list_join VAR [SEP] ..
+</code></pre>
+
+<p>Join the items in <code>VAR</code> into a list, separated by <code>SEP</code>.
+<code>SEP</code> can be:</p>
+
+<ul>
+<li>
+<code>AND</code> - separate with <code>" and "</code> </li>
+<li>
+<code>OR</code> - separate with <code>" or "</code> </li>
+<li>
+<code>KEYS</code> - enclose each item with <code>X'</code> and <code>'</code>, followed by <code>,</code> </li>
+<li>
+<code>TAB</code> - use tabs to separate items </li>
+<li>
+<code>NL</code> - separate each item with newline (and some spaces) </li>
+<li>
+<code>NOWRAP</code> - do not auto-wrap long lines (default is <code>WRAP</code>) </li>
+<li>
+<code>','</code> - separate items with a comma (default) </li>
+<li>
+<p><code>str</code> - separate each item with an given string. </p>
+
+<p>join_lines</p>
+</li>
+</ul>
+
+<p>Read <code>STDIN</code> and catenate lines; remove trailing <code>NL</code>.</p>
+
+<pre><code>list_lookup LISTVAR KEY
+</code></pre>
+
+<p>Lookup and return matching <code>KEY</code> in <code>LISTVAR</code>.  <code>KEY</code> can be an abbreviation.</p>
+
+<pre><code>list_grep   LISTVAR PAT
+</code></pre>
+
+<p>Perform a <code>grep</code> using pattern <code>PAT</code> across the contents of <code>LISTVAR</code>.</p>
+
+<pre><code>list_map    LISTVAR EXPR [JOINSTR]
+</code></pre>
+
+<p>Create a list of <code>EXPR</code> applied to each item in <code>LISTVAR</code>.</p>
+
+<pre><code>list_reduce LISTVAR EXPR [INIT]
+</code></pre>
+
+<p>Reduce <code>LISTVAR</code> using <code>EXPR,</code> with initial value <code>INIT</code>.</p>
+
+<pre><code>list_sum LISTVAR
+</code></pre>
+
+<p>Sum the items in <code>LISTVAR</code>.</p>
+
+<pre><code>list_max LISTVAR
+</code></pre>
+
+<p>Return the maximum item in <code>LISTVAR</code>.</p>
+
+<pre><code>list_min LISTVAR
+</code></pre>
+
+<p>Return the minimum item in <code>LISTVAR</code>.</p>
+
+<pre><code>list_avg LISTVAR
+</code></pre>
+
+<p>Return the average of the items in <code>LISTVAR</code>.</p>
+
+<pre><code>list_print LISTVAR [indent=INDENT] [width=WIDTH] [sep=SEP] [cols=COLS]
+
+list_print LISTVAR [i=INDENT] [w=WIDTH] [s=SEP]  [c=COLS]
+</code></pre>
+
+<p>Print the items in <code>LIST</code> in vertically-sorted columns.  Use <code>COLS</code> if given,
+otherwise the number of columns is computed from <code>WIDTH</code> (defaults to 80) and
+the maximum width of all the items in <code>LISTVAR</code>.</p>
+
+<pre><code>list_help
+</code></pre>
+
+<p>Describe the list functions.</p>
+
+<p>There are convenient aliases for most <code>list_XXX</code> functions as <code>XXX_list</code>.  For
+example, <code>join_list</code> =&gt; <code>list_join</code>, <code>list_pop</code> =&gt; <code>pop_list</code>, <code>map_list</code> =&gt;
+<code>list_map</code>, etc.  This allows people who think <em>VERB-NOUN</em> to use the functions
+like <code>grep_list</code>, while other people who think <em>NOUN-VERB</em> can use <code>list_grep</code>.
+The canonical function name begins with <code>list_</code>.</p>
+
+<p>Programmers wanting to make use of the list functions can use any of the list
+names prefixed with <code>__</code> to avoid the argument checking that is more helpful
+for interactive usage.  For example, within a script, the size of a list <code>FOO</code>
+is obtained with <code>__list_size FOO</code>.</p>
+
+<h2>
+<a id="splitting" class="anchor" href="#splitting" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Splitting</h2>
+
+<pre><code>split_into  VAR "STRING" SEP
+</code></pre>
+
+<p>Splits a <code>STRING</code> into parts using separator (<code>SEP</code>) (default is ',')
+and assigns the resulting separated, quoted strings to the <code>VAR</code>.</p>
+
+<pre><code>split_str   "STRING" [SEP]
+</code></pre>
+
+<p>Outputs the split of <code>STRING</code> into parts using a separator <code>SEP</code>
+(defaulting to space/tab).</p>
+
+<pre><code>split_input [SEP]
+</code></pre>
+
+<p>Splits the input text into parts using separator (<code>SEP</code>) (default is tab).</p>
+
+<p>For the split functions:</p>
+
+<p>If <code>SEP</code> does not include a space (<code>" "</code>), care is taken to avoid removing
+whitespace from the split values.</p>
+
+<p><code>SEP</code> can be multiple characters; for example <code>' ,'</code> (a space, comma) will
+split using both space and comma.  By default, splitting is done by tabs.</p>
+
+<h2>
+<a id="lookup-functions" class="anchor" href="#lookup-functions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Lookup functions</h2>
+
+<pre><code>list_lookup LIST "WORD"
+</code></pre>
+
+<p>Looks up <code>WORD</code> in the array <code>LIST</code> for the uniquely matching item, using
+disambiguating case-insensitive matching.  If no match, return empty string and
+code 1; if 2 or more matches, return empty string, and error code 2.</p>
+
+<pre><code>list_grep LIST PATTERN
+</code></pre>
+
+<p>Look up items matching <code>PATTERN</code> in the array <code>LIST</code>.  Return all matching items,
+and return code 0.  If no matching items, return empty string and return code 1.</p>
+
+<pre><code>lookup_error CODE WORD [NOTFOUNDMSG [AMBIGMSG]]
+</code></pre>
+
+<p>A utility function to be used in conjunction with a <code>lookup_list</code> or
+<code>grep_list</code> invocation.  <code>CODE</code> is an error code returned from <code>lookup_list</code> or
+<code>grep_list</code>.  <code>WORD</code> is the word used on the search, and is used as the <code>"%s"</code>
+argument in either error message.  <code>NOTFOUNDMSG</code> is the error message used in
+the case of error code 1.  <code>AMBIGMSG</code> is the error message used in the case of
+error code 2.</p>
+
+<p><code>lookup_error</code> is used like this:</p>
+
+<pre><code>read -p "What word do you want to use?" word
+words=( a list of words to search from )
+found=`lookup_list words $word` || lookup_error $? $word \
+      "'%s' is not a valid word" \
+      "'%s" is an ambiguous word"
+</code></pre>
+
+<h1>
+<a id="option-utilssh-" class="anchor" href="#option-utilssh-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>option-utils.sh <a name="option_utils" id="options_utils"></a>
+</h1>
+
+<p>The <code>option-util.sh</code> library is a small set of functions to manage
+building options and arguments, which is often needed in the
+development of command-line utilities.  </p>
+
+<p>These functions use two global variables: <code>option_pairs</code> and
+<code>options</code>.  The <code>option_pairs</code> variable is used to accumulate pairs
+of options and arguments, e.g.: <code>-F FILE</code>, while <code>options</code> is used to
+accumulate single character options that can be clustered behind a
+single dash "-".</p>
+
+<p>All of the accumulated options and arguments can be output with
+<code>all_opts</code>.</p>
+
+<pre><code>init_opts                # empty "option_pairs" and "options"
+
+reset_opts               # same as init_opts
+
+add_optarg OPTION ARG .. # add OPTION and ARG to the option_pairs list
+
+add_option OPTION ..     # add OPTION to the single options list
+add_opt    OPTION ..     # eg: add_arg -c -d ..  or add_arg c d ..
+
+all_opts                 # outputs both option_pairs and options
+</code></pre>
+
+<h1>
+<a id="prompt-colorssh-" class="anchor" href="#prompt-colorssh-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>prompt-colors.sh <a name="prompt_colors" id="prompt_colors"></a>
+</h1>
+
+<p><code>prompt-colors.sh</code> is a bash script that creates two functions:
+<code>define_color_names</code> and <code>reset_color_names</code>, and then invokes the former.  The
+<code>define_color_names</code> function creates a bunch of color variable names, setting
+them to the corresponding <code>bash</code> prompt escape sequences.  This allows the
+<code>bash</code> <code>PS1</code> and related prompts to be easily colored using color names, like
+<code>${Red}</code> and <code>${BoldCyan}</code>.  The function <code>reset_color_names</code> removes all the
+color names from the current bash session.</p>
+
+<p>Usage:</p>
+
+<pre><code>source prompt-colors.sh
+</code></pre>
+
+<p>The file <code>prompt-colors.sh</code> is actually dynamically generated from the script
+<code>generate-color-names</code>, and is not even part of this repository.  To create it, you
+must run <code>make</code>, or invoke <code>generate-prompt-colors</code> manually.</p>
+
+<h1>
+<a id="real-utilssh-" class="anchor" href="#real-utilssh-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>real-utils.sh <a name="real_utils" id="real_utils"></a>
+</h1>
+
+<p>The <code>real-utils.sh</code> bash library provides real number arithmetic in bash
+scripts.  Real numbers are managed as floating point strings in the format
+<code>"X.Y"</code>, where <code>X</code> is the integer portion, and <code>Y</code> is the fractional part.</p>
+
+<p>Usage:</p>
+
+<pre><code>source real-utils.sh
+
+real_compute "EXPRESSIN"  [SCALE]
+
+real_eval    "EXPRESSION" [SCALE]
+
+real_cond     EXPRESSION  [SCALE]
+
+real_int   REAL
+
+real_frac  REAL
+</code></pre>
+
+<p>Descriptions:</p>
+
+<pre><code>real_compute "EXPRESSION" [SCALE]
+</code></pre>
+
+<p>The <code>real_compute</code> bash function evaluates <code>EXPRESSION</code> using syntax, operators
+and functions as described in the <code>bc</code> manual.  All numbers and variables
+within <code>EXPRESSION</code> are interpreted by <code>bc</code>.  The result of the computation is
+output to <code>STDOUT</code>.</p>
+
+<p>If an error occurs, there is no indication.  This function does not set a
+return code, nor does it set the shell status variable <code>$?</code>.  Use <code>real_eval</code>
+for those effects.</p>
+
+<p>In addition to the operators and functions defined by <code>bc</code>, the following
+additional functions are also made available within the <code>EXPRESSION</code>:</p>
+
+<pre><code>abs(x)           deg(x)           log10(x)         rad(x)
+acos(x)          exp(x)           logn(x)          round(x,s)
+asin(x)          frac(x)          ndeg(x)          sin(x)
+atan(x)          int(x)           pi()             tan(x)
+cos(x)           log(x)           pow(x,y)
+</code></pre>
+
+<p>To see the <code>bc</code> definitions of these functions, use the <code>real_functions</code>
+function.</p>
+
+<pre><code>real_eval "EXPRESSION" [SCALE]
+</code></pre>
+
+<p>The <code>real_eval</code> bash function invokes <code>real_compute</code> on the arguments, prints
+the result on <code>STDOUT</code>, and returns with the <code>bc</code> return code <code>$?</code> (0 or 1, for
+success or error, respectively).</p>
+
+<pre><code>real_cond "EXPRESSION" [SCALE]
+</code></pre>
+
+<p><code>EXPRESSION</code> is a real number conditional which should evaluate to 1 or 0.  The
+return status is 0 for true, 1 for false.  Example usage:</p>
+
+<pre><code>if real_cond "$num &lt; $max" 2 ; then
+   ...
+fi
+
+
+real_scale=NUM
+</code></pre>
+
+<p>Set the precision of subsequent real number arithmetic results.   The
+default is 2.</p>
+
+<pre><code>real_int   REAL         -- outputs the integer portion of a REAL number
+real_frac  REAL         -- outputs the fractional portion of a REAL number
+
+sin R, cos R, tan R     -- trig functions on radians R
+asin X, acos X, atan X  -- inverse trig functions
+cotan X, sec X, cosec X -- cotangent, secant, cosecant
+arccot X                -- arc-cotangent
+hypot X Y               -- hypotenuse X, Y [sqrt(X^2 + Y^2)]
+sqrt X                  -- square-root of X
+logn X, log X           -- natural log, log base 10
+exp X                   -- exponent X of E (e.g., e^X)
+pow X Y                 -- power function [X^Y]
+rad D                   -- convert degrees D to radians
+deg R                   -- convert radians R to degrees
+ndeg R                  -- convert radians R to natural degrees (0..360)
+round X S               -- Round X to S decimals.  When S=0, rounds to the nearest integer.
+real_int X              -- outputs integer portion of X
+real_frac X             -- outputs fractional portion of X
+abs X                   -- Return the absolute value of X.
+
+PI   = 3.141592653589793
+TAU  = 6.283185307179586   # 2*PI
+E    = 2.718281828459045
+</code></pre>
+
+<h1>
+<a id="run-utilssh-" class="anchor" href="#run-utilssh-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>run-utils.sh <a name="run_utils" id="run_utils"></a>
+</h1>
+
+<p>Shell utility functions for running system commands:</p>
+
+<pre><code>run COMMAND ARGS ..       Show `COMMAND` `ARGS` if `$norun` or `$verbose`;
+                          run `COMMAND` unless `$norun`.
+
+safe_run COMMAND ARGS ... Same as "run", but always executes.
+
+rm_file_later FILE        Cause `FILE` to be removed upon program exit.
+
+add_trap "CMD" SIGNAL ..  Add `CMD` to the trap list for `SIGNAL`
+</code></pre>
+
+<h1>
+<a id="sh-utilssh-" class="anchor" href="#sh-utilssh-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>sh-utils.sh <a name="sh_utils" id="sh_utils"></a>
+</h1>
+
+<p>Handy functions for writing bash-based scripts</p>
+
+<p>The shell command utility functions consist of several groups
+of functions which collectively are quite useful in development
+command-line utilities and other system scripts.</p>
+
+<p>The following are separate modules that are included with <code>sh-utils</code>:</p>
+
+<ul>
+<li>
+<code>arg-utils</code>    - help with arguments or <code>STDIN</code>
+</li>
+<li>
+<code>help-util</code>    - help with help on selected functions</li>
+<li>
+<code>option-utils</code> - manage option and argument lists</li>
+<li>
+<code>run-utils</code>    - run system commands, with <code>$norun</code> and <code>$verbose</code> </li>
+<li>
+<code>talk-utils</code>   - conditional output to <code>STDERR</code>
+</li>
+</ul>
+
+<p>There are also some miscellaneous functions:</p>
+
+<pre><code>rm_file_later FILE         Cause `FILE` to be removed upon program exit.
+
+add_trap "CMD" SIGNAL ..   Add `CMD` to the trap list for `SIGNAL`
+
+rm_trap "CMD" SIGNAL ..    Remove `CMD` from the trap list for `SIGNAL` ..
+
+get_traps SIGNAL           Get the trap list for `SIGNAL`
+
+filter_traps 'CMD'         Filter `CMD` from the trap list on `STDIN`
+
+reset_traps SIGNAL         Reset (remove) the trap list for `SIGNAL`
+
+fn_exists FUNCTION         Return 0 (true) if `FUNCTION` exists; 1 (false) otherwise
+</code></pre>
+
+<h1>
+<a id="talk-utilssh-" class="anchor" href="#talk-utilssh-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>talk-utils.sh <a name="talk_utils" id="talk_utils"></a>
+</h1>
+
+<p>The <code>talk</code>, <code>error</code>, and <code>die</code> functions print their arguments on <code>STDERR.</code>
+The <code>talk</code> and <code>talkf</code> functions print unconditionally to <code>STDERR</code>, and return
+success (0).  The related functions with prefixes of 'v', 'vo', 'nr', 'nv',
+'nq' and 'nrv' print conditionally and return success (0) if they printed, and
+failure (1) otherwise.  This allows them to be used on conditionals.</p>
+
+<p>The <code>warn</code> function is just another name for <code>talk</code>: it prints its output on
+<code>STDERR</code>.  The <code>error</code> function does the same, accepting an optional error
+CODE, and then exits.  The <code>die</code> function sends a <code>SIGABRT</code> signal to the
+parent process id, forcing an abort.</p>
+
+<pre><code>   talk MSG ..              Print all args on `STDERR`
+  vtalk MSG ..              If `$norun` or `$verbose` is set, print all args.
+ votalk MSG ..              If `$verbose` only (no `$norun`) is set, print all args.
+ nrtalk MSG ..              if `$norun` set, print all args
+ nvtalk MSG ..              Unless `$verbose` is set, print all args
+ nqtalk MSG ..              Unless `$quiet` is set, print all args
+nrvtalk MSG ..              If `$norun` or `$verbose` is set, print all args.
+
+   talkf FMT ARGS ..        Printf the arguments on `STDERR`
+  vtalkf FMT ARGS ..        If `$norun` or `$verbose` is set, `talkf` the args
+ votalkf FMT ARGS ..        If `$verbose` only (no `$norun`) is set, `talkf` the args
+ nrtalkf FMT ARGS ..        If `$norun` set, `talkf` the args
+ nvtalkf FMT ARGS ..        Unless `$verbose` is set, `talkf` the args
+ nqtalkf FMT ARGS ..        Unless `$quiet` is set, `talkf` the args
+nrvtalkf FMT ARGS ..        If `$norun` or `$verbose` is set, `talkf` the args
+
+   warn MSG                 Print all args on `STDERR`
+  error [CODE] "MSG"        Print `MSG` on `STDERR`, then exit with code `CODE` (or 2)
+    die "MSG"               Print `MSG` on `STDERR`, then die (with `kill -ABRT`)
+
+  warnf FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR`
+ errorf [CODE] FMT ARGS ..  Printf `FMT` `ARGS` on `STDERR`, then exit `$CODE` [2]
+   dief FMT ARGS ..         Printf `FMT` `ARGS` on `STDERR`, then die (with `kill -ABRT`)
+</code></pre>
+
+<h1>
+<a id="text-utilssh-" class="anchor" href="#text-utilssh-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>text-utils.sh <a name="text_utils" id="text_utils"></a>
+</h1>
+
+<p>Text processing utilities for bash scripts.</p>
+
+<p>usage:</p>
+
+<pre><code>export PATH=.:$HOME/lib:$PATH
+source text-utils.sh
+</code></pre>
+
+<p>The following functions are provided by this library:</p>
+
+<pre><code>lowercase STRING              # return the lowercase string
+uppercase STRING              # return the uppercase string
+trim STRING                   # trim blanks surrounding string
+ltrim STRING                  # trim left-side blanks from STRING
+rtrim STRING                  # trim right-side blanks from STRING
+squeeze STRING                # squeeze multiple blanks in string
+split_str STRING [SEP]        # split STRING using SEP [default: ' \t']
+split_input [SEP]             # split STDIN using SEP [default: ' \t']
+args2lines [ARG ..]           # echo each ARG (or STDIN) on a separate line
+sort_str2lines "STRING .."    # output the sorted words in STRING on separate lines
+join_lines                    # join lines on STDIN together with newlines
+sort_str [WORDS TO BE SORTED] # return the sorted list of WORDS
+str_sort [WORDS TO BE SORTED] # an alias for 'sort_str'
+html_encode [STRING]          # encode STRING (or STDIN) for html
+url_encode  [STRING]          # encode STRING (or STDIN) for url
+html_decode [STRING]          # decode STRING (or STDIN) from HTML encoding
+url_decode  [STRING]          # decode STRING (or STDIN) from URL encoding
+</code></pre>
+
+<p>Most functions, except <code>split_str</code> and <code>sort_str</code>, can be used in a pipe
+without an argument.  For example:</p>
+
+<pre><code>echo "This is a string" | uppercase   =&gt; "THIS IS A STRING"
+html_encode &lt;input-file &gt;html-file
+</code></pre>
+
+<h1>
+<a id="test-utilssh-" class="anchor" href="#test-utilssh-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>test-utils.sh <a name="test_utils" id="test_utils"></a>
+</h1>
+
+<p>The <code>test-utils.sh</code> library provides an infrastructure for test-driven
+development (TDD) of <code>bash</code> scripts.</p>
+
+<p>Usage:</p>
+
+<pre><code>source test-utils.sh
+
+test_NAME1() {
+  start_test
+  ... # perform operations and test the results
+  end_test
+}
+
+test_NAME2() {
+  start_test
+  ... # perform operations and test the results
+  end_test
+}
+
+init_tests [ARGUMENTS]
+run_tests
+summarize_tests
+</code></pre>
+
+<h2>
+<a id="description" class="anchor" href="#description" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Description:</h2>
+
+<p>A <em>run</em> is a collection of <em>tests</em> (within a single file); each test has
+a name.</p>
+
+<p>A <em>test</em> is a set of related operations with <em>checks</em> on the results.</p>
+
+<p>A <em>check</em>` tests or compares values, which quietly succeeds, or results in an
+error.  The error message can be provided, or a default one is used.</p>
+
+<p>At the end of each test, the number of checks and errors is remembered for
+later summarization.</p>
+
+<p>At the end of the run, all checks and error counts are summarized.</p>
+
+<p>While the tests and checks are being performed, output is occuring to show the
+progress.  There are three modes of output: terse, errors-only, and detailed.</p>
+
+<p>Terse mode shows each test name followed by the number of checks, and how many
+of those checks had errors.  Terse mode is the default.</p>
+
+<p>In errors-only mode, successful tests still show the same as terse mode, but
+tests with error checks show the error message followed by a stack dump
+indicating the location of the error.  Errors-mode is indicated by the <code>-e</code>
+option when invoking the test script.</p>
+
+<p>In details mode, the tests and checks are run in verbose mode, showing both
+successful checks and errors.  Details mode is indicated by the <code>-d</code> option.</p>
+
+<p>When invoking the test script, the command line argument can be used to pass
+a <code>PATTERN</code> that is used to match a subset of the test names.  By default, all
+tests with the pattern "test_" are run.  For example, if the pattern "basic" is
+used, all tests with the string "basic"` will be run, and no others.</p>
+
+<p>In order to be discovered for automatic test runs, the tests functions must
+have the function name begin with <code>test_</code>.</p>
+
+<p>A common technique for test naming is: <code>test_NN_some_descriptive_name</code>, where
+<code>NN</code> is a number.  This allows easy reference by the <code>NN</code> to selectively run a
+test or tests.</p>
+
+<p>Below are the tests that are currently supported:</p>
+
+<pre><code>  check_value        VAL               ERROR
+  check_empty        VAL               ERROR
+</code></pre>
+
+<p>Expression tests</p>
+
+<pre><code>  check_true         "EXPR"            ERROR
+  check_false        "EXPR"            ERROR
+</code></pre>
+
+<p>Array item tests</p>
+
+<pre><code>  check_size         LIST SIZE         ERROR  # same as check_size_eq
+  check_size_XX      LIST SIZE         ERROR
+
+  check_item         LIST INDEX VAL    ERROR
+  check_item_equal   LIST INDEX VAL    ERROR
+  check_item_unequal LIST INDEX NONVAL ERROR
+</code></pre>
+
+<p>Hash tests</p>
+
+<pre><code>  check_key          HASH KEY          ERROR
+  check_no_key       HASH KEY          ERROR
+  check_key_value    HASH KEY VALUE    ERROR
+</code></pre>
+
+<p>String tests</p>
+
+<pre><code>  check_equal        VAL1 VAL2         ERROR
+  check_unequal      VAL1 VAL2         ERROR
+
+  check_match        VAL1 REGEXP       ERROR
+  check_nomatch      VAL1 REGEXP       ERROR
+</code></pre>
+
+<p>Numeric tests</p>
+
+<pre><code>  check_eq           N1 N2             ERROR
+  check_ne           N1 N2             ERROR
+  check_lt           N1 N2             ERROR
+  check_le           N1 N2             ERROR
+  check_gt           N1 N2             ERROR
+  check_ge           N1 N2             ERROR
+</code></pre>
+
+<p>Output tests</p>
+
+<pre><code> check_output [NAME] EXPRESSION [ERROR]
+</code></pre>
+
+<p>Evaluate <code>EXPRESSION</code> and compare its output against a previously collected
+reference output.  If the output matches, the test succeeds.  If the output
+does not match, print <code>ERROR</code> or a default error message.</p>
+
+<p>Use <code>NAME</code> as the unique identifier for files in which the <code>stdout</code>, <code>stderr</code>,
+and reference output is identified.</p>
+
+<p>Reference output can be created by the <code>-k</code> (<code>$keep</code>) option when the test is
+run.</p>
+
+<p>The first time a new <code>check_output</code> test is evaluated, there will not be a
+collected reference output to compare against, and the test will fail.</p>
+
+<h2>
+<a id="examples-of-tests" class="anchor" href="#examples-of-tests" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Examples of Tests:</h2>
+
+<p>Please carefully review the various test files in this repository:</p>
+
+<pre><code>test-date-utils.sh    -- test the functions in date-utils.sh
+test-hash-utils.sh    -- test the functions in hash-utils.sh
+test-list-utils.sh    -- test the functions in list-utils.sh
+test-real-utils.sh    -- test the functions in real-utils.sh
+test-sh-utils.sh      -- test the functions in sh-utils.sh
+test-text-utils.sh    -- test the functions in text-utils.sh
+test-template.sh      -- a template for future tests
+test-utils.sh         -- the functions described here
+</code></pre>
+
+<p>NOTE: The following functions are not yet implemented.</p>
+
+<pre><code> check_out      [NAME] EXPRESSION [ERROR]
+ check_out_none [NAME] EXPRESSION [ERROR]
+ check_err      [NAME] EXPRESSION [ERROR]
+ check_err_none [NAME] EXPRESSION [ERROR]
+</code></pre>
+
+<p>Check that <code>STDOUT</code> or <code>STDERR</code> is or is not empty when evaluating
+<code>EXPRESSION</code>, or show the <code>ERROR</code> (or default) message.</p>
+
+<pre><code> check_out_eq   [NAME] EXPRESSION VALUE [ERROR]
+ check_err_eq   [NAME] EXPRESSION VALUE [ERROR]
+</code></pre>
+
+<p>Check that the <code>STDOUT</code>, or <code>STDERR</code> of the evaluated <code>EXPRESSION</code> matches
+<code>VALUE</code>, or show the <code>ERROR</code> (or a default error message).</p>
+
+<pre><code> check_out_ne [NAME] EXPRESSION VALUE [ERROR]
+ check_err_ne [NAME] EXPRESSION VALUE [ERROR]
+</code></pre>
+
+<p>Check that the <code>STDOUT</code> or <code>STDERR</code> of the evaluated <code>EXPRESSION</code> does not
+contain <code>VALUE</code>, or show the <code>ERROR</code>.</p>
+
+<p>In all cases, the <code>ERROR</code> message is optional.</p>
+
+<h1>
+<a id="time-utilssh-" class="anchor" href="#time-utilssh-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>time-utils.sh <a name="time_utils" id="time_utils"></a>
+</h1>
+
+<p>The <code>time-utils</code> library enables easy management of timestamps, with hour,
+minute, seconds, and timezone components.  A variety of time formats are
+supported both on input parsing, and on output formatting. </p>
+
+<pre><code>time_parse [TIMESTRING]
+time_arg   [TIMESTRING]
+</code></pre>
+
+<p>Parse <code>TIMESTRING</code> in one of several recognized formats: <code>HH:MM:SS</code>,
+<code>HH:MM:SS.ssss</code>, If the <code>TIMESTRING</code> is successfully parsed, the variables
+<code>hours</code>, <code>mins</code>, and <code>secs</code> are set the corresponding numbers.  <code>time_arg</code> is
+another name for the same function.</p>
+
+<p>If <code>TIMESTRING</code> is empty, a line of input from <code>STDIN</code> is read and used instead.</p>
+
+<pre><code>time2secs [TIMESTRING]
+</code></pre>
+
+<p>Parse <code>TIMESTRING</code> (or <code>STDIN)</code> and convert to seconds.</p>
+
+<pre><code>time_format [FORMAT] HOURS MINS SECS
+time_format [FORMAT] TIMESTRING
+</code></pre>
+
+<p>The <code>time_format</code> function accepts an optional format string, followed by three
+numeric arguments, for the hour, minutes, and seconds, or a single string
+argument in any of the parsable date formats, and reformats into the default
+time format, given by <code>TIME_FORMAT</code>.  If <code>TIME_FORMAT</code> is not defined, the
+format <code>%T</code> is used.  (See <code>man strftime</code> for details).</p>
+
+<pre><code>time_add TIME1 TIME2
+</code></pre>
+
+<p>Add <code>TIME1</code> to <code>TIME2</code> and produce a <code>time_format</code> result.</p>
+
+<pre><code>time_sub TIME1 TIME2
+</code></pre>
+
+<p>Subtract <code>TIME2</code> from <code>TIME1</code> and produce a <code>time_format</code> result.</p>
+
+<p>vim: set ai sw=2</p>
+      </section>
+    </div>
+
+    
+  </body>
+</html>

@@ -2,6 +2,8 @@ bash-lib
 ========
 Library of bash scripts.
 
+See http://aks.github.io/bash-lib/ for a prettier rendition.
+
 Author: Alan K. Stebbens <aks@stebbens.org>
 
 Usage:

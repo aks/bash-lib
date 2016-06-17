@@ -678,7 +678,7 @@ df_day() {		        # d - the day of the month as a decimal number (01-31).
 }
 
 df_month() {		        # e - day of the month as a decimal number (1-31); 
-  printf "%2d\n" $month         #     single digits are preceded by a blank.
+  printf "%02d\n" $month         #     single digits are preceded by a blank.
 }
 
 df_fin_date() {		        # F - quivalent to ``%Y-%m-%d''.

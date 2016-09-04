@@ -3,13 +3,13 @@
 #
 # Copyright 2009-2015 Alan K. Stebbens <aks@stebbens.org>
 
-DATE_UTILS_VERSION="date-utils.sh v1.12"
+DATE_UTILS_VERSION="date-utils.sh v1.13"
 [[ "$DATE_UTILS_SH" = "$DATE_UTILS_VERSION" ]] && return
 DATE_UTILS_SH="$DATE_UTILS_VERSION"
 
 export DATE_FORMAT="%F"
 
-source sh-utils.sh
+source arg-utils.sh
 
 help_date() {
   cat <<'EOF'
@@ -198,6 +198,18 @@ date_parse_str() {
       date_parse_mdy ${BASH_REMATCH[1]} ${BASH_REMATCH[2]} ${BASH_REMATCH[3]}
     fi
 
+  # YYYYMMDDHHMM
+  elif [[ "$date" =~ ([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2}) ]]; then
+    datetime_parse_ymdhm ${BASH_REMATCH[1]} ${BASH_REMATCH[2]} ${BASH_REMATCH[3]} ${BASH_REMATCH[4]} ${BASH_REMATCH[5]}
+
+  # YYYYMMDDHH
+  elif [[ "$date" =~ ([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2}) ]]; then
+    datetime_parse_ymdhm ${BASH_REMATCH[1]} ${BASH_REMATCH[2]} ${BASH_REMATCH[3]} ${BASH_REMATCH[4]} 00
+
+  # YYYYMMDD
+  elif [[ "$date" =~ ([0-9]{4})([0-9]{2})([0-9]{2}) ]]; then
+    date_parse_ymd ${BASH_REMATCH[1]} ${BASH_REMATCH[2]} ${BASH_REMATCH[3]}
+
   # WDAY MMM DD HH:MM:SS TZONE YYYY
   elif [[ "$date" =~ ([[:alpha:]]{2,9})\ ([[:alpha:]]{3,8})\ ([ 0-9]{2})\ ([0-9]{2}:[0-9]{2}:[0-9]{2})\ ([[:alnum:]]{3,9})\ ([0-9]{4}) ]] ; then
     date_parse_mmmdy ${BASH_REMATCH[2]} ${BASH_REMATCH[3]} ${BASH_REMATCH[6]}
@@ -212,6 +224,7 @@ date_parse_str() {
 # date_parse_mdy   MONTH [DAY] [YEAR]
 # date_parse_dmy   DAY [MONTH] [YEAR]
 # date_parse_mmmdy MONTHNAME DAY YEAR
+# datetime_parse_ymdhm YEAR MONTH DATE HOUR MINUTE
 #
 # Set three global variables 'year', 'month', 'day'
 #
@@ -222,6 +235,11 @@ check_parsed_date_values() {
   (( month >= 1 && month <= 12 )) || error "Bad month value: $month"
   (( day >= 1 && day <= 31 ))     || error "Bad day value: $day"
   [[ -n "year" ]]                 || error "Bad year value: $year"
+}
+
+check_parsed_time_values() {
+  (( hour >= 0   && hour <= 23 ))   || error "Bad hour value: $hour"
+  (( minute >= 0 && minute <= 59 )) || error "Bad minute value: $minute"
 }
 
 date_parse_ymd() {
@@ -242,6 +260,13 @@ date_parse_dmy() {
 date_parse_mmmdy() {
   month=`month_number $1` day=$(( 10#$2 ))  year=$(( 10#$3 ))
   check_parsed_date_values
+}
+
+datetime_parse_ymdhm() {
+  year=$(( 10#$1 ))  month=$(( 10#$2 ))  day=$(( 10#$3 ))
+  check_parsed_date_values
+  hour=$(( 10#$4 ))  minute=$(( 10#$5 ))
+  check_parsed_time_values
 }
 
 # month_number MONTHNAME

@@ -17,7 +17,7 @@ testdata='test-dates.dat'
 test_01_conversion_equivalencies() {
   start_test
   last_adays='-1'
-  for ((year=1; year<=2082; year+=300)) ; do
+  for ((year=1; year<=2082; year+=500)) ; do
     for month in 1 2 3 6 9 12; do
       mdays=`last_day_of_month $year $month`
       for day in 1 15 25 $mdays ; do
@@ -98,6 +98,14 @@ check_date() {
   check_eq $year $2
   check_eq $month $3
   check_eq $day   $4
+}
+
+# check_date_time 'yyyymmddhhmm' yyyy mm dd hh mm
+
+check_date_time() {
+  check_date "$1" $2 $3 $4
+  check_eq $hour   $5
+  check_eq $minute $6
 }
 
 test_04_parse_date() {
@@ -216,6 +224,21 @@ test_10_date_x_years_before() {
   check_date_x_years_before 5 2011/8/5  2006/8/5
   check_date_x_years_after  1 2001/11/1 2002/11/1
   check_date_x_years_after  5 2011/8/5  2016/8/5
+  end_test
+}
+
+test_11_date_parse_serials() {
+  start_test
+  check_date  20140101   2014 1   1
+  check_date  20161231   2016 12 31
+  end_test
+}
+
+test_12_datetime_parse_serials() {
+  start_test
+  check_date_time  201401010809   2014 1   1  8  9
+  check_date_time  201612310708   2016 12 31  7  8
+  check_date_time  201612312359   2016 12 31 23 59
   end_test
 }
 

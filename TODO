@@ -1,6 +1,8 @@
 Things to do
 ============
 
+* update README for new date-utils functions (tomorrow, yesterday, get_date_x_days ...)
+
 * Create the check_out, check_err, etc. functions.
 
 * write tests for run-utils.sh

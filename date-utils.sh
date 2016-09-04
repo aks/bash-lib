@@ -1,4 +1,4 @@
-# bash 
+# bash
 # date-utils.sh  -- date management utility for bash
 #
 # Copyright 2009-2015 Alan K. Stebbens <aks@stebbens.org>
@@ -23,12 +23,14 @@ format NN/NN/NNNN is interpreted: if set to 1, that format is taken to mean
 date_parse [DATESTRING]   - parse DATESTRING
 date_arg   [DATESTRING]   - an alias for date_parse
 
-    Parse DATESTRING in one of several recognized formats:
-    `YYYY-MM-DD`, `YYYY.MM.DD`, `YYYY/MM/DD`, `YYYY MM DD`, `MM DD
-    YYYYY`, `DD.MM.YYYY`, and `DD MM YYYYY` (if `EUROPEAN_DATES` is
-    set).  If the DATESTRING is successfully parsed, the variables
-    `year`, `month`, and `day` are set to their respective numbers.
-    `date_arg` is another name for the same function.
+    Parse DATESTRING in one of several recognized formats: `YYYY-MM-DD`,
+    `YYYY.MM.DD`, `YYYY/MM/DD`, `YYYY MM DD`, `MM DD YYYYY`, `DD.MM.YYYY`, `DD
+    MM YYYYY` (if `EUROPEAN_DATES` is set), and finally some serialized date
+    strings, possibly including times: `YYYYMMDDHHMM`, `YYYYMMDDHH`, and
+    `YYYYMMDD`.  If the DATESTRING is successfully parsed, the variables
+    `year`, `month`, and `day` are set to their respective numbers.  `date_arg`
+    is another name for the same function.  For those date serials that
+    contain `HHMM`, the variables `hour` and `minute` will be set also.
 
     If DATESTRING is empty, a line of input from STDIN is read and
     used instead.
@@ -97,6 +99,21 @@ three numeric arguments, for the year, month, and day, or a single string
 argument in any of the parsable date formats, and reformats into the default
 date format, given by DATE_FORMAT.  If DATE_FORMAT is not defined, the format
 `%F` is used.  (See `man strftime` for details).
+
+Date Arithmetic
+---------------
+
+get_date_x_years_after  X DATESTRING   - get the date X years after a date
+get_date_x_years_since  X DATESTRING   - alias to .._after
+
+get_date_x_years_before X DATESTRING   - get the date X years before a date
+
+get_date_last_quarter_end DATESTRING   - get the date of the last quarter end
+
+get_date_x_days_after   X DATESTRING   - get the date X days after a date
+get_date_x_days_since   X DATESTRING   - alias
+
+get_date_x_days_before  X DATESTRING   - get the date X days before a date
 
 EOF
 
@@ -215,6 +232,15 @@ date_parse_str() {
     date_parse_mmmdy ${BASH_REMATCH[2]} ${BASH_REMATCH[3]} ${BASH_REMATCH[6]}
     weekday_name=${BASH_REMATCH[1]} timestr="${BASH_REMATCH[4]}" tzone="${BASH_REMATCH[5]}"
 
+  elif [[ "$date" =~ today|tod ]] ; then
+    date_parse_ymd `today`
+
+  elif [[ "$date" =~ yesterday|yester|y ]] ; then
+    date_parse_ymd `yesterday`
+
+  elif [[ "$date" =~ tomorrow|tom ]]; then
+    date_parse_ymd `tomorrow`
+
   else  # failure -- leave no variables set
     :
   fi
@@ -322,7 +348,7 @@ days_in_month() {
 days_before_month=( -  0 31 59 90 120 151 181 212 243 273 304 334 )
 
 
-# is_leap_year YYYY 
+# is_leap_year YYYY
 #
 # Returns 0 (true) if YYYY is a leap year; 1 (false) otherwise
 
@@ -348,10 +374,10 @@ is_julian_date() {
     local year month day
     parse_date "$@"
   fi
-  if (( year < GREGORIAN_START_YEAR || 
-        (year == GREGORIAN_START_YEAR && 
+  if (( year < GREGORIAN_START_YEAR ||
+        (year == GREGORIAN_START_YEAR &&
           (month < GREGORIAN_START_MONTH ||
-            (month == GREGORIAN_START_MONTH && 
+            (month == GREGORIAN_START_MONTH &&
               day < GREGORIAN_START_DAY ) ) ) )) ; then
     return 0
   else
@@ -395,7 +421,7 @@ date_to_jdays() {
 
 jdays_to_date() {
   local jdays=`numarg_or_input $1`
-  local a b c d e m 
+  local a b c d e m
   if (( jdays < GREGORIAN_START_JDAY )) ; then
     (( b = 0 ))
     (( c = jdays + 32082 ))
@@ -458,7 +484,7 @@ date_to_adays() {
 
 # week_number [DATESTRING | YYYY MM DD]
 #
-# See 
+# See
 # http://my.safaribooksonline.com/book/xml/0596009747/dates-and-times/xsltckbk2-chp-4-sect-4
 
 week_number() {
@@ -583,6 +609,14 @@ date_to_seconds() {
 
 today() { date +'%F' ; }
 
+tomorrow() {
+  get_date_x_days_since 1 `today`
+}
+
+yesterday() {
+  get_date_x_days_before 1 `today`
+}
+
 # date_format  FORMAT
 # date_format [FORMAT] [DATESTRING]
 # date_format [FORMAT] [YYYY MM DD]
@@ -650,11 +684,11 @@ format_date() { date_format "$@" ; }
 # Index          0   1   2   3   4   5   6   7
 weekday_names=( Sun Mon Tue Wed Thu Fri Sat Sun )
 
-df_weekday_name() {		# A
+df_weekday_name() {             # A
   echo "`df_weekday_abbrev`day"
 }
 
-df_weekday_abbrev() {		# a
+df_weekday_abbrev() {           # a
   local wd=`df_weekday_num0`
   echo "${weekday_names[$wd]}"
 }
@@ -675,50 +709,50 @@ date_to_weekday_name() {
 # Index           1     2        3      4     5   6    7    8      9         10      11       12
 month_names=( - January February March April May June July August September October November December )
 
-df_month_name() {		# B
+df_month_name() {               # B
   echo "${month_names[$month]}"
 }
 
-df_month_abbrev() {		# b
+df_month_abbrev() {             # b
   local name=`df_month_name`
   echo "${name:0:3}"
 }
 
-df_century() {		        # C
+df_century() {                  # C
   echo "$(( year / 100 ))"
 }
 
-df_date_time() {		# c
+df_date_time() {                # c
   local dow=`df_weekday_abbrev`
   local mmm=`df_month_abbrev`
   echo "$dow $mmm $day $year"
 }
 
-df_mmddyy() {		        # D
+df_mmddyy() {                   # D
   printf "%02d/%02d/%4d\n" $month $day $year
 }
 
-df_day() {		        # d - the day of the month as a decimal number (01-31).
+df_day() {                      # d - the day of the month as a decimal number (01-31).
   printf "%02d\n" $day
 }
 
-df_month() {		        # e - day of the month as a decimal number (1-31); 
+df_month() {                    # e - day of the month as a decimal number (1-31);
   printf "%2d\n" $month         #     single digits are preceded by a blank.
 }
 
-df_fin_date() {		        # F - quivalent to ``%Y-%m-%d''.
+df_fin_date() {                 # F - quivalent to ``%Y-%m-%d''.
   printf "%4d-%02d-%02d\n" $year $month $day
-} 
+}
 
-df_year4() {		        # G - year as a decimal number with century.
+df_year4() {                    # G - year as a decimal number with century.
   printf "%4d\n" $year
 }
 
-df_year2() {		        # g - year as in ``%G'', but as a decimal number without century (00-99).
+df_year2() {                    # g - year as in ``%G'', but as a decimal number without century (00-99).
   printf "%02d\n" $(( year % 100 ))
 }
 
-df_day_of_year() {		# j - the day of the year as a decimal number (001-366).
+df_day_of_year() {              # j - the day of the year as a decimal number (001-366).
   echo "$(( days_before_month[$month] + $day ))"
 }
 
@@ -731,34 +765,34 @@ df_weekday_num1() {             # u
   echo $(( wd == 0 ? 7 : $wd )) # return 1..7 (Mon .. Sun)
 }
 
-df_week_num0() {		# U
+df_week_num0() {                # U
   #week_number "$@"
   date -r `date_to_seconds "$@"` +'%U'
 }
 
-df_week_num_ISO() {		# V
+df_week_num_ISO() {             # V
   # week_number "$@"
   date -r `date_to_seconds "$@"` +'%V'
 }
 
-df_eby4() {		        # v
+df_eby4() {                     # v
   local mname=`df_month_abbrev`
 }
 
-df_week_num1() {		# W
+df_week_num1() {                # W
   #week_number "$@"
   date -r `date_to_seconds "$@"` +'%W'
 }
 
-df_weekday_num0() {		# w
+df_weekday_num0() {             # w
   date_to_weekday_num $year $month $day   # output 0..6 for Sun..Sat
 }
 
-df_date() {		        # x
+df_date() {                     # x
   printf "%02d/%02d/%04d\n" $month $day $year
 }
 
-df_year4() {		        # Y
+df_year4() {                    # Y
   printf "%04d\n" $year
 }
 
@@ -797,13 +831,14 @@ get_date_5_years_before() {
 # Get the date X years before or after the given date
 
 get_date_x_years_after() {
-  local yoffset="${1:?'Missing number of years'}"
+  local yoffset="${1:?Missing offset!}"
   shift
   local year month day
   date_parse "$@"
   (( year += yoffset )) # get X years later/before
   print_date $year $month $day
 }
+
 get_date_x_years_since()  { get_date_x_years_after "$@" ; }
 get_date_x_years_before() { get_date_x_years_after "-$@" ; }
 
@@ -818,6 +853,26 @@ get_date_last_quarter_end() {
   month=$(( ( ( ( month - 1 ) / 3 ) * 3 ) + 1 ))    # get previous quarter month
   print_date $year $month 1
 }
+
+# get_date_x_days_after   X [DATESTRING]   - get the date X days after a date
+# get_date_x_days_since   X [DATESTRING]   - alias
+
+get_date_x_days_after() {
+  local doffset="${1?Missing offset}"
+  shift
+  if [[ $# -eq 0 ]]; then
+    set `today`
+  fi
+  local year month day
+  local days=`date_to_jdays "$@"`
+  (( days += doffset ))
+  jdays_to_date $days
+}
+
+get_date_x_days_since()  { get_date_x_days_after "$@"  ; }
+get_date_x_days_before() { get_date_x_days_after "-$@" ; }
+
+# get_date_x_days_before  X DATESTRING   - get the date X days before a date
 
 # end of date-utils.sh
 # vim: set ai sw=2

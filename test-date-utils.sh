@@ -242,6 +242,54 @@ test_12_datetime_parse_serials() {
   end_test
 }
 
+date_parts() {
+  echo "${1:0:4} ${1:5:2} ${1:8:2}"
+}
+
+test_13_today() {
+  start_test
+  local tdate=`date +%F`
+  local date=`today`
+  check_date "$date" `date_parts $tdate`
+  end_test
+}
+
+test_14_yesterday() {
+  start_test
+  local ydate=`date -j -v-1d +%F`
+  local date=`yesterday`
+  check_date "$date" `date_parts $ydate`
+  end_test
+}
+
+test_15_tomorrow() {
+  start_test
+  local tdate=`date -j -v+1d +%F`
+  local date=`tomorrow`
+  check_date "$date" `date_parts $tdate`
+  end_test
+}
+
+test_16_get_date_x_days_before() {
+  start_test
+  for offset in 1 3 5 7 15 ; do
+    local tdate=`date -j -v-${offset}d +%F`
+    local date=`get_date_x_days_before $offset`
+    check_date "$date" `date_parts $tdate`
+  done
+  end_test
+}
+
+test_17_get_date_x_days_since() {
+  start_test
+  for offset in 1 3 5 7 15 ; do
+    local tdate=`date -j -v+${offset}d +%F`
+    local date=`get_date_x_days_since $offset`
+    check_date "$date" `date_parts $tdate`
+  done
+  end_test
+}
+
 init_tests "$@"
 run_tests
 summarize_tests

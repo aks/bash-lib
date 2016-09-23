@@ -3,13 +3,14 @@
 #
 # Copyright 2009-2015 Alan K. Stebbens <aks@stebbens.org>
 
-DATE_UTILS_VERSION="date-utils.sh v1.13"
+DATE_UTILS_VERSION="date-utils.sh v2.0"
 [[ "$DATE_UTILS_SH" = "$DATE_UTILS_VERSION" ]] && return
 DATE_UTILS_SH="$DATE_UTILS_VERSION"
 
 export DATE_FORMAT="%F"
 
 source arg-utils.sh
+source talk-utils.sh
 
 help_date() {
   cat <<'EOF'
@@ -102,6 +103,14 @@ date format, given by DATE_FORMAT.  If DATE_FORMAT is not defined, the format
 
 Date Arithmetic
 ---------------
+
+date_adjust DATESTRING [+-] NUM [KIND] ... - adjust the DATE by +- NUM KIND [d,w,m,y]
+
+date_add DATESTRING NUM [dwmy]         - add NUM days, weeks, months, or years
+
+date_sub DATESTRING NUM [dwmy]         - subtract NUM days, weeks, months, or years
+
+days_between DATESTRING1 DATESTRING2   - compute difference (in days) between two dates
 
 get_date_x_years_after  X DATESTRING   - get the date X years after a date
 get_date_x_years_since  X DATESTRING   - alias to .._after
@@ -215,6 +224,10 @@ date_parse_str() {
       date_parse_mdy ${BASH_REMATCH[1]} ${BASH_REMATCH[2]} ${BASH_REMATCH[3]}
     fi
 
+  # the value is a big integer, we assume it is the serialized values of
+  # YEAR_MONTH_DAY, and not milliseconds or seconds from Epoch.  In the latter
+  # case, use "date_format "%S"
+
   # YYYYMMDDHHMM
   elif [[ "$date" =~ ([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2}) ]]; then
     datetime_parse_ymdhm ${BASH_REMATCH[1]} ${BASH_REMATCH[2]} ${BASH_REMATCH[3]} ${BASH_REMATCH[4]} ${BASH_REMATCH[5]}
@@ -258,14 +271,14 @@ date_parse_str() {
 # is the current year.
 
 check_parsed_date_values() {
-  (( month >= 1 && month <= 12 )) || error "Bad month value: $month"
-  (( day >= 1 && day <= 31 ))     || error "Bad day value: $day"
-  [[ -n "year" ]]                 || error "Bad year value: $year"
+  (( month >= 1 && month <= 12 )) || warn "Bad month value: $month"
+  (( day >= 1 && day <= 31 ))     || warn "Bad day value: $day"
+  [[ -n "year" ]]                 || warn "Bad year value: $year"
 }
 
 check_parsed_time_values() {
-  (( hour >= 0   && hour <= 23 ))   || error "Bad hour value: $hour"
-  (( minute >= 0 && minute <= 59 )) || error "Bad minute value: $minute"
+  (( hour >= 0   && hour <= 23 ))   || warn "Bad hour value: $hour"
+  (( minute >= 0 && minute <= 59 )) || warn "Bad minute value: $minute"
 }
 
 date_parse_ymd() {
@@ -314,7 +327,7 @@ month_number() {
     october|oct|se)   echo 10 ;;
     november|nov|no)  echo 11 ;;
     december|dec|de)  echo 12 ;;
-  *) error "month_number: Bad monthname: $1" ;;
+  *) warn "month_number: Bad monthname: $1" ;;
   esac
 }
 month_num() { month_number "$@" ; }
@@ -339,7 +352,7 @@ days_in_month() {
     10|10|october|oct|se)  echo 31 ;;
     11|11|november|nov|no) echo 31 ;;
     12|12|december|dec|de) echo 31 ;;
-    *) error "Bad month name or index: $1" ;;
+    *) warn "Bad month name or index: $1" ;;
   esac
 }
 
@@ -451,7 +464,7 @@ jdatefunc_to_date() {
   (( day   = e - (153*m + 2)/5 + 1   ))
   (( month = m + 3 - 12*(m/10)       ))
   (( year  = b*100 + d - 4800 + m/10 ))
-  printd $year $month $day
+  print_date_vars
 }
 
 # The difference, in days, between a julian day and an absolute day
@@ -658,6 +671,7 @@ date_format() {
       g) new=`df_year2`          ;;
       j) new=`df_day_of_year`    ;;
       n) new=$'\n'               ;;
+      s) new=`df_seconds`        ;;
       t) new=$'\t'               ;;
       U) new=`df_week_num0`      ;;
       u) new=`df_weekday_num1`   ;;
@@ -758,6 +772,10 @@ df_day_of_year() {              # j - the day of the year as a decimal number (0
 
 n() { echo $'\n' ; }            # n
 
+df_seconds() {                  # s - seconds since Epoch
+  date_to_seconds "$@"
+}
+
 t() { echo $'\t' ; }            # t
 
 df_weekday_num1() {             # u
@@ -775,8 +793,9 @@ df_week_num_ISO() {             # V
   date -r `date_to_seconds "$@"` +'%V'
 }
 
-df_eby4() {                     # v
+df_eby4() {                     # v => %e %b %Y
   local mname=`df_month_abbrev`
+  printf "%2d %3s %04d\n" $month "$mname" $year
 }
 
 df_week_num1() {                # W
@@ -805,24 +824,23 @@ df_year4() {                    # Y
 print_date() {
   local year month day
   date_parse "$@"
-  printf "%04d-%02d-%02d\n" $year $month $day
+  print_date_vars
 }
 printd() { print_date "$@" ; }
 
-# get_date_5_years_before [YYYY-MM-DD]
+# print_date_vars [FORMAT]
 #
-# get_date_last_quarter_end YYYY-MM-DD
-#
-# Both the above routines output a date string, in YYYY-MM-DD format.
-# Both accept a date as input, the absence of which defaults to now.
+# Print the date using the current values of $year, $month, and $day
+
+print_date_vars() {
+  printf "%04d-%02d-%02d\n" $year $month $day
+}
 
 # get_date_5_years_before [YYYY-MM-DD]
 #
 # Get the date five years before the given date
 
-get_date_5_years_before() {
-  get_date_x_years_before 5 $1
-}
+get_date_5_years_before() { date_adjust "$1" - 5y ; }
 
 # get_date_x_years_before YEARSOFFSET [YYYY-MM-DD]
 # get_date_x_years_after  YEARSOFFSET [YYYY-MM-DD]
@@ -831,16 +849,18 @@ get_date_5_years_before() {
 # Get the date X years before or after the given date
 
 get_date_x_years_after() {
-  local yoffset="${1:?Missing offset!}"
+  local offset="${1:?Missing offset!}"
   shift
-  local year month day
-  date_parse "$@"
-  (( year += yoffset )) # get X years later/before
-  print_date $year $month $day
+  date_add "$@" $offset years
 }
 
 get_date_x_years_since()  { get_date_x_years_after "$@" ; }
-get_date_x_years_before() { get_date_x_years_after "-$@" ; }
+
+get_date_x_years_before() {
+  local offset="${1:?Missing offset!}"
+  shift
+  date_sub "$@" $offset years
+}
 
 # get_date_last_quarter_end YYYY-MM-DD
 #
@@ -858,21 +878,92 @@ get_date_last_quarter_end() {
 # get_date_x_days_since   X [DATESTRING]   - alias
 
 get_date_x_days_after() {
-  local doffset="${1?Missing offset}"
+  local offset="${1:?'Missing offset'}"
   shift
-  if [[ $# -eq 0 ]]; then
-    set `today`
-  fi
-  local year month day
-  local days=`date_to_jdays "$@"`
-  (( days += doffset ))
-  jdays_to_date $days
+  date_add "$*" $offset days
 }
 
 get_date_x_days_since()  { get_date_x_days_after "$@"  ; }
-get_date_x_days_before() { get_date_x_days_after "-$@" ; }
 
-# get_date_x_days_before  X DATESTRING   - get the date X days before a date
+get_date_x_days_before() {
+  local offset="${1:?'Missing offset'}"
+  shift
+  date_sub "$*" $offset days
+}
+
+# get_date_x_days_before  X DATESTRING      - get the date X days before a date
+
+
+# date_adjust [DATESTRING] [+-] NUM [KIND] .. - adjust the DATE by NUM KIND [d,w,m,y]
+#
+# Example:
+# date_adjust YYYY/MM/DD - 1d - 1y
+
+date_adjust() {
+  local day month year
+  local datearg="${1:-`today`}"               # default date is today
+  local date=`print_date "$datearg"`          # YYYY-MM-DD
+  shift
+  local func offset kind
+  while [[ $# -gt 0 ]]; do
+    func="$1" ; shift
+    if [[ "$func" =~ ([+-])([[:digit:]].*) ]] ; then
+      func="${BASH_REMATCH[1]}" offset="${BASH_REMATCH[2]}"
+    elif [[ "$func" =~ ([+-]) ]] ; then
+      offset="$1" ; shift
+    else
+      warn "Bad operator '$func'; must be '+' or '-'"
+    fi
+    if [[ "$offset" =~ ([[:digit:]]+)([dwmy]) ]]; then
+      offset="${BASH_REMATCH[1]}" kind="${BASH_REMATCH[2]}"
+    else
+      kind="${1:-d}" ; shift
+    fi
+    case "$kind" in               # defaults to days
+      d|day|days)
+        local jdays=`date_to_jdays $date`
+        jdays=$(( $jdays $func $offset ))
+        date=`jdays_to_date $jdays`
+        ;;
+      w|week|weeks)
+        local jdays=`date_to_jdays $date`
+        jdays=$(( $jdays $func ( $offset * 7 ) ))
+        date=`jdays_to_date $jdays`
+        ;;
+      m|month|months)
+        date_parse $date
+        local years=$(( $offset / 12 )) months=$(( $offset % 12 ))
+        (( month = month $func $months ))
+        (( year  = year  $func $years  ))
+        date=`print_date_vars`
+        ;;
+      y|year|years)
+        date_parse $date
+        (( year = year $func $offset ))
+        date=`print_date_vars`
+        ;;
+      *) warn "Unknown duration '$kind'"
+    esac
+  done
+  print_date "$date"
+}
+
+# date_add DATESTRING NUM [dwmy]         - add NUM days, weeks, months, or years
+date_add() {
+  date_adjust "$1" + $2 $3
+}
+
+# date_sub DATESTRING NUM [dwmy]         - subtract NUM days, weeks, months, or years
+date_sub() {
+  date_adjust "$1" - $2 $3
+}
+
+# days_between DATESTRING1 DATESTRING2   - compute difference (in days) between two dates
+days_between() {
+  local jdays1=$(( `date_to_jdays "${1:?'Missing date1'}"` ))
+  local jdays2=$(( `date_to_jdays "${2:?'Missing date2'}"` ))
+  abs $(( jdays2 - jdays1 ))
+}
 
 # end of date-utils.sh
 # vim: set ai sw=2

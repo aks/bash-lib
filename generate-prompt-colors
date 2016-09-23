@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # generate-prompt-colors-file
 #
 #  generate-prompt-colors-files -hnv [OUTPUTFILE]

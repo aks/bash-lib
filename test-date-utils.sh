@@ -290,6 +290,43 @@ test_17_get_date_x_days_since() {
   end_test
 }
 
+test_20_date_adjust() {
+  start_test
+
+  for offset in 1 3 5 7 15 ; do
+    local tdate=`date -j -v+${offset}d +%F`
+    local date=`date_adjust today + $offset days`
+    check_date "$new_date" `date_parts $tdate`
+  done
+
+  for offset in 1 3 5 7 15 ; do
+    local tdate=`date -j -v-${offset}d +%F`
+    local date=`date_adjust today - $offset days`
+    check_date "$new_date" `date_parts $tdate`
+  done
+
+  end_test
+}
+
+test_21_date_add() {
+  start_test
+
+  end_test
+}
+
+test_22_date_sub() {
+  start_test
+
+  end_test
+}
+
+test_23_days_between() {
+  start_test
+
+  end_test
+}
+
+
 init_tests "$@"
 run_tests
 summarize_tests

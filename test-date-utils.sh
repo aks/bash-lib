@@ -91,13 +91,13 @@ test_03_years_offset() {
   end_test
 }
 
-# check_date 'mm/dd/yyyy' yyyy mm dd
+# check_date 'mm/dd/yyyy' yyyy mm dd [ERROR]
 
 check_date() {
   parse_date "$1"
-  check_eq $year $2
-  check_eq $month $3
-  check_eq $day   $4
+  check_eq $year  $2 "Date test failed; got year $year, expected $2"
+  check_eq $month $3 "Date test failed; got month $month, expected $3"
+  check_eq $day   $4 "Date test failed; got day $day, expected $4"
 }
 
 # check_date_time 'yyyymmddhhmm' yyyy mm dd hh mm
@@ -290,33 +290,56 @@ test_17_get_date_x_days_since() {
   end_test
 }
 
+# run_test_data_on FUNCTION
+run_test_data_on() {
+  local func="${1:?'Missing function'}"
+  local x start_date offset target_date tdate
+  for(( x=0; x < ${#test_data[*]}; x+=3 )) ; do
+    start_date=${test_data[$x]}
+    offset=${test_data[$x+1]}
+    target_date=${test_data[$x+2]}
+    tdate=`$func $start_date $offset`
+    check_date "$target_date" `date_parts $tdate`
+  done
+}
+
 test_20_date_adjust() {
   start_test
-
-  for offset in 1 3 5 7 15 ; do
-    local tdate=`date -j -v+${offset}d +%F`
-    local date=`date_adjust today + $offset days`
-    check_date "$new_date" `date_parts $tdate`
-  done
-
-  for offset in 1 3 5 7 15 ; do
-    local tdate=`date -j -v-${offset}d +%F`
-    local date=`date_adjust today - $offset days`
-    check_date "$new_date" `date_parts $tdate`
-  done
-
+  test_data=( 2016-08-31 '+ 1'    2016-09-01
+              2016-08-31 '+ 1d'   2016-09-01
+              2016-08-31 '+ 1w'   2016-09-07
+              2016-08-31 '+ 1m'   2016-09-31
+              2016-08-31 '+ 1y'   2017-08-31
+              2016-09-01 '- 1d'   2016-08-31
+              2016-09-01 '- 1w'   2016-08-25
+              2016-09-01 '- 1m'   2016-08-01
+              2016-09-01 '- 1y'   2015-09-01
+            )
+  run_test_data_on date_adjust
   end_test
 }
 
 test_21_date_add() {
   start_test
-
+  test_data=( 2016-08-31 1        2016-09-01
+              2016-08-31 1d       2016-09-01
+              2016-08-31 1w       2016-09-07
+              2016-08-31 1m       2016-09-31
+              2016-08-31 1y       2017-08-31
+            )
+  run_test_data_on date_add
   end_test
 }
 
 test_22_date_sub() {
   start_test
-
+  test_data=( 2016-09-01 1        2016-08-31
+              2016-09-01 1d       2016-08-31
+              2016-09-01 1w       2016-08-25
+              2016-09-01 1m       2016-08-01
+              2016-09-01 1y       2015-09-01
+            )
+  run_test_data_on date_sub
   end_test
 }
 

@@ -17,7 +17,7 @@ Replace `$HOME/lib` with wherever these files are installed
 This bash library is modular, and the individual utilities can be independently
 sourced, as needed.
 
-Each library has a corresponding test script to ensure proper operation before 
+Each library has a corresponding test script to ensure proper operation before
 installation.  These test scripts are also the basis for regression tests, after
 new features are added (or bugs are fixed).
 
@@ -136,11 +136,11 @@ Return the argument or read it from `STDIN`
 Return arguments or read them from `STDIN`
 
     args_or_stdin "$@"
-    
+
 Return the arguments or read all of `STDIN`
 
     append_args "$@"
-    
+
 Append the arguments to the next line from `STDIN`
 
     append_arg "$1"
@@ -231,14 +231,17 @@ date-utils.sh <a name="date_utils" id="date_utils">
 
 The `date-utils` library enables easy management of dates and its year, month,
 and day components.  A variety of date formats are supported both on input
-parsing, and on output formatting.  
+parsing, and on output formatting.
 
 The envar `EUROPEAN_DATES` controls how the format `NN/NN/NNNN` is interpreted:
 if set to 1, that format is taken to mean `DD/MM/YYYY`, where DD is the day of
 the month; otherwise, it is parsed as `MM/DD/YYYY`.
 
-    date_parse [DATESTRING]
-    date_arg   [DATESTRING]
+Date Parsing
+------------
+
+    date_parse        [DATESTRING]   # can be any modern date format
+    date_arg          [DATESTRING]   # an alias for old scripts
 
 Parse `DATESTRING` in one of several recognized formats: `YYYY-MM-DD`,
 `YYYY.MM.DD`, `YYYY/MM/DD`, `YYYY MM DD`, `MM DD YYYYY`, `DD.MM.YYYY`, and `DD
@@ -247,12 +250,28 @@ parsed, the variables `year`, `month`, and `day` are set to their respective
 numbers.  `date_arg` is another name for the same function.
 
 If `DATESTRING` is empty, a line of input from `STDIN` is read and used
-instead.  This makes the script handy in a pipe.  Example:
+instead.  This makes the script handy in a pipe.  For example:
 
     extract_first_date_from_log /var/log/messages | date_parse
 
-will set `year`, `month`, and `day` from the date extracted.
+The function `date_parse`, as well as all of the functions below will set
+`year`, `month`, and `day` from the date extracted.
 
+    date_parse_str    "DATESTRING"
+    date_parse_ymd    YYYY MM DD
+    date_parse_mdy    MM DD YYYY
+    date_parse_dmy    DD MM YYYY
+    date_parse_mmmdy  MMM DD YYYY
+
+    datetime_parse_ymdhm YYYY MM DD HH MM
+
+Each of the above functions are used by `date_parse` once it has matched the
+corresponding syntax.  So, if your script/command knows, in advance, the
+precise date (or `datetime`) format, it can use one of the above,
+format-specific functions.
+
+Date Components
+---------------
 
     month_number MONTHNAME
     month_num    MONTHNAME
@@ -283,12 +302,21 @@ Return 0 (true) if `YEAR` is a leap year; return 1 (false) otherwise.
 
 Return the last day of the month corresponding to year `YYYY` and month `MM`.
 
-    date_to_adays YYYY MM DD
+Date Conversions
+----------------
+
+All dates can be converted to a given number of days since the beginning of the
+Julian calendar, _jdays_, or the beginning of the Common Era calendar, _adays_,
+which as been defined as 12/31/0000.  Just like Celsius and Kelvin are similar
+measures of temperature with dissimilar origins, _jdays_ and _adays_ are both
+measures of days, but from different origins.
+
+    date_to_jdays YYYY MM DD
     date_to_adays YYYY-MM-DD
 
-Returns the number of absolute days from the beginning of the Gregorian
-calendar for the given date, which can be specified with three numeric
-arguments, or a single string argument, which must be parsable by
+Returns the number of Julian or absolute days from the beginning of the
+Gregorian calendar for the given date, which can be specified with three
+numeric arguments, or a single string argument, which must be parsable by
 `date_parse`.
 
     jdays_to_date JDAYS
@@ -306,21 +334,26 @@ Converts `ABSDAYS` into a date formatted by `print_date`.
 
 These functions convert from absolute days to Julian day number, and vice-versa.
 
-    week_number [DATESTRING | YYYY MM DD]
+    week_number [DATESTRING | YYYY MM DD]          - the week number
 
-Returns the week number for the given `DATESTRING` or date components.
+    date_to_weekday_name [DATESTRING | YYYY MM DD] - the name of the week day
 
-    date_to_weekday_name [DATESTRING | YYYY MM DD]
+    date_to_weekday_num [DATESTRING | YYYY MM DD]  - the day of the week (0..6)
 
-Returns the weekday name for the given `DATESTRING` or date components.
+    date_day_num [DATESTRING | YYYY MM DD]         - the day number of the date
 
-    date_to_weekday_num [DATESTRING | YYYY MM DD]
+    days_at_epoch        # The number of absolute days at 1970-01-01.
 
-Returns the weekday number (0..6) for the given `DATESTRING` or date components.
+    date_to_days_since_epoch DATESTRING   - the number of days since the Epoch
 
-    date_day_num [DATESTRING | YYYY MM DD]
+    date_to_seconds DATESTRING            - the number of seconds since the Epoch
 
-Returns the day number for the given `DATESTRING` or date components.
+    today             -- today's date
+    yesterday         -- yesterday's date
+    tomorrow          -- tomorrow's date
+
+Date Formatting
+---------------
 
     date_format [FORMAT] YYYY MM DD
     date_format [FORMAT] YYYY-MM-DD
@@ -330,6 +363,79 @@ three numeric arguments, for the year, month, and day, or a single string
 argument in any of the parsable date formats, and reformats into the default
 date format, given by `DATE_FORMAT`.  If `DATE_FORMAT` is not defined, the format
 `%F` is used.  (See `man strftime` for details).
+
+Most of the date format codes are performed by a function, which are listed
+here.  Typically, they would be invoked via `date_format CODE DATESTRING`.  All
+of these `df_...` functions accept no arguments, taking the date component
+values they need from the variables set by `date_parse`: `year`, `month`, and
+`day`.
+
+    | Function          | Code | Result                                |
+    |-------------------+------+---------------------------------------|
+    | df_weekday_name   | %A   | full weekday name                     |
+    | df_weekday_abbrev | %a   | abbreviated weekday name              |
+    | df_month_name     | %B   | full month name                       |
+    | df_month_abbrev   | %b   | abbreviated month name                |
+    | df_century        | %C   | The century digits of the year        |
+    | df_date_time      | %c   | %a %b %D %Y                           |
+    | df_mmddyy         | %D   | mm/dd/yyyy                            |
+    | df_day            | %d   | day of month (01..31)                 |
+    | df_month          | %e   | m or mm: month number, space leader   |
+    | df_fin_date       | %F   | financial date: %Y-%m-%d (YYYY-MM-DD) |
+    | df_year4          | %G   | Year as 4 digits, using space leader  |
+    | df_year2          | %g   | The last two digits of the year       |
+    | df_day_of_year    | %j   | The day of the year: (000 .. 366)     |
+    | df_month0         | %m   | mm - month number, zero-filled        |
+    | \n                | %n   | _newline_                             |
+    | df_seconds        | %s   | seconds                               |
+    | \t                | %t   | _tab_                                 |
+    | df_week_num0      | %U   | week number (0..51)                   |
+    | df_weekday_num1   | %u   | weekday number (1..7) for (Mon..Sun)  |
+    | df_week_num_ISO   | %V   | week number by ISO standards          |
+    | df_eby4           | %v   | %e %b %Y                              |
+    | df_week_num1      | %W   | week number (1..52)                   |
+    | df_weekday_num0   | %w   | weekday number (0..6) for (Sun..Sat)  |
+    | df_date           | %x   | mm/dd/YYYY (%m/%d/%Y)                 |
+    | df_year04         | %Y   | Year as 4 digits, with zero leader    |
+    | %                 | %%   | percent-sign                          |
+
+
+    month_names=( - 'January' 'February' ... 'December' )
+
+The `month_names` array is indexed with origin-1 as 'January'.  It is used by
+the month name formatting functions.
+
+    print_date [FORMAT] YYYY MM DD
+    print_date [FORMAT] DATESTRING
+    printd     [FORMAT] DATESTRING
+
+The function `print_date` and `printd` will print the `DATESTRING` value, or
+the date components, as given by `YYYY`, `MM`, `DD`.
+
+Date Arithmetic
+---------------
+
+    date_adjust DATESTRING [+-] NUM [KIND] ... - adjust the DATE by +- NUM KIND [d,w,m,y]
+
+    date_add DATESTRING NUM [dwmy]         - add NUM days, weeks, months, or years
+
+    date_sub DATESTRING NUM [dwmy]         - subtract NUM days, weeks, months, or years
+
+    days_between DATESTRING1 DATESTRING2   - compute difference (in days) between two dates
+
+    get_date_x_years_after  X DATESTRING   - get the date X years after a date
+    get_date_x_years_since  X DATESTRING   - alias to .._after
+
+    get_date_x_years_before X DATESTRING   - get the date X years before a date
+
+    get_date_last_quarter_end DATESTRING   - get the date of the last quarter end
+
+    get_date_x_days_after   X DATESTRING   - get the date X days after a date
+    get_date_x_days_since   X DATESTRING   - alias
+
+    get_date_x_days_before  X DATESTRING   - get the date X days before a date
+
+In all the above cases, `DATESTRING` defaults to the value of `today`.
 
 
 hash-utils.sh <a name="hash_utils" id="hash_utils">
@@ -499,7 +605,7 @@ Insert `VAL..` at the front of `VAR`.
 
     list_insert_once VAR VAL ...
 
-Insert one or more values (`VAL..`) at the front of `VAR`. 
+Insert one or more values (`VAL..`) at the front of `VAR`.
 
     list_pop VAR
 
@@ -574,14 +680,14 @@ Split `STRING` by `SEP`.
 Join the items in `VAR` into a list, separated by `SEP`.
 `SEP` can be:
 
-* `AND   ` - separate with `" and "` 
-* `OR    ` - separate with `" or "` 
-* `KEYS  ` - enclose each item with `X'` and `'`, followed by `,` 
-* `TAB   ` - use tabs to separate items 
-* `NL    ` - separate each item with newline (and some spaces) 
-* `NOWRAP` - do not auto-wrap long lines (default is `WRAP`) 
-* `','   ` - separate items with a comma (default) 
-* `str   ` - separate each item with an given string. 
+* `AND   ` - separate with `" and "`
+* `OR    ` - separate with `" or "`
+* `KEYS  ` - enclose each item with `X'` and `'`, followed by `,`
+* `TAB   ` - use tabs to separate items
+* `NL    ` - separate each item with newline (and some spaces)
+* `NOWRAP` - do not auto-wrap long lines (default is `WRAP`)
+* `','   ` - separate items with a comma (default)
+* `str   ` - separate each item with an given string.
 
 
 
@@ -706,7 +812,7 @@ option-utils.sh <a name="option_utils" id="options_utils">
 
 The `option-util.sh` library is a small set of functions to manage
 building options and arguments, which is often needed in the
-development of command-line utilities.  
+development of command-line utilities.
 
 These functions use two global variables: `option_pairs` and
 `options`.  The `option_pairs` variable is used to accumulate pairs
@@ -741,7 +847,7 @@ them to the corresponding `bash` prompt escape sequences.  This allows the
 color names from the current bash session.
 
 Usage:
-    
+
     source prompt-colors.sh
 
 
@@ -867,7 +973,7 @@ The following are separate modules that are included with `sh-utils`:
 - `arg-utils`    - help with arguments or `STDIN`
 - `help-util`    - help with help on selected functions
 - `option-utils` - manage option and argument lists
-- `run-utils`    - run system commands, with `$norun` and `$verbose` 
+- `run-utils`    - run system commands, with `$norun` and `$verbose`
 - `talk-utils`   - conditional output to `STDERR`
 
 There are also some miscellaneous functions:
@@ -1129,7 +1235,7 @@ time-utils.sh <a name="time_utils" id="time_utils">
 =============
 The `time-utils` library enables easy management of timestamps, with hour,
 minute, seconds, and timezone components.  A variety of time formats are
-supported both on input parsing, and on output formatting. 
+supported both on input parsing, and on output formatting.
 
     time_parse [TIMESTRING]
     time_arg   [TIMESTRING]

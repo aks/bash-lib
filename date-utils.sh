@@ -3,7 +3,7 @@
 #
 # Copyright 2009-2015 Alan K. Stebbens <aks@stebbens.org>
 
-DATE_UTILS_VERSION="date-utils.sh v2.0"
+DATE_UTILS_VERSION="date-utils.sh v2.1"
 [[ "$DATE_UTILS_SH" = "$DATE_UTILS_VERSION" ]] && return
 DATE_UTILS_SH="$DATE_UTILS_VERSION"
 
@@ -21,6 +21,9 @@ format NN/NN/NNNN is interpreted: if set to 1, that format is taken to mean
 "DD/MM/YYYY", where DD is the day of the month; otherwise, it is parsed as
 'MM/DD/YYYY'.
 
+Date Parsing
+------------
+
 date_parse [DATESTRING]   - parse DATESTRING
 date_arg   [DATESTRING]   - an alias for date_parse
 
@@ -29,12 +32,34 @@ date_arg   [DATESTRING]   - an alias for date_parse
     MM YYYYY` (if `EUROPEAN_DATES` is set), and finally some serialized date
     strings, possibly including times: `YYYYMMDDHHMM`, `YYYYMMDDHH`, and
     `YYYYMMDD`.  If the DATESTRING is successfully parsed, the variables
-    `year`, `month`, and `day` are set to their respective numbers.  `date_arg`
-    is another name for the same function.  For those date serials that
-    contain `HHMM`, the variables `hour` and `minute` will be set also.
+    `year`, `month`, and `day` are set to their respective numbers.
 
-    If DATESTRING is empty, a line of input from STDIN is read and
-    used instead.
+    `date_arg` is another name for the same function.  For those date serials
+    that contain `HHMM`, the variables `hour` and `minute` will be set also.
+
+    If DATESTRING is empty, a line of input from STDIN is read and used
+    instead.  This makes the script handy in a pipe. For example:
+
+      extract_first_date_from_log /var/log/messages | date_parse
+
+The function `date_parse`, as well as all of the functions below, will set
+`year`, `month`, and `day` from the date extracted.
+
+    date_parse_str    "DATESTRING"
+    date_parse_ymd    YYYY MM DD
+    date_parse_mdy    MM DD YYYY
+    date_parse_dmy    DD MM YYYY
+    date_parse_mmmdy  MMM DD YYYY
+
+    datetime_parse_ymdhm YYYY MM DD HH MM
+
+Each of the above functions are used by `date_parse` once it has matched the
+corresponding syntax.  So, if your script/command knows, in advance, the
+precise date (or `datetime`) format, it can use one of the above,
+format-specific functions.
+
+Date Components
+---------------
 
 month_number MONTHNAME     - Given a month name, output it's index.
 month_num    MONTHNAME
@@ -60,8 +85,17 @@ is_leap_year YEAR          - return true (0) if YEAR is a leap year
 
 last_day_of_month YYYY MM  - last day of the month for YYYY/MM
 
+Date Conversions
+----------------
+
+All dates can be converted to a given number of days since the beginning of the
+Julian calendar, _jdays_, or the beginning of the Common Era calendar, _adays_,
+which as been defined as 12/31/0000.  Just like Celsius and Kelvin are similar
+measures of temperature with dissimilar origins, _jdays_ and _adays_ are both
+measures of days, but from different origins.
+
 date_to_adays YYYY MM DD   - absolute days for the date
-date_to_adays YYYY-MM-DD
+date_to_jdays YYYY-MM-DD
 
     Returns the number of absolute days from the beginning of the
     Gregorian calendar for the given date, which can be specified with
@@ -80,17 +114,35 @@ adays_to_date ABSDAYS      - the date for absolute ABSDAYS
 adays_to_jdays ADAYS       - Julian days from absolute ADAYS
 jdays_to_adays JDAYS       - absolute days from Julian JDAYS
 
-weeknumber DATESTRING      - the weeknumber for the DATESTRING
-weeknumber YYYY MM DD      - the weeknumber for YYYY MM DD
+weeknumber  DATESTRING     - the weeknumber for the DATESTRING
+week_number DATESTRING
+weeknumber  YYYY MM DD     - the weeknumber for YYYY MM DD
+week_number YYYY MM DD     - the weeknumber for YYYY MM DD
 
-date_to_weekday_name DATESTRING   - weekday name
+date_to_weekday_name DATESTRING     - weekday name
 date_to_weekday_name YYYY MM DD
 
-date_to_weekday_num DATESTRING    - weekday number (0..6)
+date_to_weekday_num DATESTRING      - weekday number (0..6)
 date_to_weekday_num YYYY MM DD
 
-date_day_num DATESTRING           - day number for the given date
+date_day_num DATESTRING             - day number for the given date
 date_day_num YYYY MM DD
+
+days_at_epoch                       - the absolute days on 1970/1/1
+
+date_to_days_since_epoch DATESTRING - the number of days since Epoch
+
+date_to_seconds                     - the number of seconds since Epoch
+
+Both `date_to_days_since_epoch` and `date_to_seconds` are provided for 
+each usage with and for Unix `tm` values.
+
+today         - today's date
+yesterday     - yesterday's date
+tomorrow      - tomorrow's date
+
+Date Formatting
+---------------
 
 date_format [FORMAT] YYYY MM DD   - format the date, given FORMAT
 date_format [FORMAT] YYYY-MM-DD
@@ -99,7 +151,43 @@ The `format_date` function accepts an optional format string, followed by
 three numeric arguments, for the year, month, and day, or a single string
 argument in any of the parsable date formats, and reformats into the default
 date format, given by DATE_FORMAT.  If DATE_FORMAT is not defined, the format
-`%F` is used.  (See `man strftime` for details).
+`%F` is used.  (See `man strftime` for details on the date format codes).
+
+Most of the date format codes are performed by a function, which are listed
+here for completeness.  Typically, they would be invoked via `date_format CODE
+DATESTRING`.  All of these `df_...` functions accept no arguments, taking 
+the date component values they need from the variables set by `date_parse`.
+Specifically, `year`, `month`, and `day`.
+
+| Function          | Code | Result                                |
+|-------------------+------+---------------------------------------|
+| df_weekday_name   | %A   | full weekday name                     |
+| df_weekday_abbrev | %a   | abbreviated weekday name              |
+| df_month_name     | %B   | full month name                       |
+| df_month_abbrev   | %b   | abbreviated month name                |
+| df_century        | %C   | The century digits of the year        |
+| df_date_time      | %c   | %a %b %D %Y                           |
+| df_mmddyy         | %D   | mm/dd/yyyy                            |
+| df_day            | %d   | day of month (01..31)                 |
+| df_month          | %e   | m or mm: month number, space leader   |
+| df_fin_date       | %F   | financial date: %Y-%m-%d (YYYY-MM-DD) |
+| df_year4          | %G   | Year as 4 digits, using space leader  |
+| df_year2          | %g   | The last two digits of the year       |
+| df_day_of_year    | %j   | The day of the year: (000 .. 366)     |
+| df_month0         | %m   | mm - month number, zero-filled        |
+| \n                | %n   | _newline_                             |
+| df_seconds        | %s   | seconds                               |
+| \t                | %t   | _tab_                                 |
+| df_week_num0      | %U   | week number (0..51)                   |
+| df_weekday_num1   | %u   | weekday number (1..7) for (Mon..Sun)  |
+| df_week_num_ISO   | %V   | week number by ISO standards          |
+| df_eby4           | %v   | %e %b %Y                              |
+| df_week_num1      | %W   | week number (1..52)                   |
+| df_weekday_num0   | %w   | weekday number (0..6) for (Sun..Sat)  |
+| df_date           | %x   | mm/dd/YYYY (%m/%d/%Y)                 |
+| df_year04         | %Y   | Year as 4 digits, with zero leader    |
+| %                 | %%   | percent-sign                          |
+
 
 Date Arithmetic
 ---------------
@@ -652,11 +740,11 @@ date_format() {
   esac
   # year, month, day have values
   #date -jn -f '%Y-%m-%d' "$year-$month-$day" +"$format"
-  local of new
+  local of new fmt
   of=''
-  while [[ format =~ ^([^%]*)%(.)(.*)$ ]]; do
-    of="$of$1" format="$3" new=''
-    case "$2" in
+  while [[ "$format" =~ ^([^%]*)%(.)(.*)$ ]]; do
+    of+="${BASH_REMATCH[1]}" fmt="${BASH_REMATCH[2]}" format="${BASH_REMATCH[3]}" new=''
+    case "$fmt" in
       A) new=`df_weekday_name`   ;;
       a) new=`df_weekday_abbrev` ;;
       B) new=`df_month_name`     ;;
@@ -670,6 +758,7 @@ date_format() {
       G) new=`df_year4`          ;;
       g) new=`df_year2`          ;;
       j) new=`df_day_of_year`    ;;
+      m) new=`df_month0`         ;;
       n) new=$'\n'               ;;
       s) new=`df_seconds`        ;;
       t) new=$'\t'               ;;
@@ -680,12 +769,15 @@ date_format() {
       W) new=`df_week_num1`      ;;
       w) new=`df_weekday_num0`   ;;
       x) new=`df_date`           ;;
-      Y) new=`df_year4`          ;;
+      Y) new=`df_year04`         ;;
       '%') new='%'               ;;
       *) new="$2"                ;;
     esac
-    of="$of$new"
+    of+="$new"
   done
+  if [[ -n "$format" ]]; then
+    of+="$format"
+  fi
   echo "$of"
 }
 format_date() { date_format "$@" ; }
@@ -750,15 +842,15 @@ df_day() {                      # d - the day of the month as a decimal number (
   printf "%02d\n" $day
 }
 
-df_month() {                    # e - day of the month as a decimal number (1-31);
-  printf "%2d\n" $month         #     single digits are preceded by a blank.
+df_month() {                    # e - the month number, with space leader
+  printf "%2d\n" $month
 }
 
 df_fin_date() {                 # F - quivalent to ``%Y-%m-%d''.
   printf "%4d-%02d-%02d\n" $year $month $day
 }
 
-df_year4() {                    # G - year as a decimal number with century.
+df_year4() {                    # G - year as a decimal number with century, leading blanks
   printf "%4d\n" $year
 }
 
@@ -770,13 +862,17 @@ df_day_of_year() {              # j - the day of the year as a decimal number (0
   echo "$(( days_before_month[$month] + $day ))"
 }
 
-n() { echo $'\n' ; }            # n
+df_month0() {
+  printf "%02d\n" $month        # m - the month number, with zero leader
+}
+
+n() { echo $'\n' ; }            # n - newline
 
 df_seconds() {                  # s - seconds since Epoch
   date_to_seconds "$@"
 }
 
-t() { echo $'\t' ; }            # t
+t() { echo $'\t' ; }            # t - tab
 
 df_weekday_num1() {             # u
   local wd=`date_to_weekday_num $year $month $day`
@@ -807,11 +903,11 @@ df_weekday_num0() {             # w
   date_to_weekday_num $year $month $day   # output 0..6 for Sun..Sat
 }
 
-df_date() {                     # x
+df_date() {                     # x - %m/%d/%Y
   printf "%02d/%02d/%04d\n" $month $day $year
 }
 
-df_year4() {                    # Y
+df_year04() {                   # Y - 4-digit year with leading zeroes
   printf "%04d\n" $year
 }
 
@@ -907,14 +1003,15 @@ date_adjust() {
   local func offset kind
   while [[ $# -gt 0 ]]; do
     func="$1" ; shift
-    if [[ "$func" =~ ([+-])([[:digit:]].*) ]] ; then
+    if [[ "_$func" =~ _([+-])([[:digit:]].*) ]] ; then
       func="${BASH_REMATCH[1]}" offset="${BASH_REMATCH[2]}"
-    elif [[ "$func" =~ ([+-]) ]] ; then
+    elif [[ "_$func" =~ _([+-]) ]] ; then
       offset="$1" ; shift
     else
       warn "Bad operator '$func'; must be '+' or '-'"
+      return
     fi
-    if [[ "$offset" =~ ([[:digit:]]+)([dwmy]) ]]; then
+    if [[ "_$offset" =~ _([[:digit:]]+)([dwmy]) ]]; then
       offset="${BASH_REMATCH[1]}" kind="${BASH_REMATCH[2]}"
     else
       kind="${1:-d}" ; shift
@@ -942,7 +1039,7 @@ date_adjust() {
         (( year = year $func $offset ))
         date=`print_date_vars`
         ;;
-      *) warn "Unknown duration '$kind'"
+      *) warn "Unknown duration '$kind'" ; return ;;
     esac
   done
   print_date "$date"

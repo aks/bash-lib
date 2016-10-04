@@ -3,7 +3,7 @@
 #
 # Copyright 2009-2015 Alan K. Stebbens <aks@stebbens.org>
 
-DATE_UTILS_VERSION="date-utils.sh v2.1"
+DATE_UTILS_VERSION="date-utils.sh v2.2"
 [[ "$DATE_UTILS_SH" = "$DATE_UTILS_VERSION" ]] && return
 DATE_UTILS_SH="$DATE_UTILS_VERSION"
 
@@ -917,12 +917,13 @@ df_year04() {                   # Y - 4-digit year with leading zeroes
 #
 # Print the date in the YYYY-MM-DD format.
 
-print_date() {
+date_print() {
   local year month day
-  date_parse "$@"
+  date_parse `args_or_input "$@"`
   print_date_vars
 }
-printd() { print_date "$@" ; }
+print_date() { date_print "$@" ; }
+printd()     { date_print "$@" ; }
 
 # print_date_vars [FORMAT]
 #

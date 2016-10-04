@@ -2,10 +2,10 @@
 #
 # handy functions for flexibly managing function arguments in bash scripts
 #
-# Copyright 2006-2015 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2016 Alan K. Stebbens <aks@stebbens.org>
 #
 
-ARG_UTILS_VERSION="arg-utils.sh v2.0"
+ARG_UTILS_VERSION="arg-utils.sh v2.2"
 
 [[ "$ARG_UTILS_SH" = "$ARG_UTILS_VERSION" ]] && return
 ARG_UTILS_SH="$ARG_UTILS_VERSION"
@@ -14,48 +14,48 @@ source help-util.sh
 
 arg_utils_help() {
     help_pager <<'EOF'
-The `arg-utils.sh` library is a collection of bash functions that
-enable flexible argument handling on functions that need to be able
-to accept arguments on the command-line or on STDIN.
+The `arg-utils.sh` library is a collection of bash functions that enable
+flexible argument handling on functions that need to be able to accept
+arguments on the command-line or on STDIN.
 
 When writing a bash function that can accept input on the command line or from
 STDIN, the function should begin with an invocation of one of the following
 functions.
 
 For example, if we had a function that needed a numeric argument, the following
-  invocation would be used:
+invocation would be used:
 
-  local f=`numarg_or_input "$1"`
+  local f=`__numarg_or_input "$1"`
 
 If a text argument is needed:
 
-  local txtarg=`arg_or_input "$1"`
+  local txtarg=`__arg_or_input "$1"`
 
 For those cases where two or more arguments can be accepted, either on the
 command-line or from STDIN:
 
-  local args=( `args_or_input "$@"` )
+  local args=( `__args_or_input "$@"` )
 
 The following are the arg-util functions:
 
-numarg_or_input "$1"     Return a numeric argument or read it from `STDIN`
+__numarg_or_input "$1"   Return a numeric argument or read it from `STDIN`
 
-arg_or_input "$1"        Return the argument or read it from `STDIN`
+__arg_or_input "$1"      Return the argument or read it from `STDIN`
 
-args_or_input "$@"       Return arguments or read them from `STDIN`
+__args_or_input "$@"     Return arguments or read them from `STDIN`
 
-args_or_stdin "$@"       Return the arguments or read all of `STDIN`
+__args_or_stdin "$@"     Return the arguments or read all of `STDIN`
 
-append_args "$@"         Append the arguments to the next line from `STDIN`
+__append_args "$@"       Append the arguments to the next line from `STDIN`
 
-append_arg "$1"          Append the argument to the next line from `STDIN`
+__append_arg "$1"        Append the argument to the next line from `STDIN`
 EOF
 }
 
 help_arg_utils() { arg_utils_help ; }
 
-# The following functions, "numarg_or_input", "arg_for_input", and
-# "args_or_input" enable bash functions using them to flexibly accept an
+# The following functions, "__numarg_or_input", "__arg_for_input", and
+# "__args_or_input" enable bash functions using them to flexibly accept an
 # argument, or arguments, on their call, or on STDIN.
 #
 # For example, let's say we have two bash functions to convert Celsius to
@@ -79,12 +79,12 @@ help_arg_utils() { arg_utils_help ; }
 #
 #  # f2c -- convert F to C via: (°F  -  32)  x  5/9 = °C
 #  function f2c() {
-#    local f=`numarg_or_input "$1"`
+#    local f=`__numarg_or_input "$1"`
 #    echo "scale=1; ($f - 32)*5/9' | bc
 #  }
 #  # c2f -- convert C to F via °C  x  9/5 + 32 = °F
 #  function c2f() {
-#    local c=`numarg_or_input "$1"`
+#    local c=`__numarg_or_input "$1"`
 #    echo "scale=1; $c * 9/5 + 32" | bc
 #  }
 
@@ -93,6 +93,7 @@ help_arg_utils() { arg_utils_help ; }
 #
 # Return the numeric argument or read from stdin
 
+# OLD name; deprecated
 numarg_or_input() {
   __numarg_or_input "$@"
 }
@@ -120,17 +121,29 @@ __calling_funcname() {
   local _x=1
   local func="${FUNCNAME[1]}"
   for (( _x=1; _x <= ${#FUNCNAME[*]}; _x++ )); do
-    [[ "$func" =~ ^__ ]] && continue
     func="${FUNCNAME[$_x]}"
+    [[ "${func:0:2}" == '__' ]] && continue
+    [[ "${func}" == 'arg_or_input' ]] && continue
+    [[ "${func}" == 'args_or_input' ]] && continue
+    [[ "${func}" == 'args_or_stdin' ]] && continue
+    [[ "${func}" == 'numarg_or_input' ]] && continue
     break
   done
   echo "$func"
 }
 
-# local arg=`arg_or_input "$1"`
+__dump_func_stack() {
+  local _i
+  for(( _i=0 ; _i <= ${#FUNCNAME[*]}; _i++ )) ; do
+    printf 1>&2 "%2d: %s\n" $_i "${FUNCNAME[$_i]}"
+  done
+}
+
+# local arg=`__arg_or_input "$1"`
 #
 # Return the argument given, or the first non-empty line from STDIN
 
+# deprecated OLD name
 arg_or_input() {
   __arg_or_input "$@"
 }
@@ -151,9 +164,11 @@ __arg_or_input() {
 }
 
 
-# local args=( `args_or_input "$@"` )
+# local args=( `__args_or_input "$@"` )
 #
 # Return the arguments or read a line of non-empty input
+
+# deprecated OLD name
 
 args_or_input() {
   __args_or_input "$@"
@@ -172,10 +187,11 @@ __args_or_input() {
   fi
 }
 
-# args_or_stdin "$@" | some-pipe
+# some-pipe | __args_or_stdin "$@"
 #
 # return the given arguments, or read & return STDIN until EOF
 
+# deprecated OLD name
 args_or_stdin() {
   __args_or_stdin "$@"
 }
@@ -189,19 +205,19 @@ __args_or_stdin() {
 }
 
 
-# append_arg  ARG
-# append_args ARGS
+# __append_arg  ARG
+# __append_args ARGS
 #
 # appends ARGS to the next line of input, and return the entire string
 #
-#    echo SOMEDATA | input_with_arg SOMEARG ==> SOMEDATA SOMEARG
+#    echo SOMEDATA | __append_arg SOMEARG ==> SOMEDATA SOMEARG
 
-append_arg() {
+__append_arg() {
   local -a data
   read -a data
   echo "${data[@]}" "$@"
 }
-append_args() { append_arg "$@" ; }
+__append_args() { __append_arg "$@" ; }
 
 
 # end of arg-utils.sh

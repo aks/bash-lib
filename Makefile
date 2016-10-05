@@ -14,6 +14,7 @@ libs = 	\
 	arg-utils.sh		\
 	bash-check.sh		\
 	bash-lib.sh		\
+	calendar-utils.sh       \
         date-utils.sh           \
 	hash-utils.sh		\
 	help-util.sh		\

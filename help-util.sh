@@ -34,7 +34,7 @@
 # Use the user's defined pager, or use a default one.
 
 help_pager() {
-  local prog="$HELP_PAGER"
+  local prog="${HELP_PAGER:-more}"
   if [[ -z "$prog" ]]; then
     for prog in less more cat ; do
       prog=`which $prog 2>/dev/null`

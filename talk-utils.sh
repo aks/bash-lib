@@ -12,7 +12,7 @@ TALK_UTILS_SH="$TALK_UTILS_VERSION"
 
 source help-util.sh
 
-talk_utils_help() {
+talk_help() {
     help_pager <<'EOF'
 Shell output utility functions:
 
@@ -54,7 +54,9 @@ nrvtalkf FMT ARGS ..        If `$norun` or `$verbose`, printf `FMT` `ARGS`
 EOF
 }
 
-help_talk() { talk_help ; }
+talk_utils_help() { talk_help ; }
+help_talk()       { talk_help ; }
+help_talk_utils() { talk_help ; }
 
 # All output goes to STDERR
 #

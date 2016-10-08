@@ -5,7 +5,7 @@
 # Copyright 2006-2015 Alan K. Stebbens <aks@stebbens.org>
 #
 
-TALK_UTILS_VERSION="talk-utils.sh v1.7"
+TALK_UTILS_VERSION="talk-utils.sh v1.8"
 
 [[ "$TALK_UTILS_SH" = "$TALK_UTILS_VERSION" ]] && return
 TALK_UTILS_SH="$TALK_UTILS_VERSION"

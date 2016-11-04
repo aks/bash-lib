@@ -8,6 +8,7 @@ Things to do
 * Create the check_stdout, check_stderr, etc. functions.
 
 * write tests for run-utils.sh
+  - add tests for add_trap
 
 * write more tests for arg-utils.sh
 

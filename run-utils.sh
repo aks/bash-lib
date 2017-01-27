@@ -11,6 +11,7 @@ RUN_UTILS_VERSION="sh-utils.sh v1.8"
 [[ "$RUN_UTILS_SH" = "$RUN_UTILS_VERSION" ]] && return
 RUN_UTILS_SH="$RUN_UTILS_VERSION"
 
+source talk-utils.sh
 source help-util.sh
 
 run_utils_help() {

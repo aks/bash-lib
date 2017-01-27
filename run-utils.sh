@@ -72,7 +72,7 @@ trap_cmd() {
 
 run() {
   help_args_func run_utils_help $# 1 || return 1
-  if [[ $norun ]]; then
+  if [[ -n "$norun" ]]; then
     talk "(norun) $@"
   else
     safe_run "$@"

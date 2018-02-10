@@ -15,7 +15,8 @@ libs = 	\
 	bash-check.sh		\
 	bash-lib.sh		\
 	calendar-utils.sh       \
-        date-utils.sh           \
+	cli-template.sh		\
+	date-utils.sh		\
 	hash-utils.sh		\
 	help-util.sh		\
 	list-utils.sh		\
@@ -24,14 +25,14 @@ libs = 	\
 	real-utils.sh		\
 	reset-util-vars.sh	\
 	run-utils.sh		\
-        sh-utils.sh             \
+	sh-utils.sh		\
 	sync-files.sh		\
 	talk-utils.sh		\
-        test-utils.sh           \
-        test-template.sh        \
+	test-utils.sh		\
+	test-template.sh        \
 	text-utils.sh		\
 	time-utils.sh		\
-    	# end of list
+	# end of list
 
 prompt-colors.sh: generate-prompt-colors
 	generate-prompt-colors

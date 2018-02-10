@@ -12,7 +12,15 @@ Usage:
     export PATH=$PATH:$HOME/lib
     source bash-lib.sh
 
-Replace `$HOME/lib` with wherever these files are installed
+To create a command-line interface (CLI) script, you can start with
+`cli-template.sh`:
+
+    cp $HOME/lib/cli-template.sh my-new-script
+
+Then, edit `my-new-script` as appropriate, adding options, adding functions and doing
+whatever the script is intended to do.
+
+If the files are installed somewhere else, then change `$HOME/lib` accordingly.
 
 This bash library is modular, and the individual utilities can be independently
 sourced, as needed.

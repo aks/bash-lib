@@ -2,7 +2,7 @@
 #
 # handy functions for flexibly managing function arguments in bash scripts
 #
-# Copyright 2006-2016 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2018 Alan K. Stebbens <aks@stebbens.org>
 #
 
 ARG_UTILS_VERSION="arg-utils.sh v2.2"
@@ -212,6 +212,7 @@ __args_or_stdin() {
 #
 #    echo SOMEDATA | __append_arg SOMEARG ==> SOMEDATA SOMEARG
 
+
 __append_arg() {
   local -a data
   read -a data
@@ -219,6 +220,9 @@ __append_arg() {
 }
 __append_args() { __append_arg "$@" ; }
 
+# deprecated OLD names
+append_arg()  { __append_arg "$@" ; }
+append_args() { __append_arg "$@" ; }
 
 # end of arg-utils.sh
 # vim: sw=2 ai

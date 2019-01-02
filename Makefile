@@ -2,7 +2,7 @@
 #
 # Copyright Alan K. Stebbens <aks@stebbens.org>
 
-SHELL = /usr/local/bin/bash
+SHELL := $(shell which bash)
 bindirs =
 bins =
 

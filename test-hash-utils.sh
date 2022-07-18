@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Copyright 2006-2014, Alan K. Stebbens <aks@stebbens.org>
-# 
+# Copyright 2006-2022, Alan K. Stebbens <aks@stebbens.org>
+#
 # Test module for hash-utils.sh
 #
 
@@ -136,7 +136,7 @@ test_10_print_hash() {
     apple banana cherry dog elephant fox giraffe hawk indigo manzana milk november
     october december january february march april may june july august
   )
-  hash_init hash10 
+  hash_init hash10
   for ((i=0; i<${#words[@]}; i++)) ; do
     hash_set hash10 ${words[i]} $i
   done

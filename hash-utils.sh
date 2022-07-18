@@ -1,5 +1,5 @@
 # hash-utils.sh
-# Copyright 2014-2015 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2014-2022 Alan K. Stebbens <aks@stebbens.org>
 #
 # bash script utilities for managing hashes (associative arrays)
 
@@ -313,21 +313,14 @@ print_hash() { "$@" ; }
 # hash_print_items VAR
 hash_print_items() {
   help_args_func hash_help $# || return
-  local var="$1" k
+  local var="$1" key val
   local -a keys
   hash_get_keys $var
-  for k in "${keys[@]}" ; do
-    hash_print_item $var "$k"
-    echo ''
+  __list_sort keys
+  for key in "${keys[@]}" ; do
+    val=`hash_get $var "$key"`
+    printf "%s['%s']='%s'\n" $var "$key" "$val"
   done
-}
-
-# hash_print_item VAR KEY
-
-hash_print_item() {
-  local var="$1" key="$2"
-  local val=`hash_get $var "$key"`
-  printf "%s['%s']='%s'" $var "$key" "$val"
 }
 
 # _set_args "OPT1 OPT2 ..." "$@"

@@ -1,5 +1,16 @@
+# DONE
+# Copyright 2006-2022 Alan K. Stebbens <aks@stebbens.org>
+#
+# A change log for the bash-lib
+
+2022/07/17
+* Makefile:
+  - make invocation path explicitly relative
+* hash-utils.sh:
+  - sort the keys for printing on hash_print
+
 2015/05/31
-* sh-utils.sh: 
+* sh-utils.sh:
   - refactored into talk-utils, arg-utils, run-utils
 * Makefile:
   - added the newly refactored modules
@@ -21,7 +32,7 @@
 * test-text-utils.sh:
   - refactored all the tests to support new STDIN feature
 * sh-utils.sh:
-  - added args_or_stdin function to pass along ars, or 
+  - added args_or_stdin function to pass along ars, or
     read from STDIN
 
 2014/06/11

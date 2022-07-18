@@ -1,6 +1,6 @@
 # Makefile for bash-lib
 #
-# Copyright Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2022 Alan K. Stebbens <aks@stebbens.org>
 
 SHELL := $(shell which bash)
 bindirs =
@@ -35,7 +35,7 @@ libs = 	\
 	# end of list
 
 prompt-colors.sh: generate-prompt-colors
-	generate-prompt-colors
+	./generate-prompt-colors
 
 clean::
 	rm -f prompt-colors.sh*

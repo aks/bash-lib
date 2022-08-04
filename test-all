@@ -3,7 +3,7 @@
 # 
 # Run all tests with the name "test-*-*.sh"
 #
-# Copyright 2015, Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2015-2022, Alan K. Stebbens <aks@stebbens.org>
 
 lines="--------------"
 for test in test-*-*.sh ; do

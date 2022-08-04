@@ -1,9 +1,9 @@
 # bash
 # date-utils.sh  -- date management utility for bash
 #
-# Copyright 2009-2015 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2009-2022 Alan K. Stebbens <aks@stebbens.org>
 
-DATE_UTILS_VERSION="date-utils.sh v2.2"
+DATE_UTILS_VERSION="date-utils.sh v2.3"
 [[ "$DATE_UTILS_SH" = "$DATE_UTILS_VERSION" ]] && return
 DATE_UTILS_SH="$DATE_UTILS_VERSION"
 
@@ -134,7 +134,7 @@ date_to_days_since_epoch DATESTRING - the number of days since Epoch
 
 date_to_seconds                     - the number of seconds since Epoch
 
-Both `date_to_days_since_epoch` and `date_to_seconds` are provided for 
+Both `date_to_days_since_epoch` and `date_to_seconds` are provided for
 each usage with and for Unix `tm` values.
 
 today         - today's date
@@ -155,7 +155,7 @@ date format, given by DATE_FORMAT.  If DATE_FORMAT is not defined, the format
 
 Most of the date format codes are performed by a function, which are listed
 here for completeness.  Typically, they would be invoked via `date_format CODE
-DATESTRING`.  All of these `df_...` functions accept no arguments, taking 
+DATESTRING`.  All of these `df_...` functions accept no arguments, taking
 the date component values they need from the variables set by `date_parse`.
 Specifically, `year`, `month`, and `day`.
 
@@ -708,15 +708,9 @@ date_to_seconds() {
   echo $(( days * $SECONDS_PER_DAY ))
 }
 
-today() { date +'%F' ; }
-
-tomorrow() {
-  get_date_x_days_since 1 `today`
-}
-
-yesterday() {
-  get_date_x_days_before 1 `today`
-}
+today()     { date +'%F' ; }
+tomorrow()  { get_date_x_days_since 1 `today` ; }
+yesterday() { get_date_x_days_before 1 `today` ; }
 
 # date_format  FORMAT
 # date_format [FORMAT] [DATESTRING]
@@ -948,7 +942,7 @@ get_date_5_years_before() { date_adjust "$1" - 5y ; }
 get_date_x_years_after() {
   local offset="${1:?Missing offset!}"
   shift
-  date_add "$@" $offset years
+  date_add "$*" $offset years
 }
 
 get_date_x_years_since()  { get_date_x_years_after "$@" ; }
@@ -956,7 +950,7 @@ get_date_x_years_since()  { get_date_x_years_after "$@" ; }
 get_date_x_years_before() {
   local offset="${1:?Missing offset!}"
   shift
-  date_sub "$@" $offset years
+  date_sub "$*" $offset years
 }
 
 # get_date_last_quarter_end YYYY-MM-DD

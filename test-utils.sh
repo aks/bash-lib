@@ -1,7 +1,7 @@
 # test-utils.sh
-# Copyright 2006-2015 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2022 Alan K. Stebbens <aks@stebbens.org>
 
-TEST_UTILS_VERSION="test-utils.sh v1.8"
+TEST_UTILS_VERSION="test-utils.sh v1.9"
 [[ "$TEST_UTILS_SH" = "$TEST_UTILS_VERSION" ]] && return
 TEST_UTILS_SH="$TEST_UTILS_VERSION"
 
@@ -42,20 +42,21 @@ A *run* is a collection of *tests* (within a single file); each test has a name.
 A *test* is a set of related operations with *checks* on the results.
 
 A *check*` tests or compares values, which quietly succeeds, or results in an
-error.  The error message can be provided, or a default one is used.
+error.  The error message can be provided, or a default error message is used.
 
-At the end of each test, the number of checks and errors is remembered for
+At the end of each test, the number of checks and errors is recorded for
 later summarization.
 
 At the end of the run, all checks and error counts are summarized.
 
 While the tests and checks are being performed, output is occuring to show the
-progress.  There are three modes of output: terse, errors-only, and detailed.
+progress.  There are three modes of output: _terse_, _errors-only_, and
+_detailed_.
 
 Terse mode shows each test name followed by the number of checks, and how many
 of those checks had errors.  Terse mode is the default.
 
-In errors-only mode, successful tests still show the same as terse mode, but 
+In errors-only mode, successful tests still show the same as terse mode, but
 tests with error checks show the error message followed by a stack dump
 indicating the location of the error.  Errors-mode is indicated by the `-e`
 option when invoking the test script.
@@ -69,10 +70,12 @@ tests with the pattern `test_*` are run.  For example, if the pattern `basic`
 is used, all tests with the string `basic` will be run, and no others.
 
 In order to be discovered for automatic test runs, the tests functions must
-have the function name begin with "test_".
+have the function name begin with "test_".  A corrolary to that is do not
+name any functions with the 'test_' prefix unless it is intended for them to
+be discovered and run as part of a test run.
 
 A common technique for test naming is: `test_NN_some_descriptive_name`, where
-`NN` is a number.  This allows easy referency by the `NN` to selectively run a
+`NN` is a number.  This allows easy reference by the `NN` to selectively run a
 test or tests.
 
 Below are the tests that are currently supported:
@@ -88,13 +91,18 @@ Below are the tests that are currently supported:
  Array item tests
 
       check_size         LIST SIZE         ERROR  # same as check_size_eq
-      check_size_XX      LIST SIZE         ERROR 
+      check_size_eq      LIST SIZE         ERROR
+      check_size_ne      LIST SIZE         ERROR
+      check_size_lt      LIST SIZE         ERROR
+      check_size_le      LIST SIZE         ERROR
+      check_size_gt      LIST SIZE         ERROR
+      check_size_ge      LIST SIZE         ERROR
 
       check_item         LIST INDEX VAL    ERROR
       check_item_equal   LIST INDEX VAL    ERROR
       check_item_unequal LIST INDEX NONVAL ERROR
 
- Hash tets
+ Hash tests
 
       check_key          HASH KEY          ERROR
       check_no_key       HASH KEY          ERROR
@@ -126,37 +134,46 @@ reference output.  If the output matches, the test succeeds.  If the output
 does not match, print `ERROR` or a default error message.
 
 Use `NAME` as the unique identifier for files in which the `stdout`, `stderr`,
-and reference output is identified.
+and reference output is identified.  If NAME is not supplied, a name is
+generated from the alphanumeric characters of the EXPRESSION.
 
-Reference output can be created by the `-k` (`$keep`) option when the test is
-run.
+Reference output can be created and retained by the `-k` (`$keep`) option
+when the test is run.
 
 The first time a new check_output test is evaluated, there will not be a
 collected reference output to compare against, and the test will fail.
 
-NOTE: The following functions are not yet implemented.
+All of these output checkers temporarily redirect STDOUT and STDERR to
+temporary files under the 'test' directory, with suffixes of `.tmp.out` and
+`.tmp.err`, for STDOUT and STDERR, respectively.   Normally these temporary
+files are removed automatically after each test run.  However, if a test run is
+interrupted, these temporary files may be left behind.
+
 
      check_out      [NAME] EXPRESSION [ERROR]
      check_out_none [NAME] EXPRESSION [ERROR]
      check_err      [NAME] EXPRESSION [ERROR]
      check_err_none [NAME] EXPRESSION [ERROR]
 
-Check that `STDOUT` or `STDERR` is or is not empty when evaluating
-`EXPRESSION`, or show the `ERROR` (or default) message.
+The above functions check that `STDOUT` or `STDERR` is or is not empty when
+evaluating `EXPRESSION`, or show the `ERROR` (or default) message.
 
-     check_out_eq   [NAME] EXPRESSION VALUE [ERROR]
-     check_err_eq   [NAME] EXPRESSION VALUE [ERROR]
 
-Check that the `STDOUT`, or `STDERR` of the evaluated `EXPRESSION` matches
-`VALUE`, or show the `ERROR` (or a default error message).
+     check_match_out [NAME] EXPRESSION PATTERN [ERROR]
+     check_match_err [NAME] EXPRESSION PATTERN [ERROR]
 
-     check_out_ne [NAME] EXPRESSION VALUE [ERROR]
-     check_err_ne [NAME] EXPRESSION VALUE [ERROR]
+The above matching functions check that the `STDOUT`, or `STDERR` of the evaluated
+`EXPRESSION` matches `PATTERN` (which is a string or a regular expression), or
+show the `ERROR` (or a default error message).
+
+
+     check_nomatch_out [NAME] EXPRESSION PATTERN [ERROR]
+     check_nomatch_err [NAME] EXPRESSION PATTERN [ERROR]
 
 Check that the `STDOUT` or `STDERR` of the evaluated `EXPRESSION` does not
-contain `VALUE`, or show the `ERROR`.
+match `PATTERN` (a string or a regular expression), or show the `ERROR`.
 
-In all cases, the `ERROR` message is optional.
+In all cases, both the `NAME` and the `ERROR` message are optional.
 EOF
 }
 help_test() { test_help ; }
@@ -229,7 +246,7 @@ start_test() {
 
 TEST_check_start() {
   local check_name x
-  # find the first function name that does NOT begin with "TEST_"
+  # find the first function name up the call stack that does NOT begin with "TEST_"
   for ((x=1; x<${#FUNCNAME}; x++)) ; do
     check_name="${FUNCNAME[$x]}"
     if [[ "$check_name" != TEST_* ]]; then
@@ -332,7 +349,7 @@ TEST_check_expr() { TEST_check "$1" 1 '' "$2" ; }
 
 # TEST_check_size_func VAR FUNC VALUE [ERROR]
 
-TEST_check_size_func() { 
+TEST_check_size_func() {
   local insize=`__list_size $1`
   TEST_check_test $insize $2 $3 "${4:-"Size check failed; got: $insize; should be: $3"}"
 }
@@ -340,7 +357,7 @@ TEST_check_size_func() {
 # TEST_check_item_func VAR INDEX OPERATOR VALUE [error]
 # Check a specific item of VAR at INDEX for OPERATOR VALUE
 
-TEST_check_item_func() { 
+TEST_check_item_func() {
   local val
   eval "val=\"\${$1[$2]}\""
   TEST_check_test "$val" $3 "$4" "${5:-"Item check failed; got '$val', should be '$4'"}"
@@ -520,39 +537,152 @@ TEST_compare_output() {
   fi
 }
 
-# check_out NAME EXPR ERROR
+# these check functions check STDOUT and STDERR for output and/or no-output.
+
+# check_out [NAME] EXPR [ERROR]
 check_out() {
-  :
-}
-# check_out_none NAME EXPR ERROR
-check_out_none() {
-  :
-}
-# check_err NAME EXPR ERROR
-check_err() {
-  :
-}
-# check_err_none NAME EXPR ERROR
-check_err_none() {
-  :
-}
-# check_out_eq NAME EXPR VALUE ERROR
-check_out_eq() {
-  :
-}
-# check_out_ne NAME EXPR VALUE ERROR
-check_out_ne() {
-  :
-}
-# check_err_eq NAME EXPR VALUE ERROR
-check_err_eq() {
-  :
-}
-# check_err_ne NAME EXPR VALUE ERROR
-check_err_ne() {
-  :
+  local name expr errm test_ok out err
+  TEST_check_io_setup "$@"
+  TEST_check_start
+  TEST_check_io_test '-s $out' 'output to STDOUT did not occur.'
+  TEST_check_end "$test_ok" "$errm"
 }
 
+# check_out_none NAME EXPR ERROR
+check_out_none() {
+  local name expr errm test_ok out err
+  TEST_check_io_setup "$@"
+  TEST_check_start
+  TEST_check_io_test '! -s $out' 'output to STDOUT occurred.'
+  TEST_check_end "$test_ok" "$errm"
+}
+
+# check_err NAME EXPR ERROR
+check_err() {
+  local name expr errm test_ok out err
+  TEST_check_io_setup "$@"
+  TEST_check_start
+  TEST_check_io_test '-s $err' 'output to STDERR did not occur.'
+  TEST_check_end "$test_ok" "$errm"
+}
+
+# check_err_none NAME EXPR ERROR
+check_err_none() {
+  local name expr errm test_ok out err
+  TEST_check_io_setup "$@"
+  TEST_check_start
+  TEST_check_io_test '! -s $err' 'output to STDERR occurred.'
+  TEST_check_end "$test_ok" "$errm"
+}
+
+# The TEST_* functions below support the STDOUT, STDERR check functions above.
+
+# TEST_check_io_setup [NAME] EXPR [ERROR]
+# sets name, expr, errm, out, err, and test_ok=1
+TEST_check_io_setup() {
+  case $# in
+    1) name="${1//[^a-zA-Z0-9_-]/}" expr="$1" errm=     ;;
+    2) name="$1"                    expr="$2" errm=     ;;
+    3) name="$1"                    expr="$2" errm="$3" ;;
+  esac
+  out="test/$name.tmp.out"
+  err="test/$name.tmp.err"
+}
+
+# TEST_check_outerr_test CONDITION DEFAULT_ERROR
+# expr, out, err, errm must have valid values
+# returns with test_ok and errm set
+
+TEST_check_io_test() {
+  local cond="$1" goodval="$2" badval="$3"
+  if [[ -n "$errm" ]] ; then
+    errm="$name test failed; $errm"
+  else
+    errm="$name test failed; $4"
+  fi
+  test_ok=1
+  eval "$expr 1>$out 2>$err"
+  [[ $cond ]] || test_ok=
+  \rm -f $err
+  \rm -f $out
+}
+
+# these check methods match a pattern against STDOUT or STDERR
+
+# check_match_out [NAME] EXPR PATTERN [ERROR]
+check_match_out() {
+  local name expr pat errm test_ok out err
+  TEST_check_io_match_setup "$@"
+  TEST_check_start
+  TEST_check_io_matcher "$out" "STDOUT did not match '$pat'" 0
+  TEST_check_end "$test_ok" "$errm"
+}
+
+# check_nomatch_out NAME EXPR PATTERN ERROR
+check_nomatch_out() {
+  local name expr pat errm test_ok out err
+  TEST_check_io_match_setup "$@"
+  TEST_check_start
+  TEST_check_io_matcher "$out" "STDOUT matched '$pat'" 1
+  TEST_check_end "$test_ok" "$errm"
+}
+
+# check_match_err NAME EXPR PATTERN ERROR
+check_match_err() {
+  local name expr pat errm test_ok out err
+  TEST_check_io_match_setup "$@"
+  TEST_check_start
+  TEST_check_io_matcher "$err" "STDERR did not match '$pat'" 0
+  TEST_check_end "$test_ok" "$errm"
+}
+
+# check_nomatch_err NAME EXPR PATTERN ERROR
+check_nomatch_err() {
+  local name expr pat errm test_ok out err
+  TEST_check_io_match_setup "$@"
+  TEST_check_start
+  TEST_check_io_matcher "$err" "STDERR matched '$pat'" 1
+  TEST_check_end "$test_ok" "$errm"
+}
+
+# the TEST_check_io_match* functions below support the check_(out/err) matching functions above.
+
+# TEST_check_io_match_setup [NAME] EXPR PATTERN [ERROR]
+TEST_check_io_match_setup() {
+  case $# in
+    1) echo 1>&2 "\nMissing argument(s) on check method!" ; exit 1;;
+    2) name="${1//[^a-zA-Z0-9_-]/}" expr="$1" pat="$2" errm=     ;;
+    3) name="$1"                    expr="$2" pat="$3" errm=     ;;
+    4) name="$1"                    expr="$2" pat="$3" errm="$4" ;;
+  esac
+  out="test/$name.tmp.out"
+  err="test/$name.tmp.err"
+}
+
+# TEST_check_io_matcher FILENAME ERROR NEGATE
+# expr, out, err, pat must be set.  errm is optionally set.
+# NEGATE is 1 or 0.
+# returns with test_ok and errm set
+
+TEST_check_io_matcher() {
+  local file="$1" def_errm="$2" negate="$3"
+  if [[ -n "$errm" ]] ; then
+    errm="$name test failed; $errm"
+  else
+    errm="$name test failed; $def_errm"
+  fi
+  test_ok=1
+  eval "$expr 1>$out 2>$err"
+  if (( negate )) ; then
+    ! \grep --silent "$pat" $file >2/dev/null || test_ok=
+  else
+    \grep --silent "$pat" $file >2/dev/null || test_ok=
+  fi
+  \rm -f $err
+  \rm -f $out
+}
+
+# called on any check error
 
 # TEST_error_dump ERROR
 #
@@ -577,14 +707,13 @@ TEST_error_dump() {
   done
 }
 
+##########################################################################
+
 TESTS=()
 
 # Filter the TESTS array with the TEST_patterns array.  If names from the
 # former aren't matched by any patterns from the latter, remove it from the
 # TESTS array.
-#
-# Do NOT allow the `test_help` function to be included -- it is a help
-# function.
 
 filter_tests() {
   local deletes=()
@@ -592,9 +721,7 @@ filter_tests() {
   for ((nx=0; nx<${#TESTS[@]}; nx++)) ; do
     name="${TESTS[nx]}"
     local delete=    # assume the name will NOT be deleted
-    if [[ "$name" = 'test_help' ]]; then
-      delete=1
-    elif (( ${#TEST_patterns[@]} > 0 )); then
+    if (( ${#TEST_patterns[@]} > 0 )); then
       # we have patterns to match against.  Now assume we didn't match it
       delete=1
       local pat
@@ -624,10 +751,11 @@ filter_tests() {
 
 gather_tests() {
   if [[ "${#TESTS[@]}" -eq 0 ]]; then
-    TESTS=( `compgen -A function test_` )
+    # match all functions begining with 'test_' except 'test_help'
+    TESTS=( `compgen -A function -X test_help test_` )
     filter_tests
     local clause
-    case ${#TEST_patterns[@]} in 
+    case ${#TEST_patterns[@]} in
       0) clause= ;;
       1) clause=" matching pattern '${TEST_patterns[0]}'" ;;
       *) clause=" matching given patterns: ${TEST_patterns[@]}" ;;

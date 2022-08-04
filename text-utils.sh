@@ -1,9 +1,9 @@
 #!/bin/bash
 # text-utils.sh -- utilities for processing text
 #
-# Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2022 Alan K. Stebbens <aks@stebbens.org>
 
-TEXT_UTILS_VERSION="text-utils.sh v1.6"
+TEXT_UTILS_VERSION="text-utils.sh v1.8"
 [[ "$TEXT_UTILS_SH" = "$TEXT_UTILS_VERSION" ]] && return
 TEXT_UTILS_SH="$TEXT_UTILS_VERSION"
 
@@ -12,6 +12,14 @@ source arg-utils.sh
 
 text_help() {
   help_pager <<'EOF'
+str_len STRING                # string length (multi-byte unaware)
+
+mstr_len STRING               # string length (multi-byte aware)
+
+byte_len STRING               # byte length (multi-byte unaware)
+
+char_len STRING               # character length (possibly multi-byte)
+
 lowercase STRING              # return the lowercase string
 
 uppercase STRING              # return the uppercase string
@@ -49,19 +57,27 @@ Most functions, except 'split_str' and 'sort_str', can be used in a pipe
 without an argument.  For example:
 
     echo "This is a string" | uppercase   => "THIS IS A STRING"
+    echo ""
     html_encode <input-file >html-file
 EOF
 }
 
 help_text() { text_help ; }
 
-lowercase() { args_or_stdin "$@" | tr 'A-Z' 'a-z' ; }
-uppercase() { args_or_stdin "$@" | tr 'a-z' 'A-Z' ; }
+str_len()   { __args_or_stdin "$@" | wc -c ; }
+mstr_len()  { __args_or_stdin "$@" | wc -m ; }
 
-ltrim()     { args_or_stdin "$@" | sed -Ee 's/^[[:space:]]*//' ; }
-rtrim()     { args_or_stdin "$@" | sed -Ee 's/[[:space:]]*$//' ; }
-trim()      { args_or_stdin "$@" | sed -Ee 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' ; }
-squeeze()   { args_or_stdin "$@" | tr '\t' ' ' | tr -s ' ' ; }
+byte_len()  { __args_or_stdin "$@" | wc -c ; }
+char_len()  { __args_or_stdin "$@" | wc -m ; }
+
+
+lowercase() { __args_or_stdin "$@" | tr 'A-Z' 'a-z' ; }
+uppercase() { __args_or_stdin "$@" | tr 'a-z' 'A-Z' ; }
+
+ltrim()     { __args_or_stdin "$@" | sed -Ee 's/^[[:space:]]*//' ; }
+rtrim()     { __args_or_stdin "$@" | sed -Ee 's/[[:space:]]*$//' ; }
+trim()      { __args_or_stdin "$@" | sed -Ee 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' ; }
+squeeze()   { __args_or_stdin "$@" | tr '\t' ' ' | tr -s ' ' ; }
 
 # split_str   "STRING" [SEP]
 #
@@ -78,6 +94,10 @@ split_str() {
   echo "$1" | split_input "$2"
 }
 
+# split_input [SEP]
+#
+#   Splits STDIN by SEP, or by whitespace if SEP not given
+#
 split_input() {
   local sep="${1:-$' \t'}"
   tr "$sep" '\n'                    |
@@ -129,7 +149,7 @@ __sort_str() { __sort_str2lines "$@" | __join_lines ; }
 # get double-converted.
 
 url_encode() {
-  args_or_stdin "$@" |
+  __args_or_stdin "$@" |
   sed -Ee "\
            s/\%/%25/g  ;
            s/ /%20/g   ; s/\\\$/%24/g ;	s/\>/%3E/g  ;\
@@ -147,7 +167,7 @@ url_encode() {
 # url_decode        -- decode STDIN for urls
 
 url_decode() {
-  args_or_stdin "$@" |
+  __args_or_stdin "$@" |
   sed -e "\
            s/%20/ /g  ;  s/%29/)/g   ;   s/%5B/[/g    ;\
            s/%21/\!/g ;  s/%2A/*/g   ;   s/%5C/\\\\/g ;\
@@ -166,7 +186,7 @@ url_decode() {
 # converts '&' => &amp;  '>' => &gt;  '<' => &lt;
 
 html_encode() {
-  args_or_stdin "$@" |
+  __args_or_stdin "$@" |
   sed -e "s/\&/\&amp;/g ; s/[<]/\&lt;/g  ; s/[>]/\&gt;/g"
 }
 
@@ -174,7 +194,7 @@ html_encode() {
 # html_decode         -- decode STDIN from HTML presentation
 
 html_decode() {
-  args_or_stdin "$@" |
+  __args_or_stdin "$@" |
   sed -Ee "s/\&lt;/</g ; s/\&gt;/>/g ; s/\&amp;/\&/g"
 }
 

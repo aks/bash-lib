@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2006-2014, Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2022, Alan K. Stebbens <aks@stebbens.org>
 #
 # test date-utils.sh
 #
@@ -346,6 +346,30 @@ test_22_date_sub() {
 test_23_days_between() {
   start_test
 
+  end_test
+}
+
+# run_test_data_and_compare FUNCTION
+run_test_data_and_compare() {
+  local func="${1:?'Missing function'}"
+  local x input_date format expected_result actual_result target_date tdate
+  for(( x=0; x < ${#test_data[*]}; x+=3 )) ; do
+    input_date=${test_data[$x]}
+    format=${test_data[$x+1]}
+    expected_result=${test_data[$x+2]}
+    date_parse "$input_date"
+    actual_result=`$func "$format" "$input_date"`
+    check_equal "$expected_result" "$actual_result" "date_format on '$format': '$expected_result' does not equal '$actual_result' "
+  done
+}
+
+test_30_date_format() {
+  start_test
+  test_data=( 2018-02-08 "-%e-%d-" "- 2-08-"
+              2018-02-09 "-%e-%d-" "- 2-09-"
+              2018-10-10 "-%e-%d-" "-10-10-"
+            )
+  run_test_data_and_compare date_format
   end_test
 }
 

@@ -1,9 +1,9 @@
 # Makefile.inc
-# Copyright 2006-2014 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2022 Alan K. Stebbens <aks@stebbens.org>
 #
 # $Id$
 #
-# Makefile for managing sets of files 
+# Makefile for managing sets of files
 #
 # bins = list of "binaries" (could be scripts)
 # bindirs = list of directories into which the binaries can be installed
@@ -24,21 +24,21 @@ disthost ?= $(distuser)@$$DISTHOST
 distpath ?= .
 
 # These should be defined in the "parent" Makefile
-# bindirs 
-# bins 
-# libdirs 
-# libs 
+# bindirs
+# bins
+# libdirs
+# libs
 # incdirs
 # incs
 # cssdirs
 # cssfiles
 # tmpldirs
 # tmpls
-# tests 
-# subdirs 
+# tests
+# subdirs
 
 # This is a list of files which are in development, and which should not be installed
-# indev 
+# indev
 
 # if the target is "diff" or "difflist", use -k to keep going even if "diff" errors
 
@@ -55,10 +55,11 @@ allfiles = $(bins) $(libs) $(incs) $(cssfiles) Makefile RCS
 
 afile = dummy
 
-.PHONY: subdirs default help status diff diffs difflist 
+.PHONY: subdirs default help status diff diffs difflist
 .PHONY: fetch install install-bins install-libs install-files zip putzip getzip $(subdirs)
 
 default:	help
+.DEFAULT_GOAL = help
 help:
 	@echo "You can make these things:"
 	@echo " help"
@@ -67,7 +68,7 @@ help:
 	@echo " difflist -- show different files installed versions"
 	@echo " install  -- install"
 	@echo " fetch	 -- fetch the installed file(s)"
-	@echo " test	 -- run tests"
+	@echo " tests	 -- run tests"
 	@echo " zip	 -- Create a zip file "
 	@echo " putzip	 -- distribute zipfile to yoda"
 	@echo " getzip	 -- fetch zipfile from yoda"
@@ -143,7 +144,7 @@ action_if_exists = \
 	if [[ -f $(1) ]]; then	\
 	    $(2) ;		\
 	fi
-	
+
 
 # These are the known actions
 #   diff_file

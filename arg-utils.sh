@@ -2,10 +2,10 @@
 #
 # handy functions for flexibly managing function arguments in bash scripts
 #
-# Copyright 2006-2018 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2022 Alan K. Stebbens <aks@stebbens.org>
 #
 
-ARG_UTILS_VERSION="arg-utils.sh v2.2"
+ARG_UTILS_VERSION="arg-utils.sh v2.4"
 
 [[ "$ARG_UTILS_SH" = "$ARG_UTILS_VERSION" ]] && return
 ARG_UTILS_SH="$ARG_UTILS_VERSION"
@@ -160,7 +160,7 @@ __arg_or_input() {
   else
     arg="$1"
   fi
-  echo "$arg"
+  echo -n "$arg"
 }
 
 
@@ -183,7 +183,7 @@ __args_or_input() {
     done
     echo "${args[@]}"
   else
-    echo "$@"
+    echo -n "$@"
   fi
 }
 
@@ -198,11 +198,14 @@ args_or_stdin() {
 
 __args_or_stdin() {
   if [[ $# -gt 0 ]] ; then
-    echo "$*"
+    echo -n "$*"
   else
     cat
   fi
 }
+
+arg_or_stdin()   { __args_or_stdin "$1" ; }
+__arg_or_stdin() { __args_or_stdin "$1" ; }
 
 
 # __append_arg  ARG
@@ -216,7 +219,7 @@ __args_or_stdin() {
 __append_arg() {
   local -a data
   read -a data
-  echo "${data[@]}" "$@"
+  echo -n "${data[@]}" "$@"
 }
 __append_args() { __append_arg "$@" ; }
 

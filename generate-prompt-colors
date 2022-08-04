@@ -6,6 +6,8 @@
 # run this script to create "prompt-colors.sh", which contains
 # standard prompt color definitions, and a "reset_prompt_colors"
 # function to unset them all.
+#
+# Copywrite 2006-2022 Alan K. Stebbens <aks@stebbens.org>
 
 PROG="${0##*/}"
 THIS_DIR="${0%/*}"
@@ -101,14 +103,14 @@ generate_prompt_color_names() {
     else
       cv="${1}"
     fi
-    echo "\[\033[${cv}m\]"
+    echo "\$'\033[${cv}m'"
   }
 
   # def_color NAME ATTRCODE COLORCODE
   assign_color_name() {
     local color_name="$1"
     local code="`prompt_color_string $2 $3`"
-    local def="$color_name=\"$code\""
+    local def="$color_name=$code"
     votalk "+ $def"
     echo "  $def"
     add_list color_name_list $color_name

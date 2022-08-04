@@ -43,7 +43,7 @@ do_filter_test() {
 
   if (( howmany > 1 )); then
     # test pipe with no arg call next
-    out="`echo \"$input\" | $func`"
+    out="`echo -n \"$input\" | $func`"
     check_and_show_results "$output" "$out" "$error in pipe"
   fi
 }

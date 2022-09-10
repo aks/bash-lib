@@ -9,8 +9,13 @@ manpage = $(prog).$(mansec)
 
 prog = calfunc
 
+ifneq ($(OSNAME),Darwin)
+CFLAGS = -DLIBBSD_OVERLAY -I/usr/include/bsd
+LDFLAGS = -lbsd
+endif
+
 $(prog):	calfunc.c calfaq.h Makefile
-	cc -o $@ -ggdb -lc -lpcre calfaq.c calfunc.c
+	cc $(CFLAGS) $(LDFLAGS) -o $@ -ggdb -lc -lpcre calfaq.c calfunc.c
 
 $(prog).$(mansec):	calfunc.man
 

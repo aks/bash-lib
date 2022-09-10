@@ -72,7 +72,7 @@ help:
 	@echo " difflist -- show different files installed versions"
 	@echo " install  -- install"
 	@echo " fetch	 -- fetch the installed file(s)"
-	@echo " tests	 -- run tests"
+	@echo " check	 -- run tests (also 'tests')"
 	@echo " zip	 -- Create a zip file "
 	@echo " putzip	 -- distribute zipfile to yoda"
 	@echo " getzip	 -- fetch zipfile from yoda"
@@ -96,7 +96,7 @@ help:
 	@echo "   tests = $(tests)"
 
 
-test tests: $(tests) install-tbins
+check test tests: $(tests) install-tbins
 	@for file in $(tests) ; do		\
 	    echo '' ; echo "Testing $$file .." ; \
 	    case $$file in			\

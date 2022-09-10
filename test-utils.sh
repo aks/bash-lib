@@ -799,5 +799,6 @@ run_tests() {
 summarize_tests() {
   echo 1>&2 ''
   printf 1>&2 "%d tests, %d checks, %d errors\n" $TEST_tests $TEST_checks $TEST_errors
+  if [[ $TEST_errors -gt 0 ]] ; then exit $TEST_errors ; fi
 }
 

@@ -2,7 +2,7 @@
 #
 # handy output functions for writing bash-based scripts
 #
-# Copyright 2006-2015 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2022 Alan K. Stebbens <aks@stebbens.org>
 #
 
 TALK_UTILS_VERSION="talk-utils.sh v1.8"

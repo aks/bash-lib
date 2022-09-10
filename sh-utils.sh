@@ -2,7 +2,7 @@
 #
 # handy functions for writing bash-based scripts
 #
-# Copyright 2006-2015 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2022 Alan K. Stebbens <aks@stebbens.org>
 #
 
 SH_UTILS_VERSION="sh-utils.sh v2.2"

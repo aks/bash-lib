@@ -3,7 +3,7 @@
 # handy functions for running system commands in bash scripts, with
 # optional support for $norun and $verbose modes.
 #
-# Copyright 2006-2015 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2006-2022 Alan K. Stebbens <aks@stebbens.org>
 #
 
 RUN_UTILS_VERSION="sh-utils.sh v1.8"

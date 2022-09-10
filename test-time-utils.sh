@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2014, Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2014-2022, Alan K. Stebbens <aks@stebbens.org>
 #
 # test time-utils.sh
 #

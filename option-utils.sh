@@ -1,5 +1,5 @@
 # option-utils.sh -- 
-# Copyright 2015 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2015-2022 Alan K. Stebbens <aks@stebbens.org>
 
 # utility for collecting lists of options and arguments
 

@@ -1,7 +1,7 @@
 # bash 
 # time-utils.sh  -- time management utility for bash
 #
-# Copyright 2014  Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2014-2022  Alan K. Stebbens <aks@stebbens.org>
 
 TIME_UTILS_VERSION="time-utils.sh v1.8"
 [[ "$TIME_UTILS_SH" = "$TIME_UTILS_VERSION" ]] && return

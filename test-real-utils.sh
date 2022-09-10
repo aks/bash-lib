@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # test-real-utils.sh
 #
-# Copyright 2014, Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2014-2022, Alan K. Stebbens <aks@stebbens.org>
 #
 # test-real-utils.sh -- test the real-utils script
 

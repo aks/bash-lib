@@ -1,5 +1,5 @@
 # bash-lib.sh
-# Copyright 2009-2015 Alan K. Stebbens <aks@stebbens.org>
+# Copyright 2009-2022 Alan K. Stebbens <aks@stebbens.org>
 #
 # source all the bash library files
 

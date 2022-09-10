@@ -345,8 +345,46 @@ test_22_date_sub() {
 
 test_23_days_between() {
   start_test
+  test_data=( 2016-09-01 2016-09-02 1
+              2016-09-01 2016-09-03 2
+              2016-09-03 2016-09-01 2
+              2016-09-30 2016-10-01 1
+              2016-09-30 2016-10-02 2
+              2016-09-30 2016-10-03 3
 
+              2016-01-01 2016-02-01 31 # jan
+              2017-02-01 2017-03-01 28 # feb non-leap year
+              2016-02-01 2016-03-01 29 # feb leap year
+              2016-03-01 2016-04-01 31 # mar
+              2016-04-01 2016-05-01 30 # apr
+              2016-05-01 2016-06-01 31 # may
+              2016-06-01 2016-07-01 30 # jun
+              2016-07-01 2016-08-01 31 # jul
+              2016-08-01 2016-09-01 31 # aug
+              2016-09-01 2016-10-01 30 # sep
+              2016-10-01 2016-11-01 31 # oct
+              2016-11-01 2016-12-01 30 # nov
+              2016-12-01 2017-01-01 31 # dec
+
+              2015-01-01 2016-01-01 365
+              2016-01-01 2017-01-01 366 # leap year
+              2016-09-30 2017-09-30 365
+            )
+  run_date_func_and_compare days_between
   end_test
+}
+
+# accepts a list of [DATE1 DATE2 RESULT]
+run_date_func_and_compare() {
+  local func="${1:?'Missing function'}"
+  local x date1 date2 expected_result
+  for(( x=0; x < ${#test_data[*]}; x+=3 )) ; do
+    date1=${test_data[$x]}
+    date2=${test_data[$x+1]}
+    expected_result=${test_data[$x+2]}
+    actual_result=`$func "$date1" "$date2"`
+    check_equal "$expected_result" "$actual_result" "date_func on '$date1 $date2': '$expected_result' does not equal '$actual_result' "
+  done
 }
 
 # run_test_data_and_compare FUNCTION

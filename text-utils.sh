@@ -93,6 +93,7 @@ squeeze()   { __args_or_stdin "$@" | tr '\t' ' ' | tr -s ' ' ; }
 split_str() {
   echo "$1" | split_input "$2"
 }
+__split_str() { split_str "$@" ; }
 
 # split_input [SEP]
 #

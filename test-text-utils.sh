@@ -122,32 +122,36 @@ test_06_squeeze() {
   end_test
 }
 
-# split_str STRING SEP          # split STRING using SEP
+# split_str   STRING SEP          # split STRING using SEP
+# __split_str STRING SEP
 test_07_split_str() {
+  local func
   start_test
 
-  out=( `split_str "A list of words to split" ' '` )
+  for func in split_str __split_str ; do
+    out=( `$func "A list of words to split" ' '` )
 
-  check_split_data() {
-    check_size out 6
-    check_item out 0 'A'
-    check_item out 1 'list'
-    check_item out 2 'of'
-    check_item out 3 'words'
-    check_item out 4 'to'
-    check_item out 5 'split'
-    out=()
-  }
-  check_split_data
+    check_split_data() {
+      check_size out 6
+      check_item out 0 'A'
+      check_item out 1 'list'
+      check_item out 2 'of'
+      check_item out 3 'words'
+      check_item out 4 'to'
+      check_item out 5 'split'
+      out=()
+    }
+    check_split_data
 
-  out=( `split_str "A,list,of,words,to,split" ','` )
-  check_split_data
+    out=( `$func "A,list,of,words,to,split" ','` )
+    check_split_data
 
-  out=( `split_str "A:list:of:words:to:split" ':'` )
-  check_split_data
+    out=( `$func "A:list:of:words:to:split" ':'` )
+    check_split_data
 
-  out=( `split_str "A, list, of, words, to, split" ", "` )
-  check_split_data
+    out=( `$func "A, list, of, words, to, split" ", "` )
+    check_split_data
+  done
 
   end_test
 }

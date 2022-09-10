@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 # my-script some-args
+#
+# This is a template for a command-line script.
+# It supports four options: -n, -v, -h, and -i FILE.
+#
+# See "help getopts" for more information on adding other options.
+#
+# Copyright 2019-2022 Alan K. Stebbens <aks@stebbens.org>
 
 # set the name and directory of this program
 PROG="${0##*/}"

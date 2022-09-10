@@ -3,6 +3,20 @@
 #
 # A change log for the bash-lib
 
+2022/09/10
+* text-utils.sh:
+  - fix missing __split_str
+* test-text-utils.sh:
+  - add tests for it
+* all files:
+  - update copyrights
+* Makefile:
+  - fix calfunc dependency
+* test-date-utils.sh:
+  - add days_between tests
+* calfaq/Makefile:
+  - non-Darwin compiles need help
+
 2022/07/17
 * Makefile:
   - make invocation path explicitly relative

@@ -733,7 +733,7 @@ date_format() {
     *) date_parse "${1:-`date +%F`}" ;;
   esac
   # year, month, day have values
-  #date -jn -f '%Y-%m-%d' "$year-$month-$day" +"$format"
+  #date "$year-$month-$day" +"$format"
   local of new fmt
   of=''
   while [[ "$format" =~ ^([^%]*)%(.)(.*)$ ]]; do

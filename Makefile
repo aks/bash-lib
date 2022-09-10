@@ -5,6 +5,21 @@
 SHELL := $(shell which bash)
 bindirs =
 bins =
+tbindirs = $(HOME)/bin
+tbins = calfunc
+
+GDATE = /usr/local/bin/gdate
+
+$(tbindirs)/calfunc: calfaq/calfunc.c calfaq/calfaq.h
+	cd calfaq ; $(MAKE) install prefix=$(HOME)
+
+$(GDATE):
+	brew install gdate
+
+test-dates.dat: gen-test-dates.sh
+	./gen-test-dates.sh
+
+test-dates-utils.sh: test-dates.dat $(GDATE)
 
 libdirs = $(HOME)/lib
 

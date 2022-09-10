@@ -5,11 +5,13 @@
 #
 # Makefile for managing sets of files
 #
-# bins = list of "binaries" (could be scripts)
-# bindirs = list of directories into which the binaries can be installed
-# libs = list of "libraries" (could be any kind of file)
-# libdirs = list of directories in which to install the libraries.
-# tests = list of test scripts
+# bins     = list of "binaries" (could be scripts)
+# bindirs  = list of directories into which the binaries can be installed
+# libs     = list of "libraries" (could be any kind of file)
+# libdirs  = list of directories in which to install the libraries.
+# tbins    = binaries needed to run tests
+# tbindirs = directories into which the test binaries can be installed
+# tests    = list of test scripts
 #
 # distuser is a userid for remote distribution
 # disthost is the default host for remote distribution
@@ -34,6 +36,8 @@ distpath ?= .
 # cssfiles
 # tmpldirs
 # tmpls
+# tbins
+# tbindirs
 # tests
 # subdirs
 
@@ -80,6 +84,7 @@ help:
 	@echo "  incdirs = $(incdirs)"
 	@echo "  cssdirs = $(cssdirs)"
 	@echo " tmpldirs = $(tmpldirs)"
+	@echo " tbindirs = $(tbindirs)"
 	@echo "  subdirs = $(subdirs)"
 	@echo ""
 	@echo "    bins = $(bins)"
@@ -87,10 +92,11 @@ help:
 	@echo "    incs = $(incs)"
 	@echo "cssfiles = $(cssfiles)"
 	@echo "   tmpls = $(tmpls)"
+	@echo "   tbins = $(tbins)"
 	@echo "   tests = $(tests)"
 
 
-test tests: $(tests)
+test tests: $(tests) install-tbins
 	@for file in $(tests) ; do		\
 	    echo '' ; echo "Testing $$file .." ; \
 	    case $$file in			\
@@ -179,7 +185,7 @@ diff diffs: subdirs ; @$(call action_to_targets,diff_changed_files)
 difflist:   subdirs ; @$(call action_to_targets,list_changed_files)
 fetch:	    subdirs ; @$(call action_to_targets,fetch_changed_files)
 
-install: install-bins install-libs install-incs install-cssfiles install-tmpls
+install: install-bins install-libs install-incs install-cssfiles install-tmpls install-tbins
 
 install_targets = $(foreach the_dir,$(1),$(MAKE) the_dir=$(the_dir) files="$(2)" mode=$(3) install-files ;)
 install-files:	$(addprefix $(the_dir)/,$(files))
@@ -189,6 +195,7 @@ install-libs:     subdirs ; @$(call install_targets,$(libdirs),$(libs),664)
 install-incs:     subdirs ; @$(call install_targets,$(incdirs),$(incs),664)
 install-cssfiles: subdirs ; @$(call install_targets,$(cssdirs),$(cssfiles),664)
 install-tmpls:    subdirs ; @$(call install_targets,$(tmpldirs),$(tmpls),664)
+install-tbins:    subdirs ; @$(call install_targets,$(tbindirs),$(tbins),775)
 
 $(the_dir): ; mkdir -p $@
 $(the_dir)/%.py:  %.py $(the_dir) ; @$(call changed_file_action,$@,$<,$(call install_py_file,$<,$@))
@@ -197,6 +204,5 @@ $(the_dir)/%.js:  %.js $(the_dir) ; @$(call changed_file_action,$@,$<,$(call ins
 $(the_dir)/%.sh:  %.sh $(the_dir) ; @$(call changed_file_action,$@,$<,$(call install_file,$<,$@))
 $(the_dir)/%.css: %.sh $(the_dir) ; @$(call changed_file_action,$@,$<,$(call install_file,$<,$@))
 $(the_dir)/%:	  %    $(the_dir) ; @$(call changed_file_action,$@,$<,$(call install_file,$<,$@))
-
 
 # vim: sw=4 ai noexpandtab sts=8

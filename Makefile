@@ -5,6 +5,16 @@
 SHELL := $(shell which bash)
 bindirs =
 bins =
+tbindirs = $(HOME)/bin
+tbins = calfunc
+
+$(tbindirs)/calfunc: calfaq/calfunc.c calfaq/calfaq.h
+	cd calfaq ; $(MAKE) install prefix=$(HOME)
+
+test-dates.dat: gen-test-dates.sh
+	./gen-test-dates.sh
+
+test-dates-utils.sh: test-dates.dat
 
 libdirs = $(HOME)/lib
 
